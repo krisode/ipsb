@@ -39,12 +39,6 @@
       "frameworks": {
         "netcoreapp3.1": {
           "targetAlias": "netcoreapp3.1",
-          "dependencies": {
-            "FirebaseAdmin": {
-              "target": "Package",
-              "version": "[2.1.0, )"
-            }
-          },
           "imports": [
             "net461",
             "net462",
@@ -99,12 +93,6 @@
       "frameworks": {
         "netcoreapp3.1": {
           "targetAlias": "netcoreapp3.1",
-          "dependencies": {
-            "FirebaseAdmin": {
-              "target": "Package",
-              "version": "[2.1.0, )"
-            }
-          },
           "imports": [
             "net461",
             "net462",
@@ -178,6 +166,10 @@
             "FirebaseAuthentication.net": {
               "target": "Package",
               "version": "[3.7.1, )"
+            },
+            "FirebaseStorage.net": {
+              "target": "Package",
+              "version": "[1.0.3, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",

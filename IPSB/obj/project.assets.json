@@ -56,6 +56,19 @@
           "lib/netstandard1.1/Firebase.Auth.dll": {}
         }
       },
+      "FirebaseStorage.net/1.0.3": {
+        "type": "package",
+        "dependencies": {
+          "NETStandard.Library": "1.6.1",
+          "Newtonsoft.Json": "9.0.1"
+        },
+        "compile": {
+          "lib/netstandard1.1/Firebase.Storage.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard1.1/Firebase.Storage.dll": {}
+        }
+      },
       "Google.Api.Gax/3.2.0": {
         "type": "package",
         "dependencies": {
@@ -2384,9 +2397,6 @@
       "IPSB.Core/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v3.1",
-        "dependencies": {
-          "FirebaseAdmin": "2.1.0"
-        },
         "compile": {
           "bin/placeholder/IPSB.Core.dll": {}
         },
@@ -2397,9 +2407,6 @@
       "IPSB.Infrastructure/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v3.1",
-        "dependencies": {
-          "FirebaseAdmin": "2.1.0"
-        },
         "compile": {
           "bin/placeholder/IPSB.Infrastructure.dll": {}
         },
@@ -2464,6 +2471,18 @@
         "firebaseauthentication.net.3.7.1.nupkg.sha512",
         "firebaseauthentication.net.nuspec",
         "lib/netstandard1.1/Firebase.Auth.dll"
+      ]
+    },
+    "FirebaseStorage.net/1.0.3": {
+      "sha512": "SupDHNUwNqcVwEo/HdFEWAXveQe3fU16q4wrrCxUVwP0a77zaddKp7vo2sHIW56DAsJn/gUfjDK3w0MuBhvzjQ==",
+      "type": "package",
+      "path": "firebasestorage.net/1.0.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "firebasestorage.net.1.0.3.nupkg.sha512",
+        "firebasestorage.net.nuspec",
+        "lib/netstandard1.1/Firebase.Storage.dll"
       ]
     },
     "Google.Api.Gax/3.2.0": {
@@ -8001,6 +8020,7 @@
       "AutoMapper.Extensions.Microsoft.DependencyInjection >= 8.1.1",
       "FirebaseAdmin >= 2.1.0",
       "FirebaseAuthentication.net >= 3.7.1",
+      "FirebaseStorage.net >= 1.0.3",
       "IPSB.Core >= 1.0.0",
       "IPSB.Infrastructure >= 1.0.0",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 5.0.1",
@@ -8069,6 +8089,10 @@
           "FirebaseAuthentication.net": {
             "target": "Package",
             "version": "[3.7.1, )"
+          },
+          "FirebaseStorage.net": {
+            "target": "Package",
+            "version": "[1.0.3, )"
           },
           "Microsoft.AspNetCore.Authentication.JwtBearer": {
             "target": "Package",

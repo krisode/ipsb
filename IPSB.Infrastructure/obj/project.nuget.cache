@@ -1,18 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "wW5OTHjBX7TTVu8A9+pqYBQGRrU5XCkJTpwjSALuDU7BeZzIBSNVo9jMRJ6O0MpswagKX1FpV99Z5/ufZaRImA==",
+  "dgSpecHash": "6FdhImxLO/R3kgxs0TUTN0XnYrzCVLbPxIljzO7cd+s517bSRcL5+gCs1dit3Y+6oRse2KKJaeTGqggKO35wXg==",
   "success": true,
   "projectFilePath": "F:\\9-Ninth Semester\\IPSB-backend\\IPSB\\IPSB.Infrastructure\\IPSB.Infrastructure.csproj",
-  "expectedPackageFiles": [
-    "C:\\Users\\mrsim\\.nuget\\packages\\firebaseadmin\\2.1.0\\firebaseadmin.2.1.0.nupkg.sha512",
-    "C:\\Users\\mrsim\\.nuget\\packages\\google.api.gax\\3.2.0\\google.api.gax.3.2.0.nupkg.sha512",
-    "C:\\Users\\mrsim\\.nuget\\packages\\google.api.gax.rest\\3.2.0\\google.api.gax.rest.3.2.0.nupkg.sha512",
-    "C:\\Users\\mrsim\\.nuget\\packages\\google.apis\\1.49.0\\google.apis.1.49.0.nupkg.sha512",
-    "C:\\Users\\mrsim\\.nuget\\packages\\google.apis.auth\\1.49.0\\google.apis.auth.1.49.0.nupkg.sha512",
-    "C:\\Users\\mrsim\\.nuget\\packages\\google.apis.core\\1.49.0\\google.apis.core.1.49.0.nupkg.sha512",
-    "C:\\Users\\mrsim\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\1.0.0\\microsoft.bcl.asyncinterfaces.1.0.0.nupkg.sha512",
-    "C:\\Users\\mrsim\\.nuget\\packages\\newtonsoft.json\\12.0.3\\newtonsoft.json.12.0.3.nupkg.sha512",
-    "C:\\Users\\mrsim\\.nuget\\packages\\system.collections.immutable\\1.7.1\\system.collections.immutable.1.7.1.nupkg.sha512"
-  ],
+  "expectedPackageFiles": [],
   "logs": []
 }
