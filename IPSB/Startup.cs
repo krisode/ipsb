@@ -1,7 +1,13 @@
+using BeautyAtHome;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using IPSB.Authorization;
+using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
+using IPSB.Infrastructure.Repositories;
+using IPSB.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +47,15 @@ namespace IPSB
 
             services.AddDbContext<indoor_positioning_mainContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("IPSBDatabase")));
+
+            services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
+
+            services.AddScoped(typeof(IPagingSupport<>), typeof(PagingSupport<>));
+
+            services.AddSingleton<IAuthorizationPolicyProvider, RequiredRolePolicyProvider>();
+            services.AddSingleton<IAuthorizationHandler, RequiredRoleHandler>();
+            services.AddSingleton<IUploadFileService, UploadFileService>();
+            services.AddSingleton<IJwtTokenProvider, JwtTokenProvider>();
 
             services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

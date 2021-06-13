@@ -1,4 +1,5 @@
 ﻿//using IPSB.Infrastructure.Contexts;
+using IPSB.Infrastructure.Contexts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -13,7 +14,7 @@ namespace IPSB.Utils
 {
     public interface IJwtTokenProvider
     {
-        //Task<string> GenerateToken(Account accountCreated);
+        Task<string> GenerateToken(Account accountCreated);
         Task<string> GetPayloadFromToken(string tokenString, string key);
 
     }
@@ -28,32 +29,32 @@ namespace IPSB.Utils
             _jwtSecurityTokenHandler = _jwtSecurityTokenHandler ?? new JwtSecurityTokenHandler();
         }
 
-        //public Task<string> GenerateToken(Account accountCreated)
-        //{
-        //    return Task.Run(() =>
-        //    {
-        //        var symmectricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["jwt:Key"]));
+        public Task<string> GenerateToken(Account accountCreated)
+        {
+            return Task.Run(() =>
+            {
+                var symmectricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["jwt:Key"]));
 
-        //        //signing credentials
-        //        var signingCredentials = new SigningCredentials(symmectricSecurityKey, SecurityAlgorithms.HmacSha256);
+                //signing credentials
+                var signingCredentials = new SigningCredentials(symmectricSecurityKey, SecurityAlgorithms.HmacSha256);
 
-        //        var additionalClaims = new List<Claim>();
-        //        additionalClaims.Add(new Claim(TokenClaims.ROLE, accountCreated.Role));
-        //        additionalClaims.Add(new Claim(TokenClaims.UID, accountCreated.Id.ToString()));
+                var additionalClaims = new List<Claim>();
+                additionalClaims.Add(new Claim(TokenClaims.ROLE, accountCreated.Role));
+                additionalClaims.Add(new Claim(TokenClaims.UID, accountCreated.Id.ToString()));
 
-        //        var token = new JwtSecurityToken(
-        //                issuer: _configuration["jwt:Issuer"],
-        //                audience: _configuration["jwt:Audience"],
-        //                expires: DateTime.Now.AddDays(1),
-        //                claims: additionalClaims,
-        //                signingCredentials: signingCredentials
-        //            );
+                var token = new JwtSecurityToken(
+                        issuer: _configuration["jwt:Issuer"],
+                        audience: _configuration["jwt:Audience"],
+                        expires: DateTime.Now.AddDays(1),
+                        claims: additionalClaims,
+                        signingCredentials: signingCredentials
+                    );
 
-        //        //return token
-        //        return _jwtSecurityTokenHandler.WriteToken(token);
-        //    });
+                //return token
+                return _jwtSecurityTokenHandler.WriteToken(token);
+            });
 
-        //}
+        }
 
         public Task<string> GetPayloadFromToken(string tokenString, string key)
         {
