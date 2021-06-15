@@ -27,7 +27,11 @@
         "frameworks": {
           "netcoreapp3.1": {
             "targetAlias": "netcoreapp3.1",
-            "projectReferences": {}
+            "projectReferences": {
+              "F:\\9-Ninth Semester\\IPSB-backend\\IPSB\\IPSB.Infrastructure\\IPSB.Infrastructure.csproj": {
+                "projectPath": "F:\\9-Ninth Semester\\IPSB-backend\\IPSB\\IPSB.Infrastructure\\IPSB.Infrastructure.csproj"
+              }
+            }
           }
         },
         "warningProperties": {

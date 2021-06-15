@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using IPSB.Infrastructure.Contexts;
+using IPSB.ViewModels;
 
 namespace IPSB.Utils
 {
@@ -14,6 +16,16 @@ namespace IPSB.Utils
             //CreateMap<ServiceVM, Service>();
             //CreateMap<ServiceCM, Service>();
             //#endregion
+
+            #region ProductCategoryModel
+            CreateMap<ProductCategory, ProductCategoryVM>();
+            CreateMap<ProductCategoryCM, Product>();
+            #endregion
+            #region ProductModel
+            CreateMap<Product, ProductVM>();
+            #endregion
+
+
         }
     }
 }

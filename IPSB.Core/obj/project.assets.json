@@ -1520,6 +1520,19 @@
         "runtime": {
           "lib/netstandard1.3/System.Xml.XmlSerializer.dll": {}
         }
+      },
+      "IPSB.Infrastructure/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v3.1",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.SqlServer": "5.0.7"
+        },
+        "compile": {
+          "bin/placeholder/IPSB.Infrastructure.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/IPSB.Infrastructure.dll": {}
+        }
       }
     }
   },
@@ -5788,10 +5801,16 @@
         "system.xml.xmlserializer.4.3.0.nupkg.sha512",
         "system.xml.xmlserializer.nuspec"
       ]
+    },
+    "IPSB.Infrastructure/1.0.0": {
+      "type": "project",
+      "path": "../IPSB.Infrastructure/IPSB.Infrastructure.csproj",
+      "msbuildProject": "../IPSB.Infrastructure/IPSB.Infrastructure.csproj"
     }
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
+      "IPSB.Infrastructure >= 1.0.0",
       "Microsoft.EntityFrameworkCore.SqlServer >= 5.0.7",
       "Microsoft.EntityFrameworkCore.Tools >= 5.0.7"
     ]
@@ -5822,7 +5841,11 @@
       "frameworks": {
         "netcoreapp3.1": {
           "targetAlias": "netcoreapp3.1",
-          "projectReferences": {}
+          "projectReferences": {
+            "F:\\9-Ninth Semester\\IPSB-backend\\IPSB\\IPSB.Infrastructure\\IPSB.Infrastructure.csproj": {
+              "projectPath": "F:\\9-Ninth Semester\\IPSB-backend\\IPSB\\IPSB.Infrastructure\\IPSB.Infrastructure.csproj"
+            }
+          }
         }
       },
       "warningProperties": {

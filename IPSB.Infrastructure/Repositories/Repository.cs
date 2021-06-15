@@ -67,5 +67,10 @@ namespace IPSB.Infrastructure.Repositories
             var lstRemove = _dbContext.Set<T>().Where(predicate);
             _dbContext.RemoveRange(lstRemove);
         }
+
+        public async Task<int> Save()
+        {
+            return await _dbContext.SaveChangesAsync();
+        }
     }
 }

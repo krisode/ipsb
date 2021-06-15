@@ -2,6 +2,7 @@ using BeautyAtHome;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using IPSB.Authorization;
+using IPSB.Core.Services;
 using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Infrastructure.Repositories;
@@ -56,6 +57,10 @@ namespace IPSB
             services.AddSingleton<IAuthorizationHandler, RequiredRoleHandler>();
             services.AddSingleton<IUploadFileService, UploadFileService>();
             services.AddSingleton<IJwtTokenProvider, JwtTokenProvider>();
+
+            // Add ProductCategoryService
+            services.AddTransient<IProductCategoryService, ProductCategoryService>();
+
 
             services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

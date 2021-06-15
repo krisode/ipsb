@@ -2398,6 +2398,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v3.1",
         "dependencies": {
+          "IPSB.Infrastructure": "1.0.0",
           "Microsoft.EntityFrameworkCore.SqlServer": "5.0.7"
         },
         "compile": {

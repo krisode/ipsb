@@ -12,4 +12,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\IPSB.Infrastructure\IPSB.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

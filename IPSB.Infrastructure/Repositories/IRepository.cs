@@ -13,5 +13,6 @@ namespace IPSB.Infrastructure.Repositories
         void Update(T entity);
         void Delete(T entity);
         void DeleteRange(Expression<Func<T, bool>> predicate);
+        Task<int> Save();
     }
 }
