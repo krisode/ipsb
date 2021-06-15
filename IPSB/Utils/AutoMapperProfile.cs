@@ -19,7 +19,7 @@ namespace IPSB.Utils
 
             #region ProductCategoryModel
             CreateMap<ProductCategory, ProductCategoryVM>();
-            CreateMap<ProductCategoryCM, Product>();
+            CreateMap<ProductCategoryCM, ProductCategory>();
             #endregion
             #region ProductModel
             CreateMap<Product, ProductVM>();

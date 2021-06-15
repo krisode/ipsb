@@ -174,6 +174,8 @@ namespace IPSB.Controllers
 
             try
             {
+                updProCate.Id = productCategory.Id;
+                updProCate.Name = productCategory.Name;
                 _service.Update(updProCate);
                 await _service.Save();
             }
