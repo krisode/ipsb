@@ -8,36 +8,36 @@ using System.Threading.Tasks;
 
 namespace IPSB.Core.Services
 {
-    public interface IProductCategoryService : IService<ProductCategory, int>
+    public interface IEdgeService : IService<Edge, int>
     {
 
     }
 
-    public class ProductCategoryService : IProductCategoryService
+    public class EdgeService : IEdgeService
     {
-        private readonly IRepository<ProductCategory, int> _iRepository;
+        private readonly IRepository<Edge, int> _iRepository;
 
-        public ProductCategoryService(IRepository<ProductCategory, int> iRepository)
+        public EdgeService(IRepository<Edge, int> iRepository)
         {
             _iRepository = iRepository;
         }
 
-        public async Task<ProductCategory> AddAsync(ProductCategory entity)
+        public async Task<Edge> AddAsync(Edge entity)
         {
             return await _iRepository.AddAsync(entity);
         }
 
-        public void Delete(ProductCategory entity)
+        public void Delete(Edge entity)
         {
             _iRepository.Delete(entity);
         }
 
-        public IQueryable<ProductCategory> GetAll(params Expression<Func<ProductCategory, object>>[] includes)
+        public IQueryable<Edge> GetAll(params Expression<Func<Edge, object>>[] includes)
         {
             return _iRepository.GetAll(includes);
         }
 
-        public async Task<ProductCategory> GetByIdAsync(Expression<Func<ProductCategory, bool>> predicate, params Expression<Func<ProductCategory, object>>[] includes)
+        public async Task<Edge> GetByIdAsync(Expression<Func<Edge, bool>> predicate, params Expression<Func<Edge, object>>[] includes)
         {
             return await _iRepository.GetByIdAsync(predicate, includes);
         }
@@ -47,7 +47,7 @@ namespace IPSB.Core.Services
             return _iRepository.Save();
         }
 
-        public void Update(ProductCategory entity)
+        public void Update(Edge entity)
         {
             _iRepository.Update(entity);
         }

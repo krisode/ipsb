@@ -20,7 +20,7 @@ namespace IPSB.Utils
         ///<summary>
         /// Get a range of persited entities.
         ///</summary>
-        PagingSupport<T> GetRange(int pageIndex, int pageSize, Expression<Func<T, object>> selector);
+        PagingSupport<T> GetRange(int pageIndex, int pageSize, Expression<Func<T, object>> selector, bool sortOrder);
 
 
 
@@ -54,11 +54,19 @@ namespace IPSB.Utils
             get { return _source.Count(); }
         }
 
-        public PagingSupport<T> GetRange(int pageIndex, int pageSize, Expression<Func<T, object>> selector)
+        public PagingSupport<T> GetRange(int pageIndex, int pageSize, Expression<Func<T, object>> selector, bool sortOrder = true)
         {
             _pageIndex = pageIndex;
             _pageSize = pageSize;
-            _sourcePageSize = _source.OrderByDescending(selector).Skip((pageIndex - 1) * pageSize).Take(pageSize);
+            if (sortOrder)
+            {
+                _sourcePageSize = _source.OrderBy(selector).Skip((pageIndex - 1) * pageSize).Take(pageSize);
+            }
+            if (!sortOrder)
+            {
+                _sourcePageSize = _source.OrderByDescending(selector).Skip((pageIndex - 1) * pageSize).Take(pageSize);
+            }
+           
             return this;
         }
 
