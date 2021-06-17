@@ -39,9 +39,9 @@ namespace IPSB.Core.Services
             return _iRepository.GetAll(includes);
         }
 
-        public async Task<ProductCategory> GetByIdAsync(int id)
+        public async Task<ProductCategory> GetByIdAsync(Expression<Func<ProductCategory, bool>> predicate, params Expression<Func<ProductCategory, object>>[] includes)
         {
-            return await _iRepository.GetByIdAsync(id);
+            return await _iRepository.GetByIdAsync(predicate, includes);
         }
 
         public Task<int> Save()
