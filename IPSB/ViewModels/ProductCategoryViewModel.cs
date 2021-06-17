@@ -10,10 +10,16 @@ namespace IPSB.ViewModels
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public ICollection<ProductVM> Products { get; set; }
+        public ICollection<ProductRefModel> Products { get; set; }
     }
-        public class ProductCategorySM
+    public class ProductCategorySM
     {
+        public string Name { get; set; }
+    }
+
+    public class ProductCategoryRefModel
+    {
+        public int Id { get; set; }
         public string Name { get; set; }
     }
 

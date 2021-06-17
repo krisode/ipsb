@@ -22,8 +22,16 @@ namespace IPSB.Utils
             CreateMap<ProductCategoryCM, ProductCategory>();
             #endregion
             #region ProductModel
-            CreateMap<Product, ProductVM>();
+            CreateMap<Product, ProductRefModel>();
             #endregion
+            #region EdgeModel
+            CreateMap<Edge, EdgeVM>();
+            CreateMap<EdgeCM, Edge>();
+            #endregion
+            #region LocationModel
+            CreateMap<Location, LocationRefModel>();
+            #endregion
+
 
 
         }

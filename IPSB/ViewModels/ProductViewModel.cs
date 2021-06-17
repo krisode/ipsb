@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace IPSB.ViewModels
 {
-    public class ProductVM
+    public class ProductRefModel
     {
         public string Id { get; set; }
         public string Name { get; set; }

@@ -1,10 +1,8 @@
 ﻿using IPSB.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace IPSB.Infrastructure.Repositories
@@ -21,6 +19,7 @@ namespace IPSB.Infrastructure.Repositories
         public IQueryable<T> GetAll(params Expression<Func<T, object>>[] includes)
         {
             IQueryable<T> queryList = _dbContext.Set<T>().AsNoTracking();
+
             foreach (var expression in includes)
             {
                 queryList = queryList.Include(expression);

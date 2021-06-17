@@ -60,6 +60,8 @@ namespace IPSB
 
             // Add ProductCategoryService
             services.AddTransient<IProductCategoryService, ProductCategoryService>();
+            // Add EdgeService
+            services.AddTransient<IEdgeService, EdgeService>();
 
 
             services

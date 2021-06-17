@@ -186,7 +186,7 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("Edge");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                //entity.Property(e => e.Id).ValueGeneratedNever();
 
                 entity.HasOne(d => d.FromLocation)
                     .WithMany(p => p.EdgeFromLocations)
@@ -205,7 +205,7 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("FavoriteStore");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                //entity.Property(e => e.Id).ValueGeneratedNever();
 
                 entity.Property(e => e.RecordDate).HasColumnType("datetime");
 
