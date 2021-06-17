@@ -49,15 +49,17 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<ProductCategoryVM> GetProductCategoryById(int id)
         {
-            IQueryable<ProductCategory> proList = _service.GetAll(_ => _.Products);
-            var proCate = proList.FirstOrDefault(_ => _.Id == id);
+            //IQueryable<ProductCategory> proList = _service.GetAll(_ => _.Products);
+            //var proCate = proList.FirstOrDefault(_ => _.Id == id);
 
+            var proCate = _service.GetByIdAsync(_ => _.Id == id, _ => _.Products);
+        
             if (proCate == null)
             {
                 return NotFound();
             }
 
-            var rtnProCate = _mapper.Map<ProductCategoryVM>(proCate);
+            var rtnProCate = _mapper.Map<ProductCategoryVM>(proCate.Result);
 
             return Ok(rtnProCate);
         }
@@ -166,7 +168,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutProductCategory(int id, [FromBody] ProductCategoryUM productCategory)
         {
-            ProductCategory updProCate = await _service.GetByIdAsync(id);
+            ProductCategory updProCate = await _service.GetByIdAsync(_ => _.Id == id);
             if (updProCate == null || id != productCategory.Id)
             {
                 return BadRequest();

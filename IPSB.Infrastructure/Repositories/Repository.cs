@@ -28,9 +28,20 @@ namespace IPSB.Infrastructure.Repositories
             return queryList;
         }
 
-        public async Task<T> GetByIdAsync(TKey id)
+        public async Task<T> GetByIdAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
         {
-            return await _dbContext.FindAsync<T>(id);
+            IQueryable<T> queryList = _dbContext.Set<T>().AsNoTracking();
+            
+            if (includes.Length > 0)
+            {
+                foreach (var expression in includes)
+                {
+                    queryList = queryList.Include(expression);
+                }
+            }
+            
+            return await queryList.FirstOrDefaultAsync(predicate);
+
         }
 
         public async Task<T> AddAsync(T entity)
