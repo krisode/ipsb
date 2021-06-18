@@ -60,6 +60,7 @@ namespace IPSB
 
             // Add AccountService
             // Add BuildingService
+            services.AddTransient<IBuildingService, BuildingService>();
             // Add EdgeService
             services.AddTransient<IEdgeService, EdgeService>();
             // Add FloorPlanService

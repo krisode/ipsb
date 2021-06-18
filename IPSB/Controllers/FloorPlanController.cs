@@ -80,7 +80,7 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<FloorPlanVM>> GetAllFloorPlans([FromQuery] FloorPlanSM model, int pageSize = 20, int pageIndex = 1, bool isAscending = true)
+        public ActionResult<IEnumerable<FloorPlanVM>> GetAllFloorPlans([FromQuery] FloorPlanSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             IQueryable<FloorPlan> list = _service.GetAll(_ => _.Building, _ => _.Locations, _ => _.LocatorTags, _ => _.Stores);
 
@@ -95,7 +95,7 @@ namespace IPSB.Controllers
             }
 
             var pagedModel = _pagingSupport.From(list)
-                .GetRange(pageIndex, pageSize, _ => _.Id, isAscending)
+                .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
                 .Paginate<FloorPlanVM>();
 
             return Ok(pagedModel);
@@ -173,12 +173,12 @@ namespace IPSB.Controllers
                 return BadRequest();
             }
 
-            if (updLocationType.FloorCode.ToUpper() == model.FloorCode)
-            {
-                return Conflict();
-            }
+            string imageURL = updLocationType.ImageUrl;
 
-            string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "floor-plan", "floor-plan-map");
+            if (model.ImageUrl.Length > 0)
+            {
+                imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "floor-plan", "floor-plan-map");
+            }
 
             try
             {
