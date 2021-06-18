@@ -17,10 +17,13 @@ namespace IPSB.Utils
             //CreateMap<ServiceCM, Service>();
             //#endregion
             #region AccountModel
+            CreateMap<Account, AccountRefModel>();
             #endregion
 
             #region BuildingModel
             CreateMap<Building, BuildingRefModel>();
+            CreateMap<Building, BuildingVM>();
+            CreateMap<BuildingCM, Building>();
             #endregion
 
             #region CouponModel
@@ -81,6 +84,7 @@ namespace IPSB.Utils
             #endregion
 
             #region VisitRouteModel
+            CreateMap<VisitRoute, VisitRouteRefModel>();
             #endregion
 
 

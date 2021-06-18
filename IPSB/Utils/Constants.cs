@@ -39,6 +39,8 @@
         {
             public const string ACTIVE = "Active";
 
+            public const string INACTIVE = "Inactive";
+
             public const string DISABLED = "Disabled";
         }
 
