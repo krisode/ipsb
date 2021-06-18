@@ -78,7 +78,7 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<LocationVM>> GetAllLocations([FromQuery] LocationSM model, int pageSize, int pageIndex, bool isAscending = true)
+        public ActionResult<IEnumerable<LocationVM>> GetAllLocations([FromQuery] LocationSM model, int pageSize = 20, int pageIndex = 1, bool isAscending = true)
         {
             IQueryable<Location> list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store,
                 _ => _.EdgeFromLocations, _ => _.EdgeToLocations, _ => _.LocatorTags, _ => _.VisitPoints);
@@ -106,16 +106,6 @@ namespace IPSB.Controllers
             if (model.LocationTypeId != 0)
             {
                 list = list.Where(_ => _.LocationTypeId == model.LocationTypeId);
-            }
-
-            if (pageSize == 0)
-            {
-                pageSize = 20;
-            }
-
-            if (pageIndex == 0)
-            {
-                pageIndex = 1;
             }
 
             var pagedModel = _pagingSupport.From(list)
@@ -146,7 +136,6 @@ namespace IPSB.Controllers
         [HttpPost]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<LocationCM>> CreateLocation([FromBody] LocationCM model)
         {

@@ -77,7 +77,7 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<LocationTypeVM>> GetAllLocationTypes([FromQuery] LocationTypeSM model, int pageSize, int pageIndex, bool isAscending = true)
+        public ActionResult<IEnumerable<LocationTypeVM>> GetAllLocationTypes([FromQuery] LocationTypeSM model, int pageSize = 20, int pageIndex = 1, bool isAscending = true)
         {
             IQueryable<LocationType> list = _service.GetAll(_ => _.Locations);
 
@@ -91,16 +91,6 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.Description.Contains(model.Description));
             }
             
-            if (pageSize == 0)
-            {
-                pageSize = 20;
-            }
-
-            if (pageIndex == 0)
-            {
-                pageIndex = 1;
-            }
-
             var pagedModel = _pagingSupport.From(list)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAscending)
                 .Paginate<LocationTypeVM>();
@@ -178,8 +168,7 @@ namespace IPSB.Controllers
                 return BadRequest();
             }
             
-            LocationType locationType = _service.GetByIdAsync(_ => _.Name.ToUpper() == model.Name.ToUpper()).Result;
-            if (locationType is not null)
+            if (updLocationType.Name.ToUpper() == model.Name.ToUpper())
             {
                 return Conflict();
             }

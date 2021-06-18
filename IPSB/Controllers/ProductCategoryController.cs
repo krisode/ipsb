@@ -84,23 +84,13 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<ProductCategoryVM>> GetAllProductCategories([FromQuery] ProductCategorySM model, int pageSize, int pageIndex, bool isAscending = true)
+        public ActionResult<IEnumerable<ProductCategoryVM>> GetAllProductCategories([FromQuery] ProductCategorySM model, int pageSize = 20, int pageIndex = 1, bool isAscending = true)
         {
             IQueryable<ProductCategory> serviceTypeList = _service.GetAll(_ => _.Products);
 
             if (!string.IsNullOrEmpty(model.Name))
             {
                 serviceTypeList = serviceTypeList.Where(_ => _.Name.Contains(model.Name));
-            }
-
-            if (pageSize == 0)
-            {
-                pageSize = 20;
-            }
-
-            if (pageIndex == 0)
-            {
-                pageIndex = 1;
             }
 
             var pagedModel = _pagingSupport.From(serviceTypeList)
@@ -127,7 +117,6 @@ namespace IPSB.Controllers
         [HttpPost]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ProductCategoryCM>> CreateProductCategory([FromBody] ProductCategoryCM proCateModel)
         {

@@ -63,6 +63,7 @@ namespace IPSB
             // Add EdgeService
             services.AddTransient<IEdgeService, EdgeService>();
             // Add FloorPlanService
+            services.AddTransient<IFloorPlanService, FloorPlanService>();
             // Add LocationService
             services.AddTransient<ILocationService, LocationService>();
             // Add LocationTypeService
