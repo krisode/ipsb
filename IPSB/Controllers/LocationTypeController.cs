@@ -150,7 +150,7 @@ namespace IPSB.Controllers
         /// <param name="id">Location type's id</param>
         /// <param name="model">Information applied to updated location type</param>
         /// <response code="204">Update location type successfully</response>
-        /// <response code="400">>Location type's id does not exist or does not match with the id in parameter</response>
+        /// <response code="400">Location type's id does not exist or does not match with the id in parameter</response>
         /// <response code="409">Location type already exists</response>
         /// <response code="500">Failed to update</response>
         [HttpPut]

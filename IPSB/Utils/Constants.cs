@@ -1,4 +1,6 @@
-﻿namespace IPSB.Utils
+﻿using System.Collections.Generic;
+
+namespace IPSB.Utils
 {
     public class Constants
     {
@@ -10,7 +12,12 @@
 
         public static class Role
         {
-            public const string ADMIN = "CUSTOMER";
+            public const string ADMIN = "Admin";
+            public const string STORE_OWNER = "Store Owner";
+            public const string BUILDING_MANAGER = "Building Manager";
+            public const string VISITOR = "Visitor";
+
+            public static readonly string[] ROLE_LIST = { ADMIN, STORE_OWNER, BUILDING_MANAGER, VISITOR };
         }
 
         public static class PrefixPolicy

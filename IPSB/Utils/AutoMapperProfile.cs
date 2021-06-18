@@ -18,6 +18,8 @@ namespace IPSB.Utils
             //#endregion
             #region AccountModel
             CreateMap<Account, AccountRefModel>();
+            CreateMap<Account, AccountVM>();
+            CreateMap<AccountCM, Account>();
             #endregion
 
             #region BuildingModel
@@ -30,6 +32,7 @@ namespace IPSB.Utils
             #endregion
 
             #region CouponInUseModel
+            CreateMap<CouponInUse, CouponInUseRefModel>();
             #endregion
 
             #region EdgeModel

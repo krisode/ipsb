@@ -160,7 +160,7 @@ namespace IPSB.Controllers
         /// <param name="id">Location's id</param>
         /// <param name="model">Information applied to updated location</param>
         /// <response code="204">Update location successfully</response>
-        /// <response code="400">>Location's id does not exist or does not match with the id in parameter</response>
+        /// <response code="400">Location's id does not exist or does not match with the id in parameter</response>
         /// <response code="500">Failed to update</response>
         [HttpPut]
         [Route("{id}")]
