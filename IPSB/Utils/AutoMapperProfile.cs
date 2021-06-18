@@ -49,6 +49,8 @@ namespace IPSB.Utils
 
             #region LocationTypeModel
             CreateMap<LocationType, LocationTypeRefModel>();
+            CreateMap<LocationType, LocationTypeVM>();
+            CreateMap<LocationTypeCM, LocationType>();
             #endregion
 
             #region LocatorTagModel

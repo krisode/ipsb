@@ -1,9 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
-using IPSB;
+﻿using IPSB;
 using IPSB.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using System;
+using System.Threading.Tasks;
 using static IPSB.Utils.Constants;
 
 namespace BeautyAtHome

@@ -1,7 +1,7 @@
-﻿using System;
+﻿using AutoMapper;
+using System;
 using System.Linq;
 using System.Linq.Expressions;
-using AutoMapper;
 
 namespace IPSB.Utils
 {

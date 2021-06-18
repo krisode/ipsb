@@ -84,7 +84,7 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<ProductCategoryVM>> GetAllProductCategories([FromQuery] ProductCategorySM model, int pageSize, int pageIndex, bool isAscending)
+        public ActionResult<IEnumerable<ProductCategoryVM>> GetAllProductCategories([FromQuery] ProductCategorySM model, int pageSize, int pageIndex, bool isAscending = true)
         {
             IQueryable<ProductCategory> serviceTypeList = _service.GetAll(_ => _.Products);
 
