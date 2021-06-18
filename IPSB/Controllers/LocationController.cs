@@ -78,7 +78,7 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<LocationVM>> GetAllLocations([FromQuery] LocationSM model, int pageSize, int pageIndex, bool isAscending)
+        public ActionResult<IEnumerable<LocationVM>> GetAllLocations([FromQuery] LocationSM model, int pageSize, int pageIndex, bool isAscending = true)
         {
             IQueryable<Location> list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store,
                 _ => _.EdgeFromLocations, _ => _.EdgeToLocations, _ => _.LocatorTags, _ => _.VisitPoints);
