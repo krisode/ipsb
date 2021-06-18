@@ -84,13 +84,13 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<ProductCategoryVM>> GetAllProductCategories([FromQuery] ProductCategorySM model, int pageSize, int pageIndex)
+        public ActionResult<IEnumerable<ProductCategoryVM>> GetAllProductCategories([FromQuery] ProductCategorySM model, int pageSize, int pageIndex, bool isAscending)
         {
-            IQueryable<ProductCategory> serviceTypeList = _service.GetAll(s => s.Products);
+            IQueryable<ProductCategory> serviceTypeList = _service.GetAll(_ => _.Products);
 
             if (!string.IsNullOrEmpty(model.Name))
             {
-                serviceTypeList = serviceTypeList.Where(s => s.Name.Contains(model.Name));
+                serviceTypeList = serviceTypeList.Where(_ => _.Name.Contains(model.Name));
             }
 
             if (pageSize == 0)
@@ -104,7 +104,7 @@ namespace IPSB.Controllers
             }
 
             var pagedModel = _pagingSupport.From(serviceTypeList)
-                .GetRange(pageIndex, pageSize, s => s.Id)
+                .GetRange(pageIndex, pageSize, _ => _.Id, isAscending)
                 .Paginate<ProductCategoryVM>();
 
             return Ok(pagedModel);
