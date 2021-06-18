@@ -154,7 +154,7 @@ namespace IPSB.Controllers
         /// <param name="id">Floor plan's id</param>
         /// <param name="model">Information applied to updated floor plan</param>
         /// <response code="204">Update floor plan successfully</response>
-        /// <response code="400">>Floor plan's id does not exist or does not match with the id in parameter</response>
+        /// <response code="400">Floor plan's id does not exist or does not match with the id in parameter</response>
         /// <response code="409">Floor plan already exists</response>
         /// <response code="500">Failed to update</response>
         [HttpPut]
@@ -175,7 +175,7 @@ namespace IPSB.Controllers
 
             string imageURL = updLocationType.ImageUrl;
 
-            if (model.ImageUrl.Length > 0)
+            if (model.ImageUrl is not null && model.ImageUrl.Length > 0)
             {
                 imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "floor-plan", "floor-plan-map");
             }

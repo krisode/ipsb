@@ -13,15 +13,16 @@ using System.Threading.Tasks;
 
 namespace IPSB.Controllers
 {
-    [Route("api/v1.0/buildings")]
+    [Route("api/v1.0/accounts")]
     [ApiController]
-    public class BuildingController : AuthorizeController
+    public class AccountController : AuthorizeController
     {
-        private readonly IBuildingService _service;
+        private readonly IAccountService _service;
         private readonly IMapper _mapper;
-        private readonly IPagingSupport<Building> _pagingSupport;
+        private readonly IPagingSupport<Account> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
-        public BuildingController(IBuildingService service, IMapper mapper, IPagingSupport<Building> pagingSupport, IUploadFileService uploadFileService)
+
+        public AccountController(IAccountService service, IMapper mapper, IPagingSupport<Account> pagingSupport, IUploadFileService uploadFileService)
         {
             _service = service;
             _mapper = mapper;
@@ -29,8 +30,9 @@ namespace IPSB.Controllers
             _uploadFileService = uploadFileService;
         }
 
+
         /// <summary>
-        /// Get a specific building by id
+        /// Get a specific account by id
         /// </summary>
         /// <remarks>
         /// Sample Request:
@@ -39,29 +41,30 @@ namespace IPSB.Controllers
         ///         "id" : "1"
         ///     }
         /// </remarks>
-        /// <returns>Return the building with the corresponding id</returns>
-        /// <response code="200">Returns the building with the specified id</response>
-        /// <response code="404">No buildings found with the specified id</response>
+        /// <returns>Return the account with the corresponding id</returns>
+        /// <response code="200">Returns the account with the specified id</response>
+        /// <response code="404">No accounts found with the specified id</response>
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id}")]
-        public ActionResult<BuildingVM> GetBuildingById(int id)
+        public ActionResult<AccountVM> GetAccountById(int id)
         {
-            var building = _service.GetByIdAsync(_ => _.Id == id, _ => _.Admin, _ => _.Manager, _ => _.FloorPlans, _ => _.Stores, _ => _.VisitRoutes);
+            var account = _service.GetByIdAsync(_ => _.Id == id, _ => _.BuildingAdmins, _ => _.BuildingManagers, 
+                _ => _.CouponInUses, _ => _.Stores, _ => _.VisitRoutes);
 
-            if (building == null)
+            if (account == null)
             {
                 return NotFound();
             }
 
-            var rtnEdge = _mapper.Map<BuildingVM>(building.Result);
+            var rtnAccount = _mapper.Map<AccountVM>(account.Result);
 
-            return Ok(rtnEdge);
+            return Ok(rtnAccount);
         }
 
         /// <summary>
-        /// Get all buildings
+        /// Get all accounts
         /// </summary>
         /// <remarks>
         /// Sample request:
@@ -72,40 +75,36 @@ namespace IPSB.Controllers
         ///     }
         ///
         /// </remarks>
-        /// <returns>All buildings</returns>
-        /// <response code="200">Returns all buildings</response>
-        /// <response code="404">No buildings found</response>
+        /// <returns>All accounts</returns>
+        /// <response code="200">Returns all accounts</response>
+        /// <response code="404">No accounts found</response>
         [HttpGet]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<BuildingVM>> GetAllBuildings([FromQuery] BuildingSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
+        public ActionResult<IEnumerable<AccountVM>> GetAllAccounts([FromQuery] AccountSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<Building> list = _service.GetAll(_ => _.Admin, _ => _.Manager, _ => _.FloorPlans, _ => _.Stores, _ => _.VisitRoutes);
+            IQueryable<Account> list = _service.GetAll(_ => _.BuildingAdmins, _ => _.BuildingManagers,
+                _ => _.CouponInUses, _ => _.Stores, _ => _.VisitRoutes);
 
-            if (model.ManagerId != 0)
+            if (!string.IsNullOrEmpty(model.Role))
             {
-                list = list.Where(_ => _.ManagerId == model.ManagerId);
-            }
-
-            if (model.AdminId != 0)
-            {
-                list = list.Where(_ => _.AdminId == model.AdminId);
+                list = list.Where(_ => _.Role.ToUpper() == model.Role.ToUpper());
             }
 
             if (!string.IsNullOrEmpty(model.Name))
             {
                 list = list.Where(_ => _.Name.Contains(model.Name));
             }
-
-            if (model.NumberOfFloor != 0)
+            
+            if (!string.IsNullOrEmpty(model.Phone))
             {
-                list = list.Where(_ => _.NumberOfFloor == model.NumberOfFloor);
+                list = list.Where(_ => _.Phone.Contains(model.Phone));
             }
-
-            if (!string.IsNullOrEmpty(model.Address))
+            
+            if (!string.IsNullOrEmpty(model.Email))
             {
-                list = list.Where(_ => _.Address.Contains(model.Address));
+                list = list.Where(_ => _.Email.Contains(model.Email));
             }
 
             if (!string.IsNullOrEmpty(model.Status))
@@ -114,7 +113,7 @@ namespace IPSB.Controllers
                 {
                     return BadRequest();
                 }
-                
+
                 else
                 {
                     if (model.Status == Constants.Status.ACTIVE)
@@ -127,45 +126,44 @@ namespace IPSB.Controllers
                         list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
                     }
                 }
-            } 
+            }
 
             var pagedModel = _pagingSupport.From(list)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
-                .Paginate<BuildingVM>();
+                .Paginate<AccountVM>();
 
             return Ok(pagedModel);
         }
 
         /// <summary>
-        /// Create a new building
+        /// Create a new account
         /// </summary>
         /// <remarks>
         /// Sample request:
         ///
         ///     POST 
         ///     {
-        ///         "ManagerId": "Id of the manager in charge of the building",   
-        ///         "AdminId": "Id of the admin in charge of the building",   
-        ///         "Name": "Name of the building",   
-        ///         "ImageUrl": "Image of the building",   
-        ///         "NumberOfFloor": "Number of floors in the building",   
-        ///         "Address": "Address of the buildings",   
-        ///         "Status": "Status of the building",   
+        ///         "Email": "Email of the account",   
+        ///         "Name": "Name of the account",   
+        ///         "Phone": "Account phone number",   
+        ///         "Image": "Profile picture of the account",   
+        ///         "Role": "Account role", 
+        ///         "Status": "Status of the account",   
         ///     }
         ///
         /// </remarks>
-        /// <response code="201">Created a new building</response>
-        /// <response code="409">Building type already exists</response>
+        /// <response code="201">Created a new account</response>
+        /// <response code="409">Account already exists</response>
         /// <response code="500">Failed to save request</response>
         [HttpPost]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<BuildingCM>> CreateBuilding([FromForm] BuildingCM model)
+        public async Task<ActionResult<AccountCM>> CreateAccount([FromForm] AccountCM model)
         {
-            Building building = _service.GetByIdAsync(_ => _.Name.ToUpper() == model.Name.ToUpper()).Result;
-            if (building is not null)
+            Account account = _service.GetByIdAsync(_ => _.Email == model.Email).Result;
+            if (account is not null)
             {
                 return Conflict();
             }
@@ -178,13 +176,22 @@ namespace IPSB.Controllers
                 }
             }
 
-            Building crtBuilding = _mapper.Map<Building>(model);
-            string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "building", "building-detail");
-            crtBuilding.ImageUrl = imageURL;
+            if (!string.IsNullOrEmpty(model.Role))
+            {
+                if (!Constants.Role.ROLE_LIST.Contains(model.Role))
+                {
+                    return BadRequest();
+                }
+            }
+
+            Account crtAccount = _mapper.Map<Account>(model);
+
+            string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "account", "account-profile");
+            crtAccount.ImageUrl = imageURL;
 
             try
             {
-                await _service.AddAsync(crtBuilding);
+                await _service.AddAsync(crtAccount);
                 await _service.Save();
             }
             catch (Exception)
@@ -192,35 +199,42 @@ namespace IPSB.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
-            return CreatedAtAction("GetBuildingById", new { id = crtBuilding.Id }, crtBuilding);
+            return CreatedAtAction("GetAccountById", new { id = crtAccount.Id }, crtAccount);
         }
 
         /// <summary>
-        /// Update building with specified id
+        /// Update account with specified id
         /// </summary>
-        /// <param name="id">Building's id</param>
-        /// <param name="model">Information applied to updated building</param>
-        /// <response code="204">Update building successfully</response>
-        /// <response code="400">Building's id does not exist or does not match with the id in parameter</response>
-        /// <response code="409">Building already exists</response>
+        /// <param name="id">Account's id</param>
+        /// <param name="model">Information applied to updated account</param>
+        /// <response code="204">Update account successfully</response>
+        /// <response code="400">Account's id does not exist or does not match with the id in parameter</response>
+        /// <response code="409">Account already exists</response>
         /// <response code="500">Failed to update</response>
         [HttpPut]
         [Route("{id}")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> PutBuilding(int id, [FromForm] BuildingUM model)
+        public async Task<ActionResult> PutAccount(int id, [FromForm] AccountUM model)
         {
 
-            Building updBuilding = await _service.GetByIdAsync(_ => _.Id == id);
-            
-            if (updBuilding == null || id != model.Id)
+            Account updAccount = await _service.GetByIdAsync(_ => _.Id == id);
+
+            if (updAccount == null || id != model.Id)
             {
                 return BadRequest();
             }
 
+            if (!string.IsNullOrEmpty(model.Role))
+            {
+                if (!Constants.Role.ROLE_LIST.Contains(model.Role))
+                {
+                    return BadRequest();
+                }
+            }
+            
             if (!string.IsNullOrEmpty(model.Status))
             {
                 if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
@@ -229,25 +243,23 @@ namespace IPSB.Controllers
                 }
             }
 
-            string imageURL = updBuilding.ImageUrl;
+            string imageURL = updAccount.ImageUrl;
 
             if (model.ImageUrl is not null && model.ImageUrl.Length > 0)
             {
-                imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "floor-plan", "floor-plan-map");
+                imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "account", "account-profile");
             }
-            
+
             try
             {
-                updBuilding.Id = model.Id;
-                updBuilding.ManagerId = model.ManagerId;
-                updBuilding.AdminId = model.AdminId;
-                updBuilding.Name = model.Name;
-                updBuilding.ImageUrl = imageURL;
-                updBuilding.NumberOfFloor = model.NumberOfFloor;
-                updBuilding.Address = model.Address;
-                updBuilding.Status = model.Status;
-                
-                _service.Update(updBuilding);
+                updAccount.Id = model.Id;
+                updAccount.Role = model.Role;
+                updAccount.Name = model.Name;
+                updAccount.ImageUrl = imageURL;
+                updAccount.Phone = model.Phone;
+                updAccount.Status = model.Status;
+
+                _service.Update(updAccount);
                 await _service.Save();
             }
             catch (Exception e)

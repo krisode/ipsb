@@ -148,7 +148,7 @@ namespace IPSB.Controllers
         /// <param name="id">Product category's id</param>
         /// <param name="productCategory">Information applied to updated service type</param>
         /// <response code="204">Update product category successfully</response>
-        /// <response code="400">>Product category's id does not exist or does not match with the id in parameter</response>
+        /// <response code="400">Product category's id does not exist or does not match with the id in parameter</response>
         /// <response code="500">Failed to update</response>
         [HttpPut]
         [Route("{id}")]

@@ -59,6 +59,7 @@ namespace IPSB
             services.AddSingleton<IJwtTokenProvider, JwtTokenProvider>();
 
             // Add AccountService
+            services.AddTransient<IAccountService, AccountService>();
             // Add BuildingService
             services.AddTransient<IBuildingService, BuildingService>();
             // Add EdgeService
