@@ -20,6 +20,7 @@ namespace IPSB.Utils
             #endregion
 
             #region BuildingModel
+            CreateMap<Building, BuildingRefModel>();
             #endregion
 
             #region CouponModel
@@ -39,6 +40,8 @@ namespace IPSB.Utils
 
             #region FloorPlanModel
             CreateMap<FloorPlan, FloorPlanRefModel>();
+            CreateMap<FloorPlan, FloorPlanVM>();
+            CreateMap<FloorPlanCM, FloorPlan>();
             #endregion
 
             #region LocationModel
