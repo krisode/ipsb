@@ -58,10 +58,26 @@ namespace IPSB
             services.AddSingleton<IUploadFileService, UploadFileService>();
             services.AddSingleton<IJwtTokenProvider, JwtTokenProvider>();
 
-            // Add ProductCategoryService
-            services.AddTransient<IProductCategoryService, ProductCategoryService>();
+            // Add AccountService
+            // Add BuildingService
             // Add EdgeService
             services.AddTransient<IEdgeService, EdgeService>();
+            // Add FloorPlanService
+            // Add LocationService
+            services.AddTransient<ILocationService, LocationService>();
+            // Add LocationTypeService
+            // Add LocatorTagService
+            // Add ProductService
+            // Add ProductCategoryService
+            services.AddTransient<IProductCategoryService, ProductCategoryService>();
+            // Add StoreService
+            // Add VisitPointService
+            // Add VisitRouteService
+
+
+
+
+            
 
 
             services

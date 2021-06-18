@@ -77,7 +77,7 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<EdgeVM>> GetAllEdges([FromQuery] EdgeSM model, int pageSize, int pageIndex)
+        public ActionResult<IEnumerable<EdgeVM>> GetAllEdges([FromQuery] EdgeSM model, int pageSize, int pageIndex, bool isAscending = true)
         {
             IQueryable<Edge> list = _service.GetAll(_ => _.FromLocation, _ => _.ToLocation);
 
@@ -117,7 +117,7 @@ namespace IPSB.Controllers
             }
 
             var pagedModel = _pagingSupport.From(list)
-                .GetRange(pageIndex, pageSize, _ => _.Id)
+                .GetRange(pageIndex, pageSize, _ => _.Id, isAscending)
                 .Paginate<EdgeVM>();
 
             return Ok(pagedModel);
