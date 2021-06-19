@@ -46,14 +46,14 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<LocationTypeVM> GetLocationTypeById(int id)
         {
-            var locationType = _service.GetByIdAsync(_ => _.Id == id, _ => _.Locations);
+            var locationType = _service.GetByIdAsync(_ => _.Id == id, _ => _.Locations).Result;
 
             if (locationType == null)
             {
                 return NotFound();
             }
 
-            var rtnLocationType = _mapper.Map<LocationTypeVM>(locationType.Result);
+            var rtnLocationType = _mapper.Map<LocationTypeVM>(locationType);
 
             return Ok(rtnLocationType);
         }

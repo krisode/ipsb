@@ -76,12 +76,13 @@ namespace IPSB
             services.AddTransient<IProductCategoryService, ProductCategoryService>();
             // Add StoreService
             // Add VisitPointService
+            services.AddTransient<IVisitPointService, VisitPointService>();
             // Add VisitRouteService
 
 
 
 
-            
+
 
 
             services

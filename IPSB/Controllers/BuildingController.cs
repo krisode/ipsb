@@ -48,14 +48,14 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<BuildingVM> GetBuildingById(int id)
         {
-            var building = _service.GetByIdAsync(_ => _.Id == id, _ => _.Admin, _ => _.Manager, _ => _.FloorPlans, _ => _.Stores, _ => _.VisitRoutes);
+            var building = _service.GetByIdAsync(_ => _.Id == id, _ => _.Admin, _ => _.Manager, _ => _.FloorPlans, _ => _.Stores, _ => _.VisitRoutes).Result;
 
             if (building == null)
             {
                 return NotFound();
             }
 
-            var rtnEdge = _mapper.Map<BuildingVM>(building.Result);
+            var rtnEdge = _mapper.Map<BuildingVM>(building);
 
             return Ok(rtnEdge);
         }

@@ -49,14 +49,14 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<FloorPlanVM> GetFloorPlanById(int id)
         {
-            var floorPlan = _service.GetByIdAsync(_ => _.Id == id, _ => _.Building, _ => _.Locations, _ => _.LocatorTags, _ => _.Stores);
+            var floorPlan = _service.GetByIdAsync(_ => _.Id == id, _ => _.Building, _ => _.Locations, _ => _.LocatorTags, _ => _.Stores).Result;
 
             if (floorPlan == null)
             {
                 return NotFound();
             }
 
-            var rtnEdge = _mapper.Map<FloorPlanVM>(floorPlan.Result);
+            var rtnEdge = _mapper.Map<FloorPlanVM>(floorPlan);
 
             return Ok(rtnEdge);
         }
