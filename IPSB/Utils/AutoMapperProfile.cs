@@ -84,6 +84,8 @@ namespace IPSB.Utils
 
             #region VisitPointModel
             CreateMap<VisitPoint, VisitPointRefModel>();
+            CreateMap<VisitPoint, VisitPointVM>();
+            CreateMap<VisitPointCM, VisitPoint>();
             #endregion
 
             #region VisitRouteModel

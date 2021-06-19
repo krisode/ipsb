@@ -47,14 +47,14 @@ namespace IPSB.Controllers
         public ActionResult<LocationVM> GetLocationById(int id)
         {
             var location = _service.GetByIdAsync(_ => _.Id == id, _ => _.FloorPlan, _ => _.LocationType, _ => _.Store,
-                _ => _.EdgeFromLocations, _ => _.EdgeToLocations, _ => _.LocatorTags, _ => _.VisitPoints);
+                _ => _.EdgeFromLocations, _ => _.EdgeToLocations, _ => _.LocatorTags, _ => _.VisitPoints).Result;
 
             if (location == null)
             {
                 return NotFound();
             }
 
-            var rtnLocation = _mapper.Map<LocationVM>(location.Result);
+            var rtnLocation = _mapper.Map<LocationVM>(location);
 
             return Ok(rtnLocation);
         }

@@ -53,14 +53,14 @@ namespace IPSB.Controllers
             //IQueryable<ProductCategory> proList = _service.GetAll(_ => _.Products);
             //var proCate = proList.FirstOrDefault(_ => _.Id == id);
 
-            var proCate = _service.GetByIdAsync(_ => _.Id == id, _ => _.Products);
+            var proCate = _service.GetByIdAsync(_ => _.Id == id, _ => _.Products).Result;
         
             if (proCate == null)
             {
                 return NotFound();
             }
 
-            var rtnProCate = _mapper.Map<ProductCategoryVM>(proCate.Result);
+            var rtnProCate = _mapper.Map<ProductCategoryVM>(proCate);
 
             return Ok(rtnProCate);
         }

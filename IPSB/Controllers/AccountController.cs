@@ -51,14 +51,14 @@ namespace IPSB.Controllers
         public ActionResult<AccountVM> GetAccountById(int id)
         {
             var account = _service.GetByIdAsync(_ => _.Id == id, _ => _.BuildingAdmins, _ => _.BuildingManagers, 
-                _ => _.CouponInUses, _ => _.Stores, _ => _.VisitRoutes);
+                _ => _.CouponInUses, _ => _.Stores, _ => _.VisitRoutes).Result;
 
             if (account == null)
             {
                 return NotFound();
             }
 
-            var rtnAccount = _mapper.Map<AccountVM>(account.Result);
+            var rtnAccount = _mapper.Map<AccountVM>(account);
 
             return Ok(rtnAccount);
         }

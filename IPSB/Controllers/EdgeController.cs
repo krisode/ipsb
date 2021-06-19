@@ -46,14 +46,14 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<EdgeVM> GetEdgeById(int id)
         {
-            var edge = _service.GetByIdAsync(_ => _.Id == id, _ => _.FromLocation, _ => _.ToLocation);
+            var edge = _service.GetByIdAsync(_ => _.Id == id, _ => _.FromLocation, _ => _.ToLocation).Result;
 
             if (edge == null)
             {
                 return NotFound();
             }
 
-            var rtnEdge = _mapper.Map<EdgeVM>(edge.Result);
+            var rtnEdge = _mapper.Map<EdgeVM>(edge);
 
             return Ok(rtnEdge);
         }
