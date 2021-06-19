@@ -27,6 +27,17 @@ namespace IPSB.Infrastructure.Repositories
             return queryList;
         }
 
+        public IQueryable<T> GetAllWhere(params Expression<Func<T, bool>>[] includes)
+        {
+            IQueryable<T> queryList = _dbContext.Set<T>().AsNoTracking();
+
+            foreach (var expression in includes)
+            {
+                queryList = queryList.Where(expression);
+            }
+            return queryList;
+        }
+
         public async Task<T> GetByIdAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
         {
             IQueryable<T> queryList = _dbContext.Set<T>().AsNoTracking();

@@ -62,6 +62,9 @@ namespace IPSB
             services.AddTransient<IAccountService, AccountService>();
             // Add BuildingService
             services.AddTransient<IBuildingService, BuildingService>();
+            // Add CouponService
+            // Add CouponInUseService
+            services.AddTransient<ICouponInUseService, CouponInUseService>();
             // Add EdgeService
             services.AddTransient<IEdgeService, EdgeService>();
             // Add FavoriteStoreService

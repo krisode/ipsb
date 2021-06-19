@@ -8,6 +8,7 @@ namespace IPSB.Infrastructure.Repositories
     public interface IRepository<T, TKey>
     {
         IQueryable<T> GetAll(params Expression<Func<T, object>>[] predicate);
+        IQueryable<T> GetAllWhere(params Expression<Func<T, bool>>[] predicate);
         Task<T> GetByIdAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] expressions);
         Task<T> AddAsync(T entity);
         void Update(T entity);
