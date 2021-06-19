@@ -118,7 +118,6 @@ namespace IPSB.Controllers
         ///     {
         ///         "LocationId": "Id of the location",   
         ///         "VisitRouteId": "Id of the visit route",   
-        ///         "RecordTime": "The date and time that the user passed this point",   
         ///     }
         ///
         /// </remarks>

@@ -42,6 +42,9 @@ namespace IPSB.Utils
             #endregion
 
             #region FavoriteStoreModel
+            CreateMap<FavoriteStore, FavoriteStoreRefModel>();
+            CreateMap<FavoriteStore, FavoriteStoreVM>();
+            CreateMap<FavoriteStoreCM, FavoriteStore>();
             #endregion
 
             #region FloorPlanModel

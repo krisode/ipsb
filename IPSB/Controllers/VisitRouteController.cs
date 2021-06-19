@@ -120,7 +120,6 @@ namespace IPSB.Controllers
         ///     {
         ///         "AccountId": "Id of the account visiting the route",   
         ///         "BuildingId": "Id of the visit building that the route belongs to",   
-        ///         "RecordTime": "The date and time that the user visited this route",   
         ///     }
         ///
         /// </remarks>
