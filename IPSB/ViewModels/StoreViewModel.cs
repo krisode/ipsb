@@ -12,5 +12,6 @@
         public string ProductCategoryIds { get; set; }
         public string Phone { get; set; }
         public string Status { get; set; }
+        public BuildingRefModel Building { get; set; }
     }
 }
