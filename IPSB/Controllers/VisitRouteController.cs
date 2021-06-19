@@ -12,23 +12,24 @@ using System.Threading.Tasks;
 
 namespace IPSB.Controllers
 {
-    [Route("api/v1.0/visit-points")]
+    [Route("api/v1.0/visit-routes")]
     [ApiController]
-    public class VisitPointController : AuthorizeController
+    public class VisitRouteController : AuthorizeController
     {
-        private readonly IVisitPointService _service;
+        private readonly IVisitRouteService _service;
         private readonly IMapper _mapper;
-        private readonly IPagingSupport<VisitPoint> _pagingSupport;
+        private readonly IPagingSupport<VisitRoute> _pagingSupport;
 
-        public VisitPointController(IVisitPointService service, IMapper mapper, IPagingSupport<VisitPoint> pagingSupport)
+        public VisitRouteController(IVisitRouteService service, IMapper mapper, IPagingSupport<VisitRoute> pagingSupport)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
         }
 
+
         /// <summary>
-        /// Get a specific visit point by id
+        /// Get a specific visit route by id
         /// </summary>
         /// <remarks>
         /// Sample Request:
@@ -37,29 +38,29 @@ namespace IPSB.Controllers
         ///         "id" : "1"
         ///     }
         /// </remarks>
-        /// <returns>Return the visit point with the corresponding id</returns>
-        /// <response code="200">Returns the visit point with the specified id</response>
-        /// <response code="404">No visit points found with the specified id</response>
+        /// <returns>Return the visit route with the corresponding id</returns>
+        /// <response code="200">Returns the visit route with the specified id</response>
+        /// <response code="404">No visit routes found with the specified id</response>
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id}")]
-        public ActionResult<VisitPointVM> GetVisitPointById(int id)
+        public ActionResult<VisitRouteVM> GetVisitRouteById(int id)
         {
-            var visitPoint = _service.GetByIdAsync(_ => _.Id == id, _ => _.Location, _ => _.VisitRoute).Result;
+            var visitRoute = _service.GetByIdAsync(_ => _.Id == id, _ => _.Account, _ => _.Building, _ => _.VisitPoints).Result;
 
-            if (visitPoint is null)
+            if (visitRoute is null)
             {
                 return NotFound();
             }
 
-            var rtnVisitPoint = _mapper.Map<VisitPointVM>(visitPoint);
+            var rtnVisitRoute = _mapper.Map<VisitRouteVM>(visitRoute);
 
-            return Ok(rtnVisitPoint);
+            return Ok(rtnVisitRoute);
         }
 
         /// <summary>
-        /// Get all visit points
+        /// Get all visit routes
         /// </summary>
         /// <remarks>
         /// Sample request:
@@ -70,32 +71,32 @@ namespace IPSB.Controllers
         ///     }
         ///
         /// </remarks>
-        /// <returns>All visit points</returns>
-        /// <response code="200">Returns all visit points</response>
-        /// <response code="404">No visit points found</response>
+        /// <returns>All visit routes</returns>
+        /// <response code="200">Returns all visit routes</response>
+        /// <response code="404">No visit routes found</response>
         [HttpGet]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<VisitPointVM>> GetAllVisitPoints([FromQuery] VisitPointSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
+        public ActionResult<IEnumerable<VisitRouteVM>> GetAllVisitRoutes([FromQuery] VisitRouteSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<VisitPoint> list = _service.GetAll(_ => _.Location, _ => _.VisitRoute);
+            IQueryable<VisitRoute> list = _service.GetAll(_ => _.Account, _ => _.Building, _ => _.VisitPoints);
 
-            if (model.LocationId != 0)
+            if (model.AccountId != 0)
             {
-                list = list.Where(_ => _.LocationId == model.LocationId);
+                list = list.Where(_ => _.AccountId == model.AccountId);
             }
 
-            if (model.VisitRouteId != 0)
+            if (model.BuildingId != 0)
             {
-                list = list.Where(_ => _.VisitRouteId == model.VisitRouteId);
+                list = list.Where(_ => _.BuildingId == model.BuildingId);
             }
 
             if (model.LowerRecordTime.HasValue)
             {
                 list = list.Where(_ => _.RecordTime >= model.LowerRecordTime);
             }
-            
+
             if (model.UpperRecordTime.HasValue)
             {
                 list = list.Where(_ => _.RecordTime <= model.UpperRecordTime);
@@ -103,41 +104,42 @@ namespace IPSB.Controllers
 
             var pagedModel = _pagingSupport.From(list)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
-                .Paginate<VisitPointVM>();
+                .Paginate<VisitRouteVM>();
 
             return Ok(pagedModel);
         }
 
+
         /// <summary>
-        /// Create a new visit point
+        /// Create a new visit route
         /// </summary>
         /// <remarks>
         /// Sample request:
         ///
         ///     POST 
         ///     {
-        ///         "LocationId": "Id of the location",   
-        ///         "VisitRouteId": "Id of the visit route",   
-        ///         "RecordTime": "The date and time that the user passed this point",   
+        ///         "AccountId": "Id of the account visiting the route",   
+        ///         "BuildingId": "Id of the visit building that the route belongs to",   
+        ///         "RecordTime": "The date and time that the user visited this route",   
         ///     }
         ///
         /// </remarks>
-        /// <response code="201">Created a new visit point</response>
+        /// <response code="201">Created a new visit route</response>
         /// <response code="500">Failed to save request</response>
         [HttpPost]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<VisitPointCM>> CreateVisitPoint([FromBody] VisitPointCM model)
+        public async Task<ActionResult<VisitRouteCM>> CreateRoute([FromBody] VisitRouteCM model)
         {
-            
-            VisitPoint crtVisitPoint = _mapper.Map<VisitPoint>(model);
+
+            VisitRoute crtVisitRoute = _mapper.Map<VisitRoute>(model);
             DateTime currentDateTime = DateTime.Now;
-            crtVisitPoint.RecordTime = currentDateTime;
+            crtVisitRoute.RecordTime = currentDateTime;
 
             try
             {
-                await _service.AddAsync(crtVisitPoint);
+                await _service.AddAsync(crtVisitRoute);
                 await _service.Save();
             }
             catch (Exception)
@@ -145,16 +147,16 @@ namespace IPSB.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
-            return CreatedAtAction("GetVisitPointById", new { id = crtVisitPoint.Id }, crtVisitPoint);
+            return CreatedAtAction("GetVisitRouteById", new { id = crtVisitRoute.Id }, crtVisitRoute);
         }
 
         /// <summary>
-        /// Update visit point with specified id
+        /// Update visit route with specified id
         /// </summary>
-        /// <param name="id">Visit point's id</param>
-        /// <param name="model">Information applied to updated visit point</param>
-        /// <response code="204">Update visit point successfully</response>
-        /// <response code="400">Visit point's id does not exist or does not match with the id in parameter</response>
+        /// <param name="id">Visit route's id</param>
+        /// <param name="model">Information applied to updated visit route</param>
+        /// <response code="204">Update visit route successfully</response>
+        /// <response code="400">Visit route's id does not exist or does not match with the id in parameter</response>
         /// <response code="500">Failed to update</response>
         [HttpPut]
         [Route("{id}")]
@@ -162,24 +164,24 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> PutVisitPoint(int id, [FromBody] VisitPointUM model)
+        public async Task<ActionResult> PutVisitRoute(int id, [FromBody] VisitRouteUM model)
         {
 
-            VisitPoint updVisitPoint = await _service.GetByIdAsync(_ => _.Id == id);
+            VisitRoute updVisitRoute = await _service.GetByIdAsync(_ => _.Id == id);
 
-            if (updVisitPoint == null || id != model.Id)
+            if (updVisitRoute == null || id != model.Id)
             {
                 return BadRequest();
             }
 
             try
             {
-                updVisitPoint.Id = model.Id;
-                updVisitPoint.LocationId = model.LocationId;
-                updVisitPoint.VisitRouteId = model.VisitRouteId;
-                updVisitPoint.RecordTime = model.RecordTime.Value;
-                
-                _service.Update(updVisitPoint);
+                updVisitRoute.Id = model.Id;
+                updVisitRoute.AccountId = model.AccountId;
+                updVisitRoute.BuildingId = model.BuildingId;
+                updVisitRoute.RecordTime = model.RecordTime.Value;
+
+                _service.Update(updVisitRoute);
                 await _service.Save();
             }
             catch (Exception e)
@@ -197,7 +199,6 @@ namespace IPSB.Controllers
         {
 
         }
-
         protected override bool IsAuthorize()
         {
             throw new NotImplementedException();

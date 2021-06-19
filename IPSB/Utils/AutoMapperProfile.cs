@@ -90,6 +90,8 @@ namespace IPSB.Utils
 
             #region VisitRouteModel
             CreateMap<VisitRoute, VisitRouteRefModel>();
+            CreateMap<VisitRoute, VisitRouteVM>();
+            CreateMap<VisitRouteCM, VisitRoute>();
             #endregion
 
 

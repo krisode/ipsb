@@ -78,6 +78,7 @@ namespace IPSB
             // Add VisitPointService
             services.AddTransient<IVisitPointService, VisitPointService>();
             // Add VisitRouteService
+            services.AddTransient<IVisitRouteService, VisitRouteService>();
 
 
 
