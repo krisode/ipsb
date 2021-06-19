@@ -29,10 +29,13 @@ namespace IPSB.Utils
             #endregion
 
             #region CouponModel
+            CreateMap<Coupon, CouponRefModel>();
             #endregion
 
             #region CouponInUseModel
             CreateMap<CouponInUse, CouponInUseRefModel>();
+            CreateMap<CouponInUse, CouponInUseVM>();
+            CreateMap<CouponInUseCM, CouponInUse>();
             #endregion
 
             #region EdgeModel
