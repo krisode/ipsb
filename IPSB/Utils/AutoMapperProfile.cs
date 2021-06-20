@@ -70,6 +70,8 @@ namespace IPSB.Utils
 
             #region LocatorTagModel
             CreateMap<LocatorTag, LocatorTagRefModel>();
+            CreateMap<LocatorTag, LocatorTagVM>();
+            CreateMap<LocatorTagCM, LocatorTag>();
             #endregion
 
             #region ProductModel
