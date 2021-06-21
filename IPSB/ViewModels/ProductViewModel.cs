@@ -14,9 +14,9 @@ namespace IPSB.ViewModels
         public int ProductGroupId { get; set; }
         public string Status { get; set; }
 
-        public virtual ProductCategoryRefModel ProductCategory { get; set; }
-        public virtual ProductGroupRefModel ProductGroup { get; set; }
-        public virtual StoreRefModel Store { get; set; }
+        public ProductCategoryRefModel ProductCategory { get; set; }
+        public ProductGroupRefModel ProductGroup { get; set; }
+        public StoreRefModel Store { get; set; }
     }
     public class ProductRefModel
     {
