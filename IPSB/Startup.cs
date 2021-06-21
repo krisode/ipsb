@@ -81,6 +81,8 @@ namespace IPSB
             services.AddTransient<IProductService, ProductService>();
             // Add ProductCategoryService
             services.AddTransient<IProductCategoryService, ProductCategoryService>();
+            // Add ProductGroupService
+            services.AddTransient<IProductGroupService, ProductGroupService>();
             // Add StoreService
             // Add VisitPointService
             services.AddTransient<IVisitPointService, VisitPointService>();

@@ -88,6 +88,8 @@ namespace IPSB.Utils
 
             #region ProductGroupModel
             CreateMap<ProductGroup, ProductGroupRefModel>();
+            CreateMap<ProductGroup, ProductGroupVM>();
+            CreateMap<ProductGroupCM, ProductGroup>();
             #endregion
 
             #region StoreModel
