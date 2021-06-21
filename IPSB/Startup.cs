@@ -78,6 +78,7 @@ namespace IPSB
             // Add LocatorTagService
             services.AddTransient<ILocatorTagService, LocatorTagService>();
             // Add ProductService
+            services.AddTransient<IProductService, ProductService>();
             // Add ProductCategoryService
             services.AddTransient<IProductCategoryService, ProductCategoryService>();
             // Add StoreService
