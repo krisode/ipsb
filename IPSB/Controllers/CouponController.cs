@@ -56,9 +56,9 @@ namespace IPSB.Controllers
                 return NotFound();
             }
 
-            var rtncoupon = _mapper.Map<CouponVM>(coupon);
+            var rtnCoupon = _mapper.Map<CouponVM>(coupon);
 
-            return Ok(rtncoupon);
+            return Ok(rtnCoupon);
         }
 
         /// <summary>
@@ -211,12 +211,22 @@ namespace IPSB.Controllers
         /// Sample request:
         ///
         ///     POST 
-        ///     {
-        ///         "Name": "Name of the product group",     
-        ///         "Description": "General description of the product group",     
-        ///         "ImageUrl": "Image of the product group", 
-        ///         "StoreId": "Id of the store which the product group belongs to",
-        ///         "Status": "Status of the product group",   
+        ///     {            
+        ///         "ImageUrl": "List of image of the coupon", 
+        ///         "Name": "Name of the coupon",     
+        ///         "Description": "General description of the coupon",    
+        ///         "StoreId": "Id of the store which the coupon belongs to",
+        ///         "Code": "Code of the coupon",
+        ///         "DiscountType":"Type of the coupon is used for",
+        ///         "PublishDate": "The date time that the coupon is valid",
+        ///         "ExpireDate": "The date time that the coupon expires",
+        ///         "Amount": "A specific rate or amount is reduced when a customer uses the coupon",
+        ///         "MaxDiscount": "The maximum amount that customers can reduce when using coupon",
+        ///         "MinSpend": "The minimum amount that customers have to spend to use the coupon",
+        ///         "ProductInclude": "The date time that the coupon expires",
+        ///         "ProductExclude": "The date time that the coupon expires",
+        ///         "Limit": "Number of customers who can use the coupon",
+        ///         "Status": "Status of the coupon",   
         ///     }
         ///
         /// </remarks>

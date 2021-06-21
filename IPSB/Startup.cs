@@ -85,6 +85,7 @@ namespace IPSB
             // Add ProductGroupService
             services.AddTransient<IProductGroupService, ProductGroupService>();
             // Add StoreService
+            services.AddTransient<IStoreService, StoreService>();
             // Add VisitPointService
             services.AddTransient<IVisitPointService, VisitPointService>();
             // Add VisitRouteService
