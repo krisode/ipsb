@@ -76,14 +76,18 @@ namespace IPSB.Utils
 
             #region ProductModel
             CreateMap<Product, ProductRefModel>();
+            CreateMap<Product, ProductVM>();
+            CreateMap<ProductCM, Product>();
             #endregion
 
             #region ProductCategoryModel
+            CreateMap<ProductCategory, ProductCategoryRefModel>();
             CreateMap<ProductCategory, ProductCategoryVM>();
             CreateMap<ProductCategoryCM, ProductCategory>();
             #endregion
 
             #region ProductGroupModel
+            CreateMap<ProductGroup, ProductGroupRefModel>();
             #endregion
 
             #region StoreModel

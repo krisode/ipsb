@@ -155,7 +155,7 @@ namespace IPSB.Controllers
         ///
         /// </remarks>
         /// <response code="201">Created a new building</response>
-        /// <response code="409">Building type already exists</response>
+        /// <response code="409">Building already exists</response>
         /// <response code="500">Failed to save request</response>
         [HttpPost]
         [Produces("application/json")]
@@ -233,7 +233,7 @@ namespace IPSB.Controllers
 
             if (model.ImageUrl is not null && model.ImageUrl.Length > 0)
             {
-                imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "floor-plan", "floor-plan-map");
+                imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "building", "building-detail");
             }
             
             try
