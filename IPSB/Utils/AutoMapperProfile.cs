@@ -96,6 +96,8 @@ namespace IPSB.Utils
 
             #region StoreModel
             CreateMap<Store, StoreRefModel>();
+            CreateMap<Store, StoreVM>();
+            CreateMap<StoreCM, Store>();
             #endregion
 
             #region VisitPointModel
