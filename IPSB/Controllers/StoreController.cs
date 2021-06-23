@@ -70,20 +70,20 @@ namespace IPSB.Controllers
             //}
 
             var rtnStore = _mapper.Map<StoreVM>(store);
-            rtnStore.ProductCategories = new List<ProductCategoryRefModel>();
-            foreach (var productCategoryId in store.ProductCategoryIds)
-            {
+            //rtnStore.ProductCategories = new List<ProductCategoryRefModel>();
+            //foreach (var productCategoryId in store.ProductCategoryIds)
+            //{
                 
-                int idd = 0;
-                if (!productCategoryId.ToString().Equals(","))
-                {
-                    idd = int.Parse(productCategoryId.ToString());
-                    ProductCategory productCategory = _productCategoryService.GetByIdAsync(_ => _.Id == idd).Result;
-                    ProductCategoryRefModel productCategoryRefModel = _mapper.Map<ProductCategoryRefModel>(productCategory);
-                    rtnStore.ProductCategories.Add(productCategoryRefModel);
-                }
+            //    int idd = 0;
+            //    if (!productCategoryId.ToString().Equals(","))
+            //    {
+            //        idd = int.Parse(productCategoryId.ToString());
+            //        ProductCategory productCategory = _productCategoryService.GetByIdAsync(_ => _.Id == idd).Result;
+            //        ProductCategoryRefModel productCategoryRefModel = _mapper.Map<ProductCategoryRefModel>(productCategory);
+            //        rtnStore.ProductCategories.Add(productCategoryRefModel);
+            //    }
 
-            }
+            //}
 
 
             return Ok(rtnStore);
@@ -190,25 +190,24 @@ namespace IPSB.Controllers
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
                 .Paginate<StoreVM>();
 
-            foreach (var store in pagedModel.Content)
-            {
-                List<ProductCategoryRefModel> listProCate = new List<ProductCategoryRefModel>();
+            //foreach (var store in pagedModel.Content.ToList())
+            //{
+            //    List<ProductCategoryRefModel> listProCate = new List<ProductCategoryRefModel>();
                 
-                foreach (var productCategoryId in store.ProductCategoryIds)
-                {
-                    int idd = 0;
-                    if (!productCategoryId.ToString().Equals(","))
-                    {
-                        idd = int.Parse(productCategoryId.ToString());
-                        ProductCategory productCategory = _productCategoryService.GetByIdAsync(_ => _.Id == idd).Result;
-                        ProductCategoryRefModel productCategoryRefModel = _mapper.Map<ProductCategoryRefModel>(productCategory);
-                        listProCate.Add(productCategoryRefModel);
-                    }
-                }
-                store.ProductCategories = listProCate;
-                var page = pagedModel;
-            }
-
+            //    foreach (var productCategoryId in store.ProductCategoryIds)
+            //    {
+            //        int idd = 0;
+            //        if (!productCategoryId.ToString().Equals(","))
+            //        {
+            //            idd = int.Parse(productCategoryId.ToString());
+            //            ProductCategory productCategory = _productCategoryService.GetByIdAsync(_ => _.Id == idd).Result;
+            //            ProductCategoryRefModel productCategoryRefModel = _mapper.Map<ProductCategoryRefModel>(productCategory);
+            //            listProCate.Add(productCategoryRefModel);
+            //        }
+            //    }
+            //    store.ProductCategories = listProCate;
+                
+            //}
             return Ok(pagedModel);
         }
 
@@ -260,16 +259,21 @@ namespace IPSB.Controllers
             Store crtStore = _mapper.Map<Store>(model);
 
             string imageUrl = "";
-
+            
             if (model.ImageUrl is not null && model.ImageUrl.Count > 0)
             {
-                List<string> imageUrls = new List<string>();
-                foreach (var url in model.ImageUrl)
-                {
-                    imageUrl = await _uploadFileService.UploadFile("123456798", url, "store", "store-detail");
-                    imageUrls.Add(imageUrl);
-                }
+                //List<string> imageUrls = new List<string>();
+                var task = model.ImageUrl.ToList().Select(_ => _uploadFileService.UploadFile("123456798", _, "store", "store-detail")).ToArray();
+                var imageUrls = await Task.WhenAll(task);
+                //var testList = task.Select<string>(_ => _.);
+
                 imageUrl = string.Join(",", imageUrls);
+                
+                //foreach (var url in model.ImageUrl)
+                //{
+                //    imageUrl = await _uploadFileService.UploadFile("123456798", url, "store", "store-detail");
+                //    imageUrls.Add(imageUrl);
+                //}
             }
 
             crtStore.ImageUrl = imageUrl;
