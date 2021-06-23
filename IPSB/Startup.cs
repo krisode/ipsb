@@ -1,6 +1,17 @@
+using BeautyAtHome;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using IPSB.Authorization;
+using IPSB.Core.Services;
+using IPSB.ExternalServices;
+using IPSB.Infrastructure.Contexts;
+using IPSB.Infrastructure.Repositories;
+using IPSB.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,6 +40,63 @@ namespace IPSB
         {
             services.AddAutoMapper(typeof(Startup));
 
+            var pathToKey = Path.Combine(Directory.GetCurrentDirectory(), "Keys", "firebase_admin_sdk.json");
+            FirebaseApp.Create(new AppOptions
+            {
+                Credential = GoogleCredential.FromFile(pathToKey)
+            });
+
+            services.AddDbContext<indoor_positioning_mainContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("IPSBDatabase")));
+
+            services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
+
+            services.AddScoped(typeof(IPagingSupport<>), typeof(PagingSupport<>));
+
+            services.AddSingleton<IAuthorizationPolicyProvider, RequiredRolePolicyProvider>();
+            services.AddSingleton<IAuthorizationHandler, RequiredRoleHandler>();
+            services.AddSingleton<IUploadFileService, UploadFileService>();
+            services.AddSingleton<IJwtTokenProvider, JwtTokenProvider>();
+
+            // Add AccountService
+            services.AddTransient<IAccountService, AccountService>();
+            // Add BuildingService
+            services.AddTransient<IBuildingService, BuildingService>();
+            // Add CouponService
+            services.AddTransient<ICouponService, CouponService>();
+            // Add CouponInUseService
+            services.AddTransient<ICouponInUseService, CouponInUseService>();
+            // Add EdgeService
+            services.AddTransient<IEdgeService, EdgeService>();
+            // Add FavoriteStoreService
+            services.AddTransient<IFavoriteStoreService, FavoriteStoreService>();
+            // Add FloorPlanService
+            services.AddTransient<IFloorPlanService, FloorPlanService>();
+            // Add LocationService
+            services.AddTransient<ILocationService, LocationService>();
+            // Add LocationTypeService
+            services.AddTransient<ILocationTypeService, LocationTypeService>();
+            // Add LocatorTagService
+            services.AddTransient<ILocatorTagService, LocatorTagService>();
+            // Add ProductService
+            services.AddTransient<IProductService, ProductService>();
+            // Add ProductCategoryService
+            services.AddTransient<IProductCategoryService, ProductCategoryService>();
+            // Add ProductGroupService
+            services.AddTransient<IProductGroupService, ProductGroupService>();
+            // Add StoreService
+            services.AddTransient<IStoreService, StoreService>();
+            // Add VisitPointService
+            services.AddTransient<IVisitPointService, VisitPointService>();
+            // Add VisitRouteService
+            services.AddTransient<IVisitRouteService, VisitRouteService>();
+
+
+
+
+
+
+
             services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -49,7 +117,7 @@ namespace IPSB
             });
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "BeautyAtHome", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Indoor Positioning System", Version = "v1.0" });
                 c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
                 {
                     Description = "Enter **_ONLY JWT Bearer token in the text box below.",
@@ -72,7 +140,7 @@ namespace IPSB
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            if (env.IsDevelopment() || env.IsProduction())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
@@ -82,6 +150,8 @@ namespace IPSB
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
