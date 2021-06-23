@@ -20,7 +20,7 @@ namespace IPSB.ViewModels
         public virtual BuildingRefModel Building { get; set; }
         public virtual FloorPlanRefModel FloorPlan { get; set; }
         public virtual ICollection<CouponRefModel> Coupons { get; set; }
-        public ICollection<ProductCategoryRefModel> ProductCategories { get; set; }
+        //public ICollection<ProductCategoryRefModel> ProductCategories { get; set; }
         public virtual ICollection<FavoriteStoreRefModel> FavoriteStores { get; set; }
         public virtual ICollection<LocationRefModel> Locations { get; set; }
         public virtual ICollection<ProductGroupRefModel> ProductGroups { get; set; }
