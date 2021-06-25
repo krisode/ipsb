@@ -37,6 +37,9 @@ namespace IPSB.ViewModels
         public int FloorPlanId { get; set; }
         public int StoreId { get; set; }
         public int LocationTypeId { get; set; }
+        public string LocationTypeName { get; set; }
+        public string StoreName { get; set; }
+        public string ProductName { get; set; }
 
     }
 
