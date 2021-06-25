@@ -39,6 +39,7 @@ namespace IPSB.ViewModels
         public string Phone { get; set; }
         public string Status { get; set; }
         public BuildingRefModel Building { get; set; }
+        public ICollection<ProductRefModel> Products { get; set; }
     }
     public class StoreSM
     {

@@ -47,6 +47,7 @@ namespace IPSB.Controllers
         public ActionResult<LocationVM> GetLocationById(int id)
         {
             var location = _service.GetByIdAsync(_ => _.Id == id, _ => _.FloorPlan, _ => _.LocationType, _ => _.Store,
+                _ => _.Store.Products,
                 _ => _.EdgeFromLocations, _ => _.EdgeToLocations, _ => _.LocatorTags, _ => _.VisitPoints).Result;
 
             if (location == null)
@@ -81,7 +82,7 @@ namespace IPSB.Controllers
         public ActionResult<IEnumerable<LocationVM>> GetAllLocations([FromQuery] LocationSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             IQueryable<Location> list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store,
-                _ => _.EdgeFromLocations, _ => _.EdgeToLocations, _ => _.LocatorTags, _ => _.VisitPoints);
+                _ => _.Store.Products, _ => _.EdgeFromLocations, _ => _.EdgeToLocations, _ => _.LocatorTags, _ => _.VisitPoints);
 
             if (model.X != 0)
             {
@@ -106,6 +107,22 @@ namespace IPSB.Controllers
             if (model.LocationTypeId != 0)
             {
                 list = list.Where(_ => _.LocationTypeId == model.LocationTypeId);
+            }
+
+            if (!string.IsNullOrEmpty(model.LocationTypeName))
+            {
+                list = list.Where(_ => _.LocationType.Name.Contains(model.LocationTypeName));
+            }
+
+            if (!string.IsNullOrEmpty(model.StoreName))
+            {
+                list = list.Where(_ => _.Store.Name.Contains(model.StoreName));
+            }
+
+            if (!string.IsNullOrEmpty(model.ProductName))
+            {
+
+                list = list.Where(_ => _.Store.Products.Any(_ => _.Name.Contains(model.ProductName)));
             }
 
             var pagedModel = _pagingSupport.From(list)
