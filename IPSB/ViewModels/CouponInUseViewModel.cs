@@ -43,8 +43,6 @@ namespace IPSB.ViewModels
         [Required]
         public DateTime RedeemDate { get; set; }
         [Required]
-        public DateTime ApplyDate { get; set; }
-        [Required]
         public string Status { get; set; }
     }
     public class CouponInUseUM
