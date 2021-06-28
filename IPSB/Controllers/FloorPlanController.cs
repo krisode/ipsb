@@ -82,6 +82,11 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<FloorPlanVM>> GetAllFloorPlans([FromQuery] FloorPlanSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
+            if (model.FloorNumber < 0)
+            {
+                return BadRequest();
+            }
+
             IQueryable<FloorPlan> list = _service.GetAll(_ => _.Building, _ => _.Locations, _ => _.LocatorTags, _ => _.Stores);
 
             if (model.BuildingId != 0)
@@ -93,6 +98,12 @@ namespace IPSB.Controllers
             {
                 list = list.Where(_ => _.FloorCode.Contains(model.FloorCode));
             }
+
+            if (model.FloorNumber > 0)
+            {
+                list = list.Where(_ => _.FloorNumber == model.FloorNumber);
+            } 
+
 
             var pagedModel = _pagingSupport.From(list)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
@@ -173,6 +184,11 @@ namespace IPSB.Controllers
                 return BadRequest();
             }
 
+            if (model.FloorNumber < 0)
+            {
+                return BadRequest();
+            }
+
             string imageURL = updLocationType.ImageUrl;
 
             if (model.ImageUrl is not null && model.ImageUrl.Length > 0)
@@ -186,6 +202,7 @@ namespace IPSB.Controllers
                 updLocationType.ImageUrl = imageURL;
                 updLocationType.BuildingId = model.BuildingId;
                 updLocationType.FloorCode = model.FloorCode;
+                updLocationType.FloorNumber = model.FloorNumber;
                 _service.Update(updLocationType);
                 await _service.Save();
             }

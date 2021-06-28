@@ -17,6 +17,7 @@ namespace IPSB.Infrastructure.Contexts
         public string ImageUrl { get; set; }
         public int BuildingId { get; set; }
         public string FloorCode { get; set; }
+        public int FloorNumber { get; set; }
 
         public virtual Building Building { get; set; }
         public virtual ICollection<Location> Locations { get; set; }
