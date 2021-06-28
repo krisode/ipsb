@@ -12,7 +12,6 @@ namespace IPSB.ViewModels
         public int FloorNumber { get; set; }
 
         public BuildingRefModel Building { get; set; }
-        public ICollection<LocationRefModel> Locations { get; set; }
         public ICollection<LocatorTagRefModel> LocatorTags { get; set; }
         public ICollection<StoreRefModel> Stores { get; set; }
     }

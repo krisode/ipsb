@@ -49,7 +49,7 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<FloorPlanVM> GetFloorPlanById(int id)
         {
-            var floorPlan = _service.GetByIdAsync(_ => _.Id == id, _ => _.Building, _ => _.Locations, _ => _.LocatorTags, _ => _.Stores).Result;
+            var floorPlan = _service.GetByIdAsync(_ => _.Id == id, _ => _.Building, _ => _.LocatorTags, _ => _.Stores).Result;
 
             if (floorPlan == null)
             {
@@ -87,7 +87,7 @@ namespace IPSB.Controllers
                 return BadRequest();
             }
 
-            IQueryable<FloorPlan> list = _service.GetAll(_ => _.Building, _ => _.Locations, _ => _.LocatorTags, _ => _.Stores);
+            IQueryable<FloorPlan> list = _service.GetAll(_ => _.Building, _ => _.LocatorTags, _ => _.Stores);
 
             if (model.BuildingId != 0)
             {
