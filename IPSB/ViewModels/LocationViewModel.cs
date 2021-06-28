@@ -28,6 +28,7 @@ namespace IPSB.ViewModels
         public int FloorPlanId { get; set; }
         public int StoreId { get; set; }
         public int LocationTypeId { get; set; }
+        public StoreRefModel Store { get; set; }
     }
 
     public class LocationSM
