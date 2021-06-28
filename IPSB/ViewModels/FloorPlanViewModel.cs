@@ -9,6 +9,7 @@ namespace IPSB.ViewModels
         public string ImageUrl { get; set; }
         public int BuildingId { get; set; }
         public string FloorCode { get; set; }
+        public int FloorNumber { get; set; }
 
         public BuildingRefModel Building { get; set; }
         public ICollection<LocationRefModel> Locations { get; set; }
@@ -21,17 +22,20 @@ namespace IPSB.ViewModels
         public string ImageUrl { get; set; }
         public int BuildingId { get; set; }
         public string FloorCode { get; set; }
+        public int FloorNumber { get; set; }
     }
     public class FloorPlanSM
     {
         public int BuildingId { get; set; }
         public string FloorCode { get; set; }
+        public int FloorNumber { get; set; }
     }
     public class FloorPlanCM
     {
         public IFormFile ImageUrl { get; set; }
         public int BuildingId { get; set; }
         public string FloorCode { get; set; }
+        public int FloorNumber { get; set; }
     }
     public class FloorPlanUM
     {
@@ -39,6 +43,7 @@ namespace IPSB.ViewModels
         public IFormFile ImageUrl { get; set; }
         public int BuildingId { get; set; }
         public string FloorCode { get; set; }
+        public int FloorNumber { get; set; }
 
     }
 
