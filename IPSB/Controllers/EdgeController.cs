@@ -46,7 +46,7 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<EdgeVM> GetEdgeById(int id)
         {
-            var edge = _service.GetByIdAsync(_ => _.Id == id, _ => _.FromLocation, _ => _.ToLocation).Result;
+            var edge = _service.GetByIdAsync(_ => _.Id == id, _ => _.FromLocation, _ => _.ToLocation, _ => _.FromLocation.Store, _ => _.ToLocation.Store).Result;
 
             if (edge == null)
             {
@@ -79,7 +79,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<EdgeVM>> GetAllEdges([FromQuery] EdgeSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<Edge> list = _service.GetAll(_ => _.FromLocation, _ => _.ToLocation);
+            IQueryable<Edge> list = _service.GetAll(_ => _.FromLocation, _ => _.ToLocation, _ => _.FromLocation.Store, _ => _.ToLocation.Store);
 
             if (model.FromLocationId != 0)
             {
