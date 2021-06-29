@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace IPSB.ViewModels
 {
@@ -35,7 +36,7 @@ namespace IPSB.ViewModels
         public string Name { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
-        public string Status { get; set; } = "Active";
+        public string Status { get; set; }
     }
     public class AccountCM
     {
@@ -44,7 +45,6 @@ namespace IPSB.ViewModels
         public string Phone { get; set; }
         public IFormFile ImageUrl { get; set; }
         public string Role { get; set; }
-        public string Status { get; set; } = "Active";
     }
     public class AccountUM
     {
@@ -53,6 +53,7 @@ namespace IPSB.ViewModels
         public string Name { get; set; }
         public IFormFile ImageUrl { get; set; }
         public string Phone { get; set; }
-        public string Status { get; set; } = "Active";
+        [Required]
+        public string Status { get; set; }
     }
 }

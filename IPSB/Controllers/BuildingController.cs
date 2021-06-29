@@ -150,7 +150,6 @@ namespace IPSB.Controllers
         ///         "ImageUrl": "Image of the building",   
         ///         "NumberOfFloor": "Number of floors in the building",   
         ///         "Address": "Address of the buildings",   
-        ///         "Status": "Status of the building",   
         ///     }
         ///
         /// </remarks>
@@ -170,17 +169,12 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-                {
-                    return BadRequest();
-                }
-            }
-
             Building crtBuilding = _mapper.Map<Building>(model);
             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "building", "building-detail");
             crtBuilding.ImageUrl = imageURL;
+
+            // Default POST Status = "Active"
+            crtBuilding.Status = Constants.Status.ACTIVE;
 
             try
             {

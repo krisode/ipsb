@@ -40,7 +40,6 @@ namespace IPSB.ViewModels
     public class LocatorTagCM
     {
         public string MacAddress { get; set; }
-        public string Status { get; set; }
         public int FloorPlanId { get; set; }
         public int LocationId { get; set; }
     }

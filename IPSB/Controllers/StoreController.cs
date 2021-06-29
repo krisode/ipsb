@@ -226,7 +226,6 @@ namespace IPSB.Controllers
         ///         "Description": "General description of the store",
         ///         "ProductCategoryIds": "List of ids of product category that belongs to the store",
         ///         "Phone": "Phone number of the store owner",
-        ///         "Status": "Status of the product group",   
         ///     }
         ///
         /// </remarks>
@@ -248,15 +247,18 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-                {
-                    return BadRequest();
-                }
-            }
+            //if (!string.IsNullOrEmpty(model.Status))
+            //{
+            //    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+            //    {
+            //        return BadRequest();
+            //    }
+            //}
 
             Store crtStore = _mapper.Map<Store>(model);
+
+            // Default POST Status = "Active"
+            crtStore.Status = Constants.Status.ACTIVE;
 
             string imageUrl = "";
             

@@ -40,7 +40,7 @@ namespace IPSB.ViewModels
         public string Name { get; set; }
         public int NumberOfFloor { get; set; }
         public string Address { get; set; }
-        public string Status { get; set; } = "Active";
+        public string Status { get; set; }
     }
     public class BuildingCM
     {
@@ -56,7 +56,6 @@ namespace IPSB.ViewModels
         public int NumberOfFloor { get; set; }
         [Required]
         public string Address { get; set; }
-        public string Status { get; set; } = "Active";
     }
     public class BuildingUM
     {
@@ -67,6 +66,7 @@ namespace IPSB.ViewModels
         public IFormFile ImageUrl { get; set; }
         public int NumberOfFloor { get; set; }
         public string Address { get; set; }
-        public string Status { get; set; } = "Active";
+        [Required]
+        public string Status { get; set; }
     }
 }

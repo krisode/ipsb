@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace IPSB.ViewModels
 {
@@ -50,7 +51,6 @@ namespace IPSB.ViewModels
         public string Description { get; set; }
         public float Price { get; set; }
         public int ProductCategoryId { get; set; }
-        public string Status { get; set; } = "Active";
     }
     public class ProductUM
     {
@@ -62,6 +62,7 @@ namespace IPSB.ViewModels
         public string Description { get; set; }
         public float Price { get; set; }
         public int ProductCategoryId { get; set; }
-        public string Status { get; set; } = "Active";
+        [Required]
+        public string Status { get; set; }
     }
 }

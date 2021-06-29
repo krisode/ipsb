@@ -149,9 +149,7 @@ namespace IPSB.Controllers
         ///     {
         ///         "CouponId": "Id of the coupon",   
         ///         "VisitorId": "Id of the visitor",   
-        ///         "RedeemDate": "The date time that user saved",   
-        ///         "ApplyDate": "The date time that user used",   
-        ///         "Status": "Status of the coupon",   
+        ///         "RedeemDate": "The date time that user saved",
         ///     }
         ///
         /// </remarks>
@@ -171,15 +169,18 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-                {
-                    return BadRequest();
-                }
-            }
+            //if (!string.IsNullOrEmpty(model.Status))
+            //{
+            //    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+            //    {
+            //        return BadRequest();
+            //    }
+            //}
 
             CouponInUse crtCouponInUse = _mapper.Map<CouponInUse>(model);
+
+            // Default POST Status = "New"
+            crtCouponInUse.Status = Constants.Status.NEW;
 
             try
             {
@@ -220,7 +221,7 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Constants.Status.NEW && model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
                 {
                     return BadRequest();
                 }

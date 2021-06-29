@@ -139,7 +139,6 @@ namespace IPSB.Controllers
         ///         "Description": "General description of the product group",     
         ///         "ImageUrl": "Image of the product group", 
         ///         "StoreId": "Id of the store which the product group belongs to",
-        ///         "Status": "Status of the product group",   
         ///     }
         ///
         /// </remarks>
@@ -159,17 +158,20 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-                {
-                    return BadRequest();
-                }
-            }
+            //if (!string.IsNullOrEmpty(model.Status))
+            //{
+            //    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+            //    {
+            //        return BadRequest();
+            //    }
+            //}
 
             ProductGroup crtProductGroup = _mapper.Map<ProductGroup>(model);
             string imageURL = await _uploadFileService.UploadFile("123456798", model.Image, "product-group", "product-group-detail");
             crtProductGroup.Image = imageURL;
+
+            // Default POST Status = "New"
+            crtProductGroup.Status = Constants.Status.NEW;
 
             try
             {
@@ -221,7 +223,7 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Constants.Status.NEW && model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
                 {
                     return BadRequest();
                 }
