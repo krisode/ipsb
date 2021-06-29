@@ -193,18 +193,21 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-                {
-                    return BadRequest();
-                }
-            }
+            //if (!string.IsNullOrEmpty(model.Status))
+            //{
+            //    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+            //    {
+            //        return BadRequest();
+            //    }
+            //}
 
             LocatorTag crtLocatorTag = _mapper.Map<LocatorTag>(model);
             DateTime currentDateTime = DateTime.Now;
             crtLocatorTag.UpdateTime = currentDateTime;
             crtLocatorTag.LastSeen = currentDateTime;
+
+            // Default POST Status = "Active"
+            crtLocatorTag.Status = Constants.Status.ACTIVE;
 
             try
             {
@@ -245,7 +248,7 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Constants.Status.MISSING && model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
                 {
                     return BadRequest();
                 }

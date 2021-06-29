@@ -42,8 +42,6 @@ namespace IPSB.ViewModels
         public int VisitorId { get; set; }
         [Required]
         public DateTime RedeemDate { get; set; }
-        [Required]
-        public string Status { get; set; }
     }
     public class CouponInUseUM
     {
@@ -52,6 +50,7 @@ namespace IPSB.ViewModels
         public int VisitorId { get; set; }
         public DateTime? RedeemDate { get; set; }
         public DateTime? ApplyDate { get; set; }
+        [Required]
         public string Status { get; set; }
     }
 }

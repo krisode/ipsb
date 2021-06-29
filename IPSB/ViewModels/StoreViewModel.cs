@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace IPSB.ViewModels
 {
@@ -62,7 +63,6 @@ namespace IPSB.ViewModels
         public int FloorPlanId { get; set; }
         public string[] ProductCategoryIds { get; set; }
         public string Phone { get; set; }
-        public string Status { get; set; } = "Active";
     }
     public class StoreUM
     {
@@ -75,6 +75,7 @@ namespace IPSB.ViewModels
         public int FloorPlanId { get; set; }
         public string[] ProductCategoryIds { get; set; }
         public string Phone { get; set; }
-        public string Status { get; set; } = "Active";
+        [Required]
+        public string Status { get; set; }
     }
 }

@@ -49,6 +49,10 @@ namespace IPSB.Utils
             public const string INACTIVE = "Inactive";
 
             public const string DISABLED = "Disabled";
+
+            public const string NEW = "New";
+
+            public const string MISSING = "Missing";
         }
 
         public static class AppSetting

@@ -92,7 +92,6 @@ namespace IPSB.ViewModels
         public string[] ProductExclude { get; set; }
         [Required]
         public int Limit { get; set; }
-        public string Status { get; set; } = "Active";
     }
     public class CouponUM
     {
@@ -110,6 +109,7 @@ namespace IPSB.ViewModels
         public int[] ProductInclude { get; set; }
         public int[] ProductExclude { get; set; }
         public int Limit { get; set; }
-        public string Status { get; set; } = "Active";
+        [Required]
+        public string Status { get; set; }
     }
 }

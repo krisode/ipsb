@@ -226,7 +226,6 @@ namespace IPSB.Controllers
         ///         "ProductInclude": "The date time that the coupon expires",
         ///         "ProductExclude": "The date time that the coupon expires",
         ///         "Limit": "Number of customers who can use the coupon",
-        ///         "Status": "Status of the coupon",   
         ///     }
         ///
         /// </remarks>
@@ -256,16 +255,19 @@ namespace IPSB.Controllers
             //    return Conflict();
             //}
 
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-                {
-                    return BadRequest();
-                }
-            }
+            //if (!string.IsNullOrEmpty(model.Status))
+            //{
+            //    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+            //    {
+            //        return BadRequest();
+            //    }
+            //}
 
             Coupon crtCoupon = _mapper.Map<Coupon>(model);
-            
+
+            // Default POST Status = "New"
+            crtCoupon.Status = Constants.Status.NEW;
+
             string imageUrl = "";
 
             if (model.ImageUrl is not null && model.ImageUrl.Count > 0)
@@ -347,7 +349,7 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Constants.Status.NEW && model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
                 {
                     return BadRequest();
                 }

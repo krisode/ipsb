@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -39,16 +40,19 @@ namespace IPSB.ViewModels
         public string Name { get; set; }
         public string Description { get; set; }
         public IFormFile Image { get; set; }
+        [Required]
         public int StoreId { get; set; }
-        public string Status { get; set; } = "Active";
     }
     public class ProductGroupUM
     {
+        [Required]
         public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public IFormFile Image { get; set; }
+        [Required]
         public int StoreId { get; set; }
-        public string Status { get; set; } = "Active";
+        [Required]
+        public string Status { get; set; }
     }
 }

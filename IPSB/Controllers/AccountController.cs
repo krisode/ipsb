@@ -147,8 +147,7 @@ namespace IPSB.Controllers
         ///         "Name": "Name of the account",   
         ///         "Phone": "Account phone number",   
         ///         "Image": "Profile picture of the account",   
-        ///         "Role": "Account role", 
-        ///         "Status": "Status of the account",   
+        ///         "Role": "Account role",
         ///     }
         ///
         /// </remarks>
@@ -168,13 +167,13 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-                {
-                    return BadRequest();
-                }
-            }
+            //if (!string.IsNullOrEmpty(model.Status))
+            //{
+            //    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+            //    {
+            //        return BadRequest();
+            //    }
+            //}
 
             if (!string.IsNullOrEmpty(model.Role))
             {
@@ -188,6 +187,9 @@ namespace IPSB.Controllers
 
             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "account", "account-profile");
             crtAccount.ImageUrl = imageURL;
+
+            // Default POST Status = "Active"
+            crtAccount.Status = Constants.Status.ACTIVE;
 
             try
             {
