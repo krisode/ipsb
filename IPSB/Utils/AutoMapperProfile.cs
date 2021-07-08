@@ -60,6 +60,7 @@ namespace IPSB.Utils
 
             #region LocationModel
             CreateMap<Location, LocationRefModel>();
+            CreateMap<Location, LocationRefModelForEdge>();
             CreateMap<Location, LocationVM>();
             CreateMap<LocationCM, Location>();
             #endregion
@@ -96,6 +97,7 @@ namespace IPSB.Utils
 
             #region StoreModel
             CreateMap<Store, StoreRefModel>();
+            CreateMap<Store, StoreRefModelForEdge>();
             CreateMap<Store, StoreVM>();
             CreateMap<StoreCM, Store>();
             #endregion
