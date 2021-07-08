@@ -63,12 +63,15 @@ namespace IPSB.Utils
             {
                 _sourcePageSize = _source.Skip((pageIndex - 1) * pageSize).Take(pageSize);
             }
-
+            else {
+                _sourcePageSize = _source;
+            } 
+            
             if (sortOrder)
             {
                 _sourcePageSize = _sourcePageSize.OrderBy(selector);
             }
-            if (!sortOrder)
+            else
             {
                 _sourcePageSize = _sourcePageSize.OrderByDescending(selector);
             }
@@ -79,13 +82,14 @@ namespace IPSB.Utils
         public Paged<TResult> Paginate<TResult>()
         {
             int count = Count;
+
             var pagingVM = new Paged<TResult>()
             {
                 TotalCount = Count,
                 PageSize = _pageSize,
                 TotalPage = (int)Math.Ceiling((double)Count / _pageSize),
                 CurrentPage = _pageIndex,
-                Content = _sourcePageSize.Select(t => _mapper.Map<TResult>(t))
+                Content = _sourcePageSize?.Select(t => _mapper.Map<TResult>(t))
             };
             if (_pageIndex > 1)
             {
