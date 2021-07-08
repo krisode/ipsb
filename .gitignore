@@ -351,3 +351,4 @@ MigrationBackup/
 
 # Build/Debug folder
 */obj/
+*/bin/
