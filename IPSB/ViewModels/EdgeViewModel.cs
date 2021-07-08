@@ -7,8 +7,8 @@
         public int ToLocationId { get; set; }
         public double Distance { get; set; }
 
-        public LocationRefModel FromLocation { get; set; }
-        public LocationRefModel ToLocation { get; set; }
+        public LocationRefModelForEdge FromLocation { get; set; }
+        public LocationRefModelForEdge ToLocation { get; set; }
     }
 
     public class EdgeSM
