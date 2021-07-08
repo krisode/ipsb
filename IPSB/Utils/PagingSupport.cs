@@ -66,11 +66,11 @@ namespace IPSB.Utils
 
             if (sortOrder)
             {
-                _sourcePageSize = _source.OrderBy(selector);
+                _sourcePageSize = _sourcePageSize.OrderBy(selector);
             }
             if (!sortOrder)
             {
-                _sourcePageSize = _source.OrderByDescending(selector);
+                _sourcePageSize = _sourcePageSize.OrderByDescending(selector);
             }
            
             return this;
