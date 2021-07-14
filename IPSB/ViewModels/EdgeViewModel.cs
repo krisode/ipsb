@@ -34,6 +34,8 @@
         public int FromLocationId { get; set; }
         public int ToLocationId { get; set; }
         public double Distance { get; set; }
+        public int FloorPlanId { get; set; }
+        public int LocationTypeId { get; set; }
     }
 
     public class EdgeUM

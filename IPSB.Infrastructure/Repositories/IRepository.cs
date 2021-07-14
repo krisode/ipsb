@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace IPSB.Infrastructure.Repositories
         IQueryable<T> GetAllWhere(params Expression<Func<T, bool>>[] predicate);
         Task<T> GetByIdAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] expressions);
         Task<T> AddAsync(T entity);
+        Task AddRangeAsync(List<T> list);
         void Update(T entity);
         void Delete(T entity);
         void DeleteRange(Expression<Func<T, bool>> predicate);

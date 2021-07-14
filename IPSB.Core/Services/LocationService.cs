@@ -2,6 +2,7 @@
 using IPSB.Infrastructure.Contexts;
 using IPSB.Infrastructure.Repositories;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace IPSB.Core.Services
 {
     public interface ILocationService : IService<Location, int>
     {
-
+        Task AddRageAsync(List<Location> list);
     }
 
     public class LocationService : ILocationService
@@ -25,6 +26,10 @@ namespace IPSB.Core.Services
         public async Task<Location> AddAsync(Location entity)
         {
             return await _iRepository.AddAsync(entity);
+        }
+        public async Task AddRageAsync(List<Location> list)
+        {
+            await _iRepository.AddRangeAsync(list);
         }
 
         public void Delete(Location entity)

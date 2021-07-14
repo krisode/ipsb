@@ -133,13 +133,12 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<EdgeCM>> CreateEdge([FromBody] EdgeCM model)
+        public async Task<ActionResult<EdgeCM>> CreateEdge([FromBody] List<EdgeCM> listModel)
         {
-            Edge crtEdge = _mapper.Map<Edge>(model);
-
+            List<Edge> list = listModel.Select(model => _mapper.Map<Edge>(model)).ToList();
             try
             {
-                await _service.AddAsync(crtEdge);
+                await _service.AddRageAsync(list);
                 await _service.Save();
             }
             catch (Exception)
@@ -147,7 +146,7 @@ namespace IPSB.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
-            return CreatedAtAction("GetEdgeById", new { id = crtEdge.Id }, crtEdge);
+            return CreatedAtAction("CreateEdge", list);
         }
 
         /// <summary>

@@ -154,21 +154,20 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<LocationCM>> CreateLocation([FromBody] LocationCM model)
+        public async Task<ActionResult<LocationCM>> CreateLocation([FromBody] List<LocationCM> listModel)
         {
-            Location crtLocation = _mapper.Map<Location>(model);
-
+            List<Location> list = listModel.Select(model => _mapper.Map<Location>(model)).ToList();
             try
             {
-                await _service.AddAsync(crtLocation);
+                await _service.AddRageAsync(list);
                 await _service.Save();
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
-            return CreatedAtAction("GetLocationById", new { id = crtLocation.Id }, crtLocation);
+            return CreatedAtAction("CreateLocation", list);
         }
 
         /// <summary>
