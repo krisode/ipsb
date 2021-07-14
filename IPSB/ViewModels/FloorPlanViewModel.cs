@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 
 namespace IPSB.ViewModels
@@ -35,6 +36,7 @@ namespace IPSB.ViewModels
         public int BuildingId { get; set; }
         public string FloorCode { get; set; }
         public int FloorNumber { get; set; }
+        public string FloorType { get; set; }
     }
     public class FloorPlanUM
     {

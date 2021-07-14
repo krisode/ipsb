@@ -87,7 +87,9 @@ namespace IPSB.Controllers
                 return BadRequest();
             }
 
-            IQueryable<FloorPlan> list = _service.GetAll(_ => _.Building, _ => _.LocatorTags, _ => _.Stores);
+            //IQueryable<FloorPlan> list = _service.GetAll(_ => _.Building, _ => _.LocatorTags, _ => _.Stores);
+
+            IQueryable<FloorPlan> list = _service.GetAll();
 
             if (model.BuildingId != 0)
             {
@@ -102,7 +104,7 @@ namespace IPSB.Controllers
             if (model.FloorNumber > 0)
             {
                 list = list.Where(_ => _.FloorNumber == model.FloorNumber);
-            } 
+            }
 
 
             var pagedModel = _pagingSupport.From(list)
@@ -135,7 +137,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<FloorPlanCM>> CreateFloorPlan([FromForm] FloorPlanCM model)
-        {   
+        {
             FloorPlan floorPlan = _service.GetByIdAsync(_ => _.FloorCode.ToUpper() == model.FloorCode).Result;
             if (floorPlan is not null)
             {
@@ -145,6 +147,8 @@ namespace IPSB.Controllers
             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "floor-plan", "floor-plan-map");
             FloorPlan crtFloorPlan = _mapper.Map<FloorPlan>(model);
             crtFloorPlan.ImageUrl = imageURL;
+            crtFloorPlan.Status = "Inactive";
+            crtFloorPlan.CreateDate = DateTime.Now;
 
             try
             {

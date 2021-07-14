@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
@@ -34,10 +36,11 @@ namespace IPSB.Infrastructure.Contexts
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            //if (!optionsBuilder.IsConfigured)
-            //{
-            //    optionsBuilder.UseSqlServer("Server=KRIS;Database=indoor_positioning_main;Trusted_Connection=True;");
-            //}
+            if (!optionsBuilder.IsConfigured)
+            {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Server=indoor-positioning.cm4zyhsrdgxp.ap-southeast-1.rds.amazonaws.com, 1433;Uid=admin;Pwd=TheHien2407abcX123;Database=indoor_positioning_main;");
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -105,7 +108,6 @@ namespace IPSB.Infrastructure.Contexts
                 entity.HasOne(d => d.Manager)
                     .WithMany(p => p.BuildingManagers)
                     .HasForeignKey(d => d.ManagerId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Building_Account1");
             });
 
@@ -184,8 +186,6 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("Edge");
 
-                //entity.Property(e => e.Id).ValueGeneratedNever();
-
                 entity.HasOne(d => d.FromLocation)
                     .WithMany(p => p.EdgeFromLocations)
                     .HasForeignKey(d => d.FromLocationId)
@@ -203,8 +203,6 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("FavoriteStore");
 
-                //entity.Property(e => e.Id).ValueGeneratedNever();
-
                 entity.Property(e => e.RecordDate).HasColumnType("datetime");
 
                 entity.HasOne(d => d.Store)
@@ -218,13 +216,23 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("FloorPlan");
 
+                entity.Property(e => e.CreateDate).HasColumnType("datetime");
+
                 entity.Property(e => e.FloorCode)
                     .IsRequired()
                     .HasMaxLength(10)
                     .IsUnicode(false);
 
+                entity.Property(e => e.FloorType)
+                    .HasMaxLength(30)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.ImageUrl)
                     .IsRequired()
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Status)
+                    .HasMaxLength(30)
                     .IsUnicode(false);
 
                 entity.HasOne(d => d.Building)
@@ -261,6 +269,8 @@ namespace IPSB.Infrastructure.Contexts
                 entity.ToTable("LocationType");
 
                 entity.Property(e => e.Description).HasMaxLength(200);
+
+                entity.Property(e => e.ImageUrl).IsUnicode(false);
 
                 entity.Property(e => e.Name)
                     .IsRequired()
