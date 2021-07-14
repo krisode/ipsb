@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 #nullable disable
 
@@ -18,6 +19,9 @@ namespace IPSB.Infrastructure.Contexts
         public int BuildingId { get; set; }
         public string FloorCode { get; set; }
         public int FloorNumber { get; set; }
+        public string FloorType { get; set; }
+        public DateTime? CreateDate { get; set; }
+        public string Status { get; set; }
 
         public virtual Building Building { get; set; }
         public virtual ICollection<Location> Locations { get; set; }
