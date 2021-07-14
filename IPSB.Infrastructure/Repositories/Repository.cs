@@ -1,6 +1,7 @@
 ﻿using IPSB.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -64,6 +65,15 @@ namespace IPSB.Infrastructure.Repositories
             return entity;
         }
 
+        public async Task AddRangeAsync(List<T> list)
+        {
+            if (list == null)
+            {
+                throw new ArgumentNullException($"{nameof(AddRangeAsync)} list entity must not be null");
+            }
+            await _dbContext.AddRangeAsync(list);
+        }
+
         public void Update(T entity)
         {
             if (entity == null)
@@ -93,5 +103,7 @@ namespace IPSB.Infrastructure.Repositories
         {
             return await _dbContext.SaveChangesAsync();
         }
+
+        
     }
 }
