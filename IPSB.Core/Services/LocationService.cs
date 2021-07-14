@@ -12,6 +12,7 @@ namespace IPSB.Core.Services
     public interface ILocationService : IService<Location, int>
     {
         Task AddRageAsync(List<Location> list);
+        void DeleteRange(List<int> list);
     }
 
     public class LocationService : ILocationService
@@ -36,7 +37,10 @@ namespace IPSB.Core.Services
         {
             _iRepository.Delete(entity);
         }
-
+        public void DeleteRange(List<int> list)
+        {
+            _iRepository.DeleteRange(_ => list.Contains(_.Id));
+        }
         public IQueryable<Location> GetAll(params Expression<Func<Location, object>>[] includes)
         {
             return _iRepository.GetAll(includes);

@@ -12,6 +12,7 @@ namespace IPSB.Core.Services
     public interface IEdgeService : IService<Edge, int>
     {
         Task AddRageAsync(List<Edge> list);
+        void DeleteRange(List<int> list);
     }
 
     public class EdgeService : IEdgeService
@@ -35,6 +36,11 @@ namespace IPSB.Core.Services
         public void Delete(Edge entity)
         {
             _iRepository.Delete(entity);
+        }
+
+        public void DeleteRange(List<int> list)
+        {
+            _iRepository.DeleteRange(_ => list.Contains(_.Id));
         }
 
         public IQueryable<Edge> GetAll(params Expression<Func<Edge, object>>[] includes)

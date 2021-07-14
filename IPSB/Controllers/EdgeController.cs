@@ -196,6 +196,21 @@ namespace IPSB.Controllers
 
         }
 
+        // DELETE api/<ProductCategoryController>?id=1&id=3
+        // Change Status to Inactive
+        [HttpDelete]
+        public ActionResult DeleteRange([FromQuery] List<int> ids)
+        {
+            try
+            {
+                _service.DeleteRange(ids);
+            }catch(Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            return NoContent();
+        }
+
         protected override bool IsAuthorize()
         {
             throw new NotImplementedException();
