@@ -11,6 +11,9 @@ namespace IPSB.ViewModels
         public int BuildingId { get; set; }
         public string FloorCode { get; set; }
         public int FloorNumber { get; set; }
+        public string FloorType { get; set; }
+        public DateTime CreateDate { get; set; }
+        public string Status { get; set; }
 
         public BuildingRefModel Building { get; set; }
         public ICollection<LocatorTagRefModel> LocatorTags { get; set; }
@@ -23,12 +26,18 @@ namespace IPSB.ViewModels
         public int BuildingId { get; set; }
         public string FloorCode { get; set; }
         public int FloorNumber { get; set; }
+        public string FloorType { get; set; }
+        public DateTime CreateDate { get; set; }
+        public string Status { get; set; }
     }
     public class FloorPlanSM
     {
         public int BuildingId { get; set; }
         public string FloorCode { get; set; }
         public int FloorNumber { get; set; }
+        public string FloorType { get; set; }
+        public DateTime CreateDate { get; set; }
+        public string Status { get; set; }
     }
     public class FloorPlanCM
     {
@@ -45,6 +54,9 @@ namespace IPSB.ViewModels
         public int BuildingId { get; set; }
         public string FloorCode { get; set; }
         public int FloorNumber { get; set; }
+        public string FloorType { get; set; }
+        public DateTime CreateDate { get; set; }
+        public string Status { get; set; }
 
     }
 
