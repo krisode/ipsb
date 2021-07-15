@@ -196,7 +196,7 @@ namespace IPSB.Controllers
 
         }
 
-        // DELETE api/<ProductCategoryController>?id=1&id=3
+        // DELETE api/<EdgeController>?id=1&id=3
         // Change Status to Inactive
         [HttpDelete]
         public ActionResult DeleteRange([FromQuery] List<int> ids)
