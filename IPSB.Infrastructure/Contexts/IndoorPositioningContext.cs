@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace IPSB.Infrastructure.Contexts
 {
-    public partial class indoor_positioning_mainContext : DbContext
+    public partial class IndoorPositioningContext : DbContext
     {
-        public indoor_positioning_mainContext()
+        public IndoorPositioningContext()
         {
         }
 
-        public indoor_positioning_mainContext(DbContextOptions<indoor_positioning_mainContext> options)
+        public IndoorPositioningContext(DbContextOptions<IndoorPositioningContext> options)
             : base(options)
         {
         }
@@ -39,7 +39,7 @@ namespace IPSB.Infrastructure.Contexts
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=indoor-positioning.cm4zyhsrdgxp.ap-southeast-1.rds.amazonaws.com, 1433;Uid=admin;Pwd=TheHien2407abcX123;Database=indoor_positioning_main;");
+                optionsBuilder.UseSqlServer("Server=indoor-positioning.cm4zyhsrdgxp.ap-southeast-1.rds.amazonaws.com, 1433;Initial Catalog=indoor_positioning_main;User ID=admin;Password=TheHien2407abcX123");
             }
         }
 
@@ -163,6 +163,14 @@ namespace IPSB.Infrastructure.Contexts
                 entity.ToTable("CouponInUse");
 
                 entity.Property(e => e.ApplyDate).HasColumnType("datetime");
+
+                entity.Property(e => e.FeedbackContent).HasMaxLength(400);
+
+                entity.Property(e => e.FeedbackDate).HasColumnType("datetime");
+
+                entity.Property(e => e.FeedbackImage)
+                    .HasMaxLength(250)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.RedeemDate).HasColumnType("datetime");
 

@@ -48,7 +48,7 @@ namespace IPSB
                 Credential = GoogleCredential.FromFile(pathToKey)
             });
 
-            services.AddDbContext<indoor_positioning_mainContext>(options =>
+            services.AddDbContext<IndoorPositioningContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("IPSBDatabase")));
 
             services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));

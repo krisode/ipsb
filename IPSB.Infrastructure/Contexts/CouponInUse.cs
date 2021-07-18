@@ -13,6 +13,10 @@ namespace IPSB.Infrastructure.Contexts
         public DateTime? RedeemDate { get; set; }
         public DateTime? ApplyDate { get; set; }
         public string Status { get; set; }
+        public string FeedbackContent { get; set; }
+        public string FeedbackImage { get; set; }
+        public DateTime? FeedbackDate { get; set; }
+        public double? RateScore { get; set; }
 
         public virtual Coupon Coupon { get; set; }
         public virtual Account Visitor { get; set; }
