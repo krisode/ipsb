@@ -10,9 +10,9 @@ namespace IPSB.Infrastructure.Repositories
 {
     public class Repository<T, TKey> : IRepository<T, TKey> where T : class
     {
-        protected indoor_positioning_mainContext _dbContext;
+        protected IndoorPositioningContext _dbContext;
 
-        public Repository(indoor_positioning_mainContext dbContext)
+        public Repository(IndoorPositioningContext dbContext)
         {
             _dbContext = dbContext;
         }
