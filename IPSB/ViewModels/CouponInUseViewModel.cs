@@ -27,6 +27,8 @@ namespace IPSB.ViewModels
     public class CouponInUseSM
     {
         public int CouponId { get; set; }
+        public int StoreId { get; set; }
+        public bool FeedbackExist { get; set; }
         public int VisitorId { get; set; }
         public DateTime? LowerRedeemDate { get; set; }
         public DateTime? UpperRedeemDate { get; set; }

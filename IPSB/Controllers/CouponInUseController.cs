@@ -131,6 +131,15 @@ namespace IPSB.Controllers
                     }
                 }
             }
+            if(model.StoreId != 0)
+            {
+                list = list.Where(_ => _.Coupon.StoreId == model.StoreId);
+            }
+
+            if (model.FeedbackExist)
+            {
+                list = list.Where(_ => _.RateScore != null);
+            }
 
             var pagedModel = _pagingSupport.From(list)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
