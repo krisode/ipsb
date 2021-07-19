@@ -19,7 +19,7 @@ namespace IPSB.Controllers
         private readonly ILocationService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<Location> _pagingSupport;
-       
+
         public LocationController(ILocationService service, IMapper mapper, IPagingSupport<Location> pagingSupport)
         {
             _service = service;
@@ -81,9 +81,9 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<LocationVM>> GetAllLocations([FromQuery] LocationSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<Location> list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store,
-                _ => _.Store.Products, _ => _.EdgeFromLocations, _ => _.EdgeToLocations, _ => _.LocatorTags, _ => _.VisitPoints);
-
+            //IQueryable<Location> list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store,
+            //    _ => _.Store.Products, _ => _.EdgeFromLocations, _ => _.EdgeToLocations, _ => _.LocatorTags, _ => _.VisitPoints);
+            IQueryable<Location> list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store, _ => _.LocatorTags);
             if (model.X != 0)
             {
                 list = list.Where(_ => _.X == model.X);
