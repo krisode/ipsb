@@ -158,9 +158,10 @@ namespace IPSB.Controllers
         {
             List<Location> list = listModel.Select(model => _mapper.Map<Location>(model))
                 .ToList()
-                .Select(_ => {
+                .Select(_ =>
+                {
                     _.Status = "Inactive";
-                    return _; 
+                    return _;
                 }).ToList();
             try
             {
@@ -216,24 +217,24 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        // DELETE api/<ProductCategoryController>/5
-        // Change Status to Inactive
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
 
-        }
         // DELETE api/<LocationController>?id=1&id=3
         // Change Status to Inactive
         [HttpDelete]
-        public ActionResult DeleteRange([FromQuery] List<int> ids)
+        public async Task<ActionResult> DeleteRange([FromBody] LocationDM model)
         {
             try
             {
-                // Delete location if location is point on route
-                _service.DeleteRange(ids.Where(id => ILocationService.TYPE_POINT_ON_ROUTE == id).ToList());
-                // Change location status to "Inactive" if location is not point on route
-                _service.Disable(ids.Where(id => ILocationService.TYPE_POINT_ON_ROUTE != id).ToList());
+                if (model.Ids != null && model.Ids.Count > 0)
+                {
+                    // Delete location if location is point on route
+                    _service.DeleteRange(model.Ids);
+                    // Change location status to "Inactive" if location is not point on route
+                    _service.Disable(model.Ids);
+
+                }
+
+                await _service.Save();
             }
             catch (Exception e)
             {

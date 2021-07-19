@@ -40,7 +40,13 @@ namespace IPSB.Core.Services
 
         public void DeleteRange(List<int> ids)
         {
-            _iRepository.DeleteRange(_ => ids.Contains(_.Id));
+            if (ids != null && ids.Count > 0)
+            {
+                var lstRemove = _iRepository.GetAll()
+               .Where(_ => ids.Contains(_.Id));
+                _iRepository.DeleteRange(lstRemove);
+            }
+
         }
 
         public IQueryable<Edge> GetAll(params Expression<Func<Edge, object>>[] includes)

@@ -41,18 +41,19 @@ namespace IPSB.Core.Services
         }
         public void DeleteRange(List<int> ids)
         {
-            _iRepository.DeleteRange(_ => ids.Contains(_.Id));
+            var lstRemove = _iRepository.GetAll()
+           .Where(_ => ids.Contains(_.Id) && _.LocationTypeId == ILocationService.TYPE_POINT_ON_ROUTE);
+            _iRepository.DeleteRange(lstRemove);
         }
 
         public void Disable(List<int> ids)
         {
-            var lstLocation = _iRepository.GetAll(_ => ids.Contains(_.Id))
-                .ToList()
-                .Select(_ => {
-                    _.Status = "Inactive";
-                    return _; 
-                });
+            var lstLocation = _iRepository.GetAll()
+            .Where(_ => ids.Contains(_.Id) && _.LocationTypeId != ILocationService.TYPE_POINT_ON_ROUTE)
+            .ToList();
+            lstLocation.ForEach(loc => loc.Status = "Inactive");
             _iRepository.UpdateRange(lstLocation);
+
         }
 
         public IQueryable<Location> GetAll(params Expression<Func<Location, object>>[] includes)

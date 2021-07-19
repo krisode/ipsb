@@ -92,10 +92,9 @@ namespace IPSB.Infrastructure.Repositories
             _dbContext.Remove(entity);
         }
 
-        public void DeleteRange(Expression<Func<T, bool>> predicate)
+        public void DeleteRange(IEnumerable<T> entities)
         {
-            var lstRemove = _dbContext.Set<T>().Where(predicate);
-            _dbContext.RemoveRange(lstRemove);
+            _dbContext.RemoveRange(entities);
         }
 
         public async Task<int> Save()
