@@ -50,7 +50,6 @@ namespace IPSB.Infrastructure.Repositories
                     queryList = queryList.Include(expression);
                 }
             }
-            
             return await queryList.FirstOrDefaultAsync(predicate);
 
         }
@@ -104,6 +103,9 @@ namespace IPSB.Infrastructure.Repositories
             return await _dbContext.SaveChangesAsync();
         }
 
-        
+        public void UpdateRange(IEnumerable<T> entities)
+        {
+            _dbContext.UpdateRange(entities);
+        }
     }
 }

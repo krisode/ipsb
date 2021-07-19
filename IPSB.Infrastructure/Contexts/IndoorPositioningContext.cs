@@ -254,6 +254,10 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("Location");
 
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
                 entity.HasOne(d => d.FloorPlan)
                     .WithMany(p => p.Locations)
                     .HasForeignKey(d => d.FloorPlanId)

@@ -14,6 +14,7 @@ namespace IPSB.Infrastructure.Repositories
         Task<T> AddAsync(T entity);
         Task AddRangeAsync(List<T> list);
         void Update(T entity);
+        void UpdateRange(IEnumerable<T> entities);
         void Delete(T entity);
         void DeleteRange(Expression<Func<T, bool>> predicate);
         Task<int> Save();
