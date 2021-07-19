@@ -12,9 +12,9 @@ namespace IPSB.Core.Services
     public interface ILocationService : IService<Location, int>
     {
         static int TYPE_POINT_ON_ROUTE = 2;
-        Task AddRageAsync(List<Location> list);
-        void DeletePointsOnRoute(List<int> list);
-        void DisableLocations(List<int> ids);
+        Task AddRangeAsync(List<Location> list);
+        void DeleteRange(List<int> ids);
+        void Disable(List<int> ids);
     }
 
     public class LocationService : ILocationService
@@ -30,7 +30,7 @@ namespace IPSB.Core.Services
         {
             return await _iRepository.AddAsync(entity);
         }
-        public async Task AddRageAsync(List<Location> list)
+        public async Task AddRangeAsync(List<Location> list)
         {
             await _iRepository.AddRangeAsync(list);
         }
@@ -39,14 +39,14 @@ namespace IPSB.Core.Services
         {
             _iRepository.Delete(entity);
         }
-        public void DeletePointsOnRoute(List<int> list)
+        public void DeleteRange(List<int> ids)
         {
-            _iRepository.DeleteRange(_ => list.Contains(_.Id) && _.LocationTypeId == ILocationService.TYPE_POINT_ON_ROUTE);
+            _iRepository.DeleteRange(_ => ids.Contains(_.Id));
         }
 
-        public void DisableLocations(List<int> ids)
+        public void Disable(List<int> ids)
         {
-            var lstLocation = _iRepository.GetAll(_ => ids.Contains(_.Id) && _.Id != ILocationService.TYPE_POINT_ON_ROUTE)
+            var lstLocation = _iRepository.GetAll(_ => ids.Contains(_.Id))
                 .ToList()
                 .Select(_ => {
                     _.Status = "Inactive";

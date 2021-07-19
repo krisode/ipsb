@@ -156,10 +156,15 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<LocationCM>> CreateLocation([FromBody] List<LocationCM> listModel)
         {
-            List<Location> list = listModel.Select(model => _mapper.Map<Location>(model)).ToList();
+            List<Location> list = listModel.Select(model => _mapper.Map<Location>(model))
+                .ToList()
+                .Select(_ => {
+                    _.Status = "Inactive";
+                    return _; 
+                }).ToList();
             try
             {
-                await _service.AddRageAsync(list);
+                await _service.AddRangeAsync(list);
                 await _service.Save();
             }
             catch (Exception e)
@@ -226,9 +231,9 @@ namespace IPSB.Controllers
             try
             {
                 // Delete location if location is point on route
-                _service.DeletePointsOnRoute(ids);
+                _service.DeleteRange(ids.Where(id => ILocationService.TYPE_POINT_ON_ROUTE == id).ToList());
                 // Change location status to "Inactive" if location is not point on route
-                _service.DisableLocations(ids);
+                _service.Disable(ids.Where(id => ILocationService.TYPE_POINT_ON_ROUTE != id).ToList());
             }
             catch (Exception e)
             {
