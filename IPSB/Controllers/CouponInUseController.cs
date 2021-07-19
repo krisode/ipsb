@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using IPSB.Core.Services;
+using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
@@ -19,12 +20,14 @@ namespace IPSB.Controllers
         private readonly ICouponInUseService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<CouponInUse> _pagingSupport;
+        private readonly IUploadFileService _uploadFileService;
 
-        public CouponInUseController(ICouponInUseService service, IMapper mapper, IPagingSupport<CouponInUse> pagingSupport)
+        public CouponInUseController(ICouponInUseService service, IMapper mapper, IPagingSupport<CouponInUse> pagingSupport, IUploadFileService uploadFileService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
+            _uploadFileService = uploadFileService;
         }
 
         /// <summary>
@@ -234,6 +237,8 @@ namespace IPSB.Controllers
                 return BadRequest();
             }
 
+            
+
             if (!string.IsNullOrEmpty(model.Status))
             {
                 if (model.Status != Constants.Status.USED && model.Status != Constants.Status.NOT_USED && model.Status != Constants.Status.DELETED)
@@ -251,6 +256,17 @@ namespace IPSB.Controllers
                     updCouponInUse.VisitorId = model.VisitorId;
                     updCouponInUse.ApplyDate = model.ApplyDate.Value;
                     updCouponInUse.Status = model.Status;
+                    if(model.RateScore != null)
+                    {
+                        updCouponInUse.FeedbackDate = DateTime.Now;
+                        if(model.FeedbackImage != null)
+                        {
+                            string imageURL = await _uploadFileService.UploadFile("123456798", model.FeedbackImage, "coupon-in-use", "feedback-image");
+                            updCouponInUse.FeedbackImage = imageURL;
+                        }
+                        updCouponInUse.FeedbackContent = model.FeedbackContent;
+                        updCouponInUse.RateScore = model.RateScore;
+                    }
 
                     _service.Update(updCouponInUse);
                     await _service.Save();
