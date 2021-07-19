@@ -75,4 +75,9 @@ namespace IPSB.ViewModels
         public int LocationTypeId { get; set; }
 
     }
+
+    public class LocationDM
+    {
+        public List<int> Ids { get; set; }
+    }
 }
