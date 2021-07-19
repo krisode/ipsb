@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace IPSB.ViewModels
@@ -61,5 +62,9 @@ namespace IPSB.ViewModels
         public DateTime? ApplyDate { get; set; }
         [Required]
         public string Status { get; set; }
+        public string FeedbackContent { get; set; }
+        public IFormFile FeedbackImage { get; set; }
+        public DateTime? FeedbackDate { get; set; }
+        public double? RateScore { get; set; }
     }
 }

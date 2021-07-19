@@ -188,22 +188,7 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        // DELETE api/<EdgeController>/5
-        // Change Status to Inactive
-        [HttpDelete]
-        public ActionResult Delete([FromQuery] List<int> ids)
-        {
-            try
-            {
-                // Delete edges
-                _service.DeleteRange(ids);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-            return NoContent();
-        }
+       
 
         // DELETE api/<EdgeController>?id=1&id=3
         // Change Status to Inactive
