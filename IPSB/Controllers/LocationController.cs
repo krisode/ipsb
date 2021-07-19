@@ -83,7 +83,7 @@ namespace IPSB.Controllers
         {
             //IQueryable<Location> list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store,
             //    _ => _.Store.Products, _ => _.EdgeFromLocations, _ => _.EdgeToLocations, _ => _.LocatorTags, _ => _.VisitPoints);
-            IQueryable<Location> list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store, _ => _.LocatorTags);
+            IQueryable<Location> list = _service.GetAll(_ => _.LocationType, _ => _.Store, _ => _.LocatorTags);
             if (model.X != 0)
             {
                 list = list.Where(_ => _.X == model.X);
