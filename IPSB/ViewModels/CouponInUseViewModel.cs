@@ -11,7 +11,10 @@ namespace IPSB.ViewModels
         public DateTime RedeemDate { get; set; }
         public DateTime ApplyDate { get; set; }
         public string Status { get; set; }
-
+        public string FeedbackContent { get; set; }
+        public string FeedbackImage { get; set; }
+        public DateTime? FeedbackDate { get; set; }
+        public double? RateScore { get; set; }
         public CouponRefModel Coupon { get; set; }
         public AccountRefModel Visitor { get; set; }
     }
