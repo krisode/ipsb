@@ -225,7 +225,10 @@ namespace IPSB.Controllers
         {
             try
             {
-                _service.DeleteRange(ids);
+                // Delete location if location is point on route
+                _service.DeletePointsOnRoute(ids);
+                // Change location status to "Inactive" if location is not point on route
+                _service.DisableLocations(ids);
             }
             catch (Exception e)
             {

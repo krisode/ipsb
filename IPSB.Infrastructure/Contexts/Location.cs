@@ -21,6 +21,7 @@ namespace IPSB.Infrastructure.Contexts
         public int FloorPlanId { get; set; }
         public int? StoreId { get; set; }
         public int LocationTypeId { get; set; }
+        public string Status { get; set; }
 
         public virtual FloorPlan FloorPlan { get; set; }
         public virtual LocationType LocationType { get; set; }
