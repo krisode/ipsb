@@ -113,21 +113,26 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Constants.Status.USED && model.Status != Constants.Status.NOT_USED && model.Status != Constants.Status.DELETED)
                 {
                     return BadRequest();
                 }
 
                 else
                 {
-                    if (model.Status == Constants.Status.ACTIVE)
+                    if (model.Status == Constants.Status.USED)
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
+                        list = list.Where(_ => _.Status == Constants.Status.USED);
                     }
 
-                    if (model.Status == Constants.Status.INACTIVE)
+                    if (model.Status == Constants.Status.NOT_USED)
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
+                        list = list.Where(_ => _.Status == Constants.Status.NOT_USED);
+                    }
+
+                    if (model.Status == Constants.Status.DELETED)
+                    {
+                        list = list.Where(_ => _.Status == Constants.Status.DELETED);
                     }
                 }
             }
@@ -189,7 +194,8 @@ namespace IPSB.Controllers
             CouponInUse crtCouponInUse = _mapper.Map<CouponInUse>(model);
 
             // Default POST Status = "New"
-            crtCouponInUse.Status = Constants.Status.NEW;
+            crtCouponInUse.Status = Constants.Status.NOT_USED;
+            crtCouponInUse.RedeemDate = DateTime.Now;
 
             try
             {
@@ -230,7 +236,7 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.NEW && model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Constants.Status.USED && model.Status != Constants.Status.NOT_USED && model.Status != Constants.Status.DELETED)
                 {
                     return BadRequest();
                 }
@@ -243,7 +249,6 @@ namespace IPSB.Controllers
                     updCouponInUse.Id = model.Id;
                     updCouponInUse.CouponId = model.CouponId;
                     updCouponInUse.VisitorId = model.VisitorId;
-                    updCouponInUse.RedeemDate = model.RedeemDate.Value;
                     updCouponInUse.ApplyDate = model.ApplyDate.Value;
                     updCouponInUse.Status = model.Status;
 

@@ -53,6 +53,12 @@ namespace IPSB.Utils
             public const string NEW = "New";
 
             public const string MISSING = "Missing";
+
+            public const string USED = "Used";
+            
+            public const string NOT_USED = "NotUsed";
+
+            public const string DELETED = "Deleted";
         }
 
         public static class AppSetting

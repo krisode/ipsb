@@ -50,10 +50,14 @@ namespace IPSB.ViewModels
     }
     public class CouponInUseUM
     {
+        [Required]
         public int Id { get; set; }
+        [Required]
         public int CouponId { get; set; }
+        [Required]
         public int VisitorId { get; set; }
-        public DateTime? RedeemDate { get; set; }
+        //public DateTime? RedeemDate { get; set; }
+        [Required]
         public DateTime? ApplyDate { get; set; }
         [Required]
         public string Status { get; set; }
