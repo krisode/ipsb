@@ -10,7 +10,7 @@ namespace IPSB.ViewModels
         public int FloorPlanId { get; set; }
         public int StoreId { get; set; }
         public int LocationTypeId { get; set; }
-
+        public string Status { get; set; }
         public FloorPlanRefModel FloorPlan { get; set; }
         public LocationTypeRefModel LocationType { get; set; }
         public StoreRefModel Store { get; set; }
