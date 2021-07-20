@@ -47,7 +47,7 @@ namespace IPSB.Controllers
 
             if (account == null)
             {
-                return Unauthorized(null);
+                return Unauthorized();
             }
 
             var rtnAccount = _mapper.Map<AccountVM>(account);
