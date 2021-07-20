@@ -18,12 +18,14 @@ namespace IPSB.Utils
             //#endregion
             #region AccountModel
             CreateMap<Account, AccountRefModel>();
+            CreateMap<Account, AccountStoreRefModel>();
             CreateMap<Account, AccountVM>();
             CreateMap<AccountCM, Account>();
             #endregion
 
             #region BuildingModel
             CreateMap<Building, BuildingRefModel>();
+            CreateMap<Building, BuildingStoreRefModel>();
             CreateMap<Building, BuildingVM>();
             CreateMap<BuildingCM, Building>();
             #endregion
@@ -54,6 +56,7 @@ namespace IPSB.Utils
 
             #region FloorPlanModel
             CreateMap<FloorPlan, FloorPlanRefModel>();
+            CreateMap<FloorPlan, FloorPlanStoreRefModel>();
             CreateMap<FloorPlan, FloorPlanVM>();
             CreateMap<FloorPlanCM, FloorPlan>();
             #endregion
@@ -113,14 +116,6 @@ namespace IPSB.Utils
             CreateMap<VisitRoute, VisitRouteVM>();
             CreateMap<VisitRouteCM, VisitRoute>();
             #endregion
-
-
-
-
-
-
-
-
         }
     }
 }

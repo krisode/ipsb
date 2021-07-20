@@ -30,6 +30,10 @@ namespace IPSB.ViewModels
         public string Email { get; set; }
         public string Status { get; set; }
     }
+    public class AccountStoreRefModel
+    {
+        public string Name { get; set; }
+    }
     public class AccountSM
     {
         public string Role { get; set; }
