@@ -61,6 +61,7 @@ namespace IPSB.ViewModels
         public double UpperAmount { get; set; }
         public double MaxDiscount { get; set; }
         public double MinSpend { get; set; }
+        public int BuildingId { get; set; }
         public string[] ProductInclude { get; set; }
         public string[] ProductExclude { get; set; }
         public int LowerLimit { get; set; }
