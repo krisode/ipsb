@@ -11,7 +11,7 @@ namespace IPSB.ViewModels
         public int StoreId { get; set; }
         public int LocationTypeId { get; set; }
         public string Status { get; set; }
-        public FloorPlanRefModel FloorPlan { get; set; }
+        public FloorPlanStoreRefModel FloorPlan { get; set; }
         public LocationTypeRefModel LocationType { get; set; }
         public StoreRefModel Store { get; set; }
         public ICollection<EdgeRefModel> EdgeFromLocations { get; set; }
