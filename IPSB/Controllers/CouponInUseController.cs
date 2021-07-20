@@ -227,7 +227,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> PutCouponInUse(int id, [FromBody] CouponInUseUM model)
+        public async Task<ActionResult> PutCouponInUse(int id, [FromForm] CouponInUseUM model)
         {
 
             CouponInUse updCouponInUse = await _service.GetByIdAsync(_ => _.Id == id);
