@@ -49,12 +49,12 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id}")]
-        public ActionResult<StoreVM> GetStoreById(int id)
+        public async Task<ActionResult<StoreVM>> GetStoreById(int id)
         {
             //var store = _service.GetByIdAsync(_ => _.Id == id, _ => _.Account, _ => _.Building,
             //    _ => _.FloorPlan, _ => _.Coupons, _ => _.FavoriteStores, _ => _.Locations,
             //    _ => _.ProductGroups, _ => _.Products).Result;
-            var store = _service.GetByIdAsync(_ => _.Id == id, _ => _.Account, _ => _.Building, _ => _.FloorPlan);
+            var store = await _service.GetByIdAsync(_ => _.Id == id, _ => _.Account, _ => _.Building, _ => _.FloorPlan);
 
             if (store == null)
             {
