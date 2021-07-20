@@ -12,4 +12,11 @@ namespace IPSB.ViewModels
 
     }
     
+    public class AuthWebChangePassword
+    {
+        public int AccountId { get; set; }
+        public string Password { get; set; }
+
+    }
+    
 }
