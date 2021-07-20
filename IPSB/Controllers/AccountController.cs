@@ -188,8 +188,9 @@ namespace IPSB.Controllers
             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "account", "account-profile");
             crtAccount.ImageUrl = imageURL;
 
-            // Default POST Status = "Active"
-            crtAccount.Status = Constants.Status.ACTIVE;
+            // Default POST Status = "NEW"
+            crtAccount.Status = Constants.Status.NEW;
+            crtAccount.Password = "password123";
 
             try
             {

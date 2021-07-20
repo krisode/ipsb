@@ -38,7 +38,6 @@ namespace IPSB.Infrastructure.Contexts
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
                 optionsBuilder.UseSqlServer("Server=indoor-positioning.cm4zyhsrdgxp.ap-southeast-1.rds.amazonaws.com, 1433;Initial Catalog=indoor_positioning_main;User ID=admin;Password=TheHien2407abcX123");
             }
         }
@@ -54,6 +53,10 @@ namespace IPSB.Infrastructure.Contexts
                 entity.Property(e => e.Email)
                     .HasMaxLength(255)
                     .IsUnicode(false);
+                
+                entity.Property(e => e.Password)
+                    .HasMaxLength(100)
+                    .IsUnicode(true);
 
                 entity.Property(e => e.ImageUrl)
                     .IsRequired()
