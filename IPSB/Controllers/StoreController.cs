@@ -262,25 +262,30 @@ namespace IPSB.Controllers
             // Default POST Status = "Active"
             crtStore.Status = Constants.Status.ACTIVE;
 
-            string imageUrl = "";
+            //string imageUrl = "";
 
-            if (model.ImageUrl is not null && model.ImageUrl.Count > 0)
+            //if (model.ImageUrl is not null && model.ImageUrl.Count > 0)
+            //{
+            //    //List<string> imageUrls = new List<string>();
+            //    var task = model.ImageUrl.ToList().Select(_ => _uploadFileService.UploadFile("123456798", _, "store", "store-detail")).ToArray();
+            //    var imageUrls = await Task.WhenAll(task);
+            //    //var testList = task.Select<string>(_ => _.);
+
+            //    imageUrl = string.Join(",", imageUrls);
+
+            //    //foreach (var url in model.ImageUrl)
+            //    //{
+            //    //    imageUrl = await _uploadFileService.UploadFile("123456798", url, "store", "store-detail");
+            //    //    imageUrls.Add(imageUrl);
+            //    //}
+            //}
+
+            //crtStore.ImageUrl = imageUrl;
+            if(model.ImageUrl != null)
             {
-                //List<string> imageUrls = new List<string>();
-                var task = model.ImageUrl.ToList().Select(_ => _uploadFileService.UploadFile("123456798", _, "store", "store-detail")).ToArray();
-                var imageUrls = await Task.WhenAll(task);
-                //var testList = task.Select<string>(_ => _.);
-
-                imageUrl = string.Join(",", imageUrls);
-
-                //foreach (var url in model.ImageUrl)
-                //{
-                //    imageUrl = await _uploadFileService.UploadFile("123456798", url, "store", "store-detail");
-                //    imageUrls.Add(imageUrl);
-                //}
+                crtStore.ImageUrl = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "store", "store-detail");
             }
-
-            crtStore.ImageUrl = imageUrl;
+            
 
             string productCategoryIds = "";
             if (model.ProductCategoryIds is not null && model.ProductCategoryIds.Length > 0)
@@ -295,7 +300,7 @@ namespace IPSB.Controllers
                 await _service.AddAsync(crtStore);
                 await _service.Save();
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
@@ -346,17 +351,22 @@ namespace IPSB.Controllers
                 }
             }
 
-            string imageUrl = updStore.ImageUrl;
+            //string imageUrl = updStore.ImageUrl;
 
-            if (model.ImageUrl is not null && model.ImageUrl.Count > 0)
+            //if (model.ImageUrl is not null && model.ImageUrl.Count > 0)
+            //{
+            //    List<string> imageUrls = new List<string>();
+            //    foreach (var url in model.ImageUrl)
+            //    {
+            //        imageUrl = await _uploadFileService.UploadFile("123456798", url, "store", "store-detail");
+            //        imageUrls.Add(imageUrl);
+            //    }
+            //    imageUrl = string.Join(",", imageUrls);
+            //}
+
+            if (model.ImageUrl != null)
             {
-                List<string> imageUrls = new List<string>();
-                foreach (var url in model.ImageUrl)
-                {
-                    imageUrl = await _uploadFileService.UploadFile("123456798", url, "store", "store-detail");
-                    imageUrls.Add(imageUrl);
-                }
-                imageUrl = string.Join(",", imageUrls);
+                updStore.ImageUrl = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "store", "store-detail");
             }
 
             string productCategoryIds = updStore.ProductCategoryIds;
@@ -372,7 +382,7 @@ namespace IPSB.Controllers
                 updStore.Id = model.Id;
                 updStore.Name = model.Name;
                 updStore.AccountId = model.AccountId;
-                updStore.ImageUrl = imageUrl;
+                //updStore.ImageUrl = imageUrl;
                 updStore.BuildingId = model.BuildingId;
                 updStore.Description = model.Description;
                 updStore.FloorPlanId = model.FloorPlanId;

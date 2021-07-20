@@ -71,7 +71,7 @@ namespace IPSB.ViewModels
     {
         public string Name { get; set; }
         public int AccountId { get; set; }
-        public IFormFileCollection ImageUrl { get; set; }
+        public IFormFile ImageUrl { get; set; }
         public int BuildingId { get; set; }
         public string Description { get; set; }
         public int FloorPlanId { get; set; }
@@ -83,7 +83,7 @@ namespace IPSB.ViewModels
         public int Id { get; set; }
         public string Name { get; set; }
         public int AccountId { get; set; }
-        public IFormFileCollection ImageUrl { get; set; }
+        public IFormFile ImageUrl { get; set; }
         public int BuildingId { get; set; }
         public string Description { get; set; }
         public int FloorPlanId { get; set; }
