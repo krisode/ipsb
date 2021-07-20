@@ -259,9 +259,9 @@ namespace IPSB.Controllers
                     if(model.RateScore != null)
                     {
                         updCouponInUse.FeedbackDate = DateTime.Now;
-                        if(model.FeedbackImage != null)
+                        if(model.ImageUrl != null)
                         {
-                            string imageURL = await _uploadFileService.UploadFile("123456798", model.FeedbackImage, "coupon-in-use", "feedback-image");
+                            string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "coupon-in-use", "feedback-image");
                             updCouponInUse.FeedbackImage = imageURL;
                         }
                         updCouponInUse.FeedbackContent = model.FeedbackContent;

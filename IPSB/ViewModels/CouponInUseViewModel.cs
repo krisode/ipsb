@@ -63,7 +63,7 @@ namespace IPSB.ViewModels
         [Required]
         public string Status { get; set; }
         public string FeedbackContent { get; set; }
-        public IFormFile FeedbackImage { get; set; }
+        public IFormFile ImageUrl { get; set; }
         public DateTime? FeedbackDate { get; set; }
         public double? RateScore { get; set; }
     }
