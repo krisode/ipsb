@@ -108,6 +108,10 @@ namespace IPSB.Controllers
             {
                 list = list.Where(_ => _.LocationTypeId == model.LocationTypeId);
             }
+            if(model.LocationTypeIds != null && model.LocationTypeIds.Length > 0)
+            {
+                list = list.Where(_ => model.LocationTypeIds.Contains(_.LocationTypeId));
+            }
 
             if (!string.IsNullOrEmpty(model.LocationTypeName))
             {
