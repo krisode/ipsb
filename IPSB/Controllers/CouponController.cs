@@ -84,6 +84,10 @@ namespace IPSB.Controllers
         {
             IQueryable<Coupon> list = _service.GetAll(_ => _.Store, _ => _.CouponInUses);
 
+            if(model.BuildingId != 0)
+            {
+                list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
+            }
             if (model.StoreId != 0)
             {
                 list = list.Where(_ => _.StoreId == model.StoreId);
