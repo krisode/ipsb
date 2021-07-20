@@ -10,7 +10,9 @@ namespace IPSB.Core.Services
 {
     public interface IAccountService : IService<Account, int>
     {
+        Account CheckLogin(string email, string password);
 
+        Account CheckEmail(string email);
     }
 
     public class AccountService : IAccountService
@@ -25,6 +27,16 @@ namespace IPSB.Core.Services
         public async Task<Account> AddAsync(Account entity)
         {
             return await _iRepository.AddAsync(entity);
+        }
+
+        public Account CheckLogin(string email, string password)
+        {
+            return _iRepository.GetAllWhere(_ => _.Email.Equals(email), _ => _.Password.Equals(password)).FirstOrDefault();
+        }
+
+        public Account CheckEmail(string email)
+        {
+            return _iRepository.GetAllWhere(_ => _.Email.Equals(email)).FirstOrDefault();
         }
 
         public void Delete(Account entity)
