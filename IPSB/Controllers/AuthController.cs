@@ -36,10 +36,10 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>Return the account with the corresponding id</returns>
         /// <response code="200">Account exists in the system</response>
-        /// <response code="404">No accounts found with the given username and password</response>
+        /// <response code="401">No accounts found with the given username and password</response>
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpPost("login")]
         public ActionResult<AccountVM> CheckLogin(AuthWebLogin authAccount)
         {
@@ -47,7 +47,7 @@ namespace IPSB.Controllers
 
             if (account == null)
             {
-                return NotFound();
+                return Unauthorized(null);
             }
 
             var rtnAccount = _mapper.Map<AccountVM>(account);
