@@ -51,9 +51,10 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<StoreVM> GetStoreById(int id)
         {
-            var store = _service.GetByIdAsync(_ => _.Id == id, _ => _.Account, _ => _.Building,
-                _ => _.FloorPlan, _ => _.Coupons, _ => _.FavoriteStores, _ => _.Locations,
-                _ => _.ProductGroups, _ => _.Products).Result;
+            //var store = _service.GetByIdAsync(_ => _.Id == id, _ => _.Account, _ => _.Building,
+            //    _ => _.FloorPlan, _ => _.Coupons, _ => _.FavoriteStores, _ => _.Locations,
+            //    _ => _.ProductGroups, _ => _.Products).Result;
+            var store = _service.GetByIdAsync(_ => _.Id == id, _ => _.Account, _ => _.Building, _ => _.FloorPlan);
 
             if (store == null)
             {
@@ -73,7 +74,7 @@ namespace IPSB.Controllers
             //rtnStore.ProductCategories = new List<ProductCategoryRefModel>();
             //foreach (var productCategoryId in store.ProductCategoryIds)
             //{
-                
+
             //    int idd = 0;
             //    if (!productCategoryId.ToString().Equals(","))
             //    {
@@ -110,9 +111,10 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<StoreVM>> GetAllStores([FromQuery] StoreSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<Store> list = _service.GetAll(_ => _.Account, _ => _.Building,
-                _ => _.FloorPlan, _ => _.Coupons, _ => _.FavoriteStores, _ => _.Locations,
-                _ => _.ProductGroups, _ => _.Products);
+            //IQueryable<Store> list = _service.GetAll(_ => _.Account, _ => _.Building,
+            //    _ => _.FloorPlan, _ => _.Coupons, _ => _.FavoriteStores, _ => _.Locations,
+            //    _ => _.ProductGroups, _ => _.Products);
+            IQueryable<Store> list = _service.GetAll(_ => _.Account, _ => _.Building, _ => _.FloorPlan);
 
             if (model.AccountId != 0)
             {
@@ -193,7 +195,7 @@ namespace IPSB.Controllers
             //foreach (var store in pagedModel.Content.ToList())
             //{
             //    List<ProductCategoryRefModel> listProCate = new List<ProductCategoryRefModel>();
-                
+
             //    foreach (var productCategoryId in store.ProductCategoryIds)
             //    {
             //        int idd = 0;
@@ -206,7 +208,7 @@ namespace IPSB.Controllers
             //        }
             //    }
             //    store.ProductCategories = listProCate;
-                
+
             //}
             return Ok(pagedModel);
         }
@@ -261,7 +263,7 @@ namespace IPSB.Controllers
             crtStore.Status = Constants.Status.ACTIVE;
 
             string imageUrl = "";
-            
+
             if (model.ImageUrl is not null && model.ImageUrl.Count > 0)
             {
                 //List<string> imageUrls = new List<string>();
@@ -270,7 +272,7 @@ namespace IPSB.Controllers
                 //var testList = task.Select<string>(_ => _.);
 
                 imageUrl = string.Join(",", imageUrls);
-                
+
                 //foreach (var url in model.ImageUrl)
                 //{
                 //    imageUrl = await _uploadFileService.UploadFile("123456798", url, "store", "store-detail");

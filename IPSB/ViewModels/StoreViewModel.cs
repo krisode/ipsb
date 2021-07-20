@@ -17,15 +17,15 @@ namespace IPSB.ViewModels
         public string Phone { get; set; }
         public string Status { get; set; }
 
-        public virtual AccountRefModel Account { get; set; }
-        public virtual BuildingRefModel Building { get; set; }
-        public virtual FloorPlanRefModel FloorPlan { get; set; }
-        public virtual ICollection<CouponRefModel> Coupons { get; set; }
+        public virtual AccountStoreRefModel Account { get; set; }
+        public virtual BuildingStoreRefModel Building { get; set; }
+        public virtual FloorPlanStoreRefModel FloorPlan { get; set; }
+        //public virtual ICollection<CouponRefModel> Coupons { get; set; }
         //public ICollection<ProductCategoryRefModel> ProductCategories { get; set; }
-        public virtual ICollection<FavoriteStoreRefModel> FavoriteStores { get; set; }
-        public virtual ICollection<LocationRefModel> Locations { get; set; }
-        public virtual ICollection<ProductGroupRefModel> ProductGroups { get; set; }
-        public virtual ICollection<ProductRefModel> Products { get; set; }
+        //public virtual ICollection<FavoriteStoreRefModel> FavoriteStores { get; set; }
+        //public virtual ICollection<LocationRefModel> Locations { get; set; }
+        //public virtual ICollection<ProductGroupRefModel> ProductGroups { get; set; }
+        //public virtual ICollection<ProductRefModel> Products { get; set; }
     }
     public class StoreRefModel
     {

@@ -30,6 +30,10 @@ namespace IPSB.ViewModels
         public DateTime CreateDate { get; set; }
         public string Status { get; set; }
     }
+    public class FloorPlanStoreRefModel
+    {
+        public string FloorCode { get; set; }
+    }
     public class FloorPlanSM
     {
         public int BuildingId { get; set; }

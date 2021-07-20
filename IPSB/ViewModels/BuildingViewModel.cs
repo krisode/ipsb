@@ -32,6 +32,11 @@ namespace IPSB.ViewModels
         public string Address { get; set; }
         public string Status { get; set; }
     }
+    public class BuildingStoreRefModel
+    {
+        public string Name { get; set; }
+    }
+
     public class BuildingSM
     {
         public int Id { get; set; }
