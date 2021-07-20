@@ -1,4 +1,6 @@
-﻿namespace IPSB.ViewModels
+﻿using System.Collections.Generic;
+
+namespace IPSB.ViewModels
 {
     public class EdgeVM
     {
@@ -44,5 +46,10 @@
         public int FromLocationId { get; set; }
         public int ToLocationId { get; set; }
         public double Distance { get; set; }
+    }
+
+    public class EdgeDM
+    {
+        public List<int> Ids { get; set; }
     }
 }

@@ -193,11 +193,11 @@ namespace IPSB.Controllers
         // DELETE api/<EdgeController>?id=1&id=3
         // Change Status to Inactive
         [HttpDelete]
-        public ActionResult DeleteRange([FromQuery] List<int> ids)
+        public ActionResult DeleteRange([FromBody] EdgeDM model)
         {
             try
             {
-                _service.DeleteRange(ids);
+                _service.DeleteRange(model.Ids);
             }catch(Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
