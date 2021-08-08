@@ -103,7 +103,7 @@ namespace IPSB.Controllers
 
             if (model.FloorPlanId != 0)
             {
-                list = list.Where(_ => _.FromLocation.FloorPlanId == model.FloorPlanId);
+                list = list.Where(_ => _.FromLocation.FloorPlanId == model.FloorPlanId || _.ToLocation.FloorPlanId == model.FloorPlanId);
             }
 
             var pagedModel = _pagingSupport.From(list)

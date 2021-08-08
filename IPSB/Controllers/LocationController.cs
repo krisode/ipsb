@@ -174,7 +174,7 @@ namespace IPSB.Controllers
                 .ToList()
                 .Select(_ =>
                 {
-                    _.Status = "Inactive";
+                    _.Status = "Active";
                     return _;
                 }).ToList();
             try
