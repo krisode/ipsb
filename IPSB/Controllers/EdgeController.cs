@@ -79,7 +79,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<EdgeVM>> GetAllEdges([FromQuery] EdgeSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<Edge> list = _service.GetAll(_ => _.FromLocation, _ => _.ToLocation, _ => _.FromLocation.Store, _ => _.ToLocation.Store);
+            IQueryable<Edge> list = _service.GetAll(_ => _.FromLocation.FloorPlan, _ => _.ToLocation.FloorPlan, _ => _.FromLocation.Store, _ => _.ToLocation.Store);
 
             if (model.FromLocationId != 0)
             {

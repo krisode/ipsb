@@ -37,6 +37,7 @@ namespace IPSB.ViewModels
         public double X { get; set; }
         public double Y { get; set; }
         public int FloorPlanId { get; set; }
+        public FloorPlanStoreRefModel FloorPlan { get; set; }
         public int StoreId { get; set; }
         public int LocationTypeId { get; set; }
         public StoreRefModelForEdge Store { get; set; }
