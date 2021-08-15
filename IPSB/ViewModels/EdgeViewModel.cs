@@ -20,6 +20,7 @@ namespace IPSB.ViewModels
         public double LowerDistance { get; set; }
         public double UpperDistance { get; set; }
         public int FloorPlanId { get; set; }
+        public int BuildingId { get; set; }
     }
 
 

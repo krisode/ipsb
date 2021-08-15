@@ -11,7 +11,7 @@ namespace IPSB.Core.Services
 {
     public interface IEdgeService : IService<Edge, int>
     {
-        Task AddRageAsync(List<Edge> list);
+        Task AddRangeAsync(List<Edge> list);
         void DeleteRange(List<int> ids);
     }
 
@@ -28,7 +28,7 @@ namespace IPSB.Core.Services
         {
             return await _iRepository.AddAsync(entity);
         }
-        public async Task AddRageAsync(List<Edge> list)
+        public async Task AddRangeAsync(List<Edge> list)
         {
             await _iRepository.AddRangeAsync(list);
         }
