@@ -106,6 +106,11 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.FromLocation.FloorPlanId == model.FloorPlanId || _.ToLocation.FloorPlanId == model.FloorPlanId);
             }
 
+            if (model.BuildingId != 0)
+            {
+                list = list.Where(_ => _.FromLocation.FloorPlan.BuildingId == model.BuildingId);
+            }
+
             var pagedModel = _pagingSupport.From(list)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
                 .Paginate<EdgeVM>();
@@ -138,7 +143,7 @@ namespace IPSB.Controllers
             List<Edge> list = listModel.Select(model => _mapper.Map<Edge>(model)).ToList();
             try
             {
-                await _service.AddRageAsync(list);
+                await _service.AddRangeAsync(list);
                 await _service.Save();
             }
             catch (Exception)
