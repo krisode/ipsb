@@ -14,7 +14,9 @@ namespace IPSB.Utils
 {
     public interface IJwtTokenProvider
     {
-        Task<string> GenerateToken(Account accountCreated);
+        Task<string> GetAccessToken(List<Claim> additionalClaims);
+        Task<string> GetRefreshToken(List<Claim> additionalClaims);
+        List<Claim> GetAdditionalClaims(Account account);
         Task<string> GetPayloadFromToken(string tokenString, string key);
 
     }
@@ -29,23 +31,23 @@ namespace IPSB.Utils
             _jwtSecurityTokenHandler = _jwtSecurityTokenHandler ?? new JwtSecurityTokenHandler();
         }
 
-        public Task<string> GenerateToken(Account accountCreated)
+        public Task<string> GenerateToken(List<Claim> additionalClaims, DateTime expiredPeriod)
         {
             return Task.Run(() =>
             {
-                var symmectricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["jwt:Key"]));
+                var jwtKey = _configuration[Constants.Config.KEY];
+                var jwtIssuer = _configuration[Constants.Config.ISSUER];
+                var jwtAudience = _configuration[Constants.Config.AUDIENCE];
+
+                var symmectricSecurityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtKey));
 
                 //signing credentials
                 var signingCredentials = new SigningCredentials(symmectricSecurityKey, SecurityAlgorithms.HmacSha256);
 
-                var additionalClaims = new List<Claim>();
-                additionalClaims.Add(new Claim(TokenClaims.ROLE, accountCreated.Role));
-                additionalClaims.Add(new Claim(TokenClaims.UID, accountCreated.Id.ToString()));
-
                 var token = new JwtSecurityToken(
-                        issuer: _configuration["jwt:Issuer"],
-                        audience: _configuration["jwt:Audience"],
-                        expires: DateTime.Now.AddDays(1),
+                        issuer: jwtIssuer,
+                        audience: jwtAudience,
+                        expires: expiredPeriod,
                         claims: additionalClaims,
                         signingCredentials: signingCredentials
                     );
@@ -54,6 +56,24 @@ namespace IPSB.Utils
                 return _jwtSecurityTokenHandler.WriteToken(token);
             });
 
+        }
+
+        public Task<string> GetAccessToken(List<Claim> additionalClaims)
+        {
+            return GenerateToken(additionalClaims, DateTime.Now.AddMinutes(Constants.TokenParams.MINUTE_TO_EXPIRES));
+        }
+
+        public Task<string> GetRefreshToken(List<Claim> additionalClaims)
+        {
+            return GenerateToken(additionalClaims, DateTime.Now.AddDays(Constants.TokenParams.DAY_TO_EXPIRES));
+        }
+
+        public List<Claim> GetAdditionalClaims(Account account)
+        {
+            var additionalClaims = new List<Claim>();
+            additionalClaims.Add(new Claim(ClaimTypes.Role, account.Role));
+            additionalClaims.Add(new Claim(ClaimTypes.Name, account.Id.ToString()));
+            return additionalClaims;
         }
 
         public Task<string> GetPayloadFromToken(string tokenString, string key)

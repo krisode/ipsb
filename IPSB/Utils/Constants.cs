@@ -8,8 +8,6 @@ namespace IPSB.Utils
 
         public static readonly int MAXIMUM_PAGE_SIZE = 250;
 
-        public static readonly string EXPIRES_IN_DAY = "86400";
-
         public static class Role
         {
             public const string ADMIN = "Admin";
@@ -20,16 +18,17 @@ namespace IPSB.Utils
             public static readonly string[] ROLE_LIST = { ADMIN, STORE_OWNER, BUILDING_MANAGER, VISITOR };
         }
 
-        public static class PrefixPolicy
+        public static class TokenParams
         {
-            public const string REQUIRED_ROLE = "RequiredRole";
+            public const int MINUTE_TO_EXPIRES = 30;
+            public const int DAY_TO_EXPIRES = 15;
         }
 
-        public static class TokenClaims
+        public static class Config
         {
-            public const string ROLE = "role";
-            public const string UID = "uid";
-            public const string EMAIL = "email";
+            public const string ISSUER = "jwt:Issuer";
+            public const string AUDIENCE = "jwt:Audience";
+            public const string KEY = "jwt:Key";
         }
 
         public static class HeaderClaims
@@ -69,5 +68,11 @@ namespace IPSB.Utils
             public const string FirebaseAuthPassword = "Firebase:Password";
 
         }
+
+        public static class QueryKeys
+        {
+            public const string BUILDING_MANAGER_ID = "buildingManagerId";
+        }
+        
     }
 }

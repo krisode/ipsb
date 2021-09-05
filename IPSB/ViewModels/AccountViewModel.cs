@@ -36,6 +36,7 @@ namespace IPSB.ViewModels
     }
     public class AccountSM
     {
+        public int BuildingManagerId { get; set; }
         public string Role { get; set; }
         public string Name { get; set; }
         public string Phone { get; set; }

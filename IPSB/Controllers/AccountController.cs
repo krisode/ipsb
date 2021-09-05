@@ -1,33 +1,39 @@
 ﻿using AutoMapper;
+using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace IPSB.Controllers
 {
     [Route("api/v1.0/accounts")]
     [ApiController]
+    [Authorize(Roles = "Admin, Building Manager")]
     public class AccountController : AuthorizeController
     {
         private readonly IAccountService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<Account> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public AccountController(IAccountService service, IMapper mapper, IPagingSupport<Account> pagingSupport, IUploadFileService uploadFileService)
+        public AccountController(IAccountService service, IMapper mapper, IPagingSupport<Account> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
+            _authorizationService = authorizationService;
         }
 
 
@@ -48,14 +54,19 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id}")]
-        public ActionResult<AccountVM> GetAccountById(int id)
+        public async Task<ActionResult<AccountVM>> GetAccountById(int id)
         {
-            var account = _service.GetByIdAsync(_ => _.Id == id, _ => _.BuildingAdmins, _ => _.BuildingManagers, 
-                _ => _.CouponInUses, _ => _.Stores, _ => _.VisitRoutes).Result;
+            var account = _service.GetByIdAsync(_ => _.Id == id).Result;
 
             if (account == null)
             {
                 return NotFound();
+            }
+            // resouce-based imperative authorization
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, account, Operations.Read);
+            if (!authorizedResult.Succeeded)
+            {
+                return Forbid($"Not authorized to access account with id: {id}");
             }
 
             var rtnAccount = _mapper.Map<AccountVM>(account);
@@ -82,10 +93,11 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = Policies.QUERY_ACCOUNT)]
         public ActionResult<IEnumerable<AccountVM>> GetAllAccounts([FromQuery] AccountSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<Account> list = _service.GetAll(_ => _.BuildingAdmins, _ => _.BuildingManagers,
-                _ => _.CouponInUses, _ => _.Stores, _ => _.VisitRoutes);
+            IQueryable<Account> list = _service.GetAll();
+
 
             if (!string.IsNullOrEmpty(model.Role))
             {

@@ -16,23 +16,25 @@ namespace IPSB.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAccountService _accountService;
+        private readonly IJwtTokenProvider _jwtTokenProvider;
         private readonly IMapper _mapper;
 
-        public AuthController(IAccountService accountService, IMapper mapper)
+        public AuthController(IAccountService accountService, IJwtTokenProvider jwtTokenProvider, IMapper mapper)
         {
             _accountService = accountService;
+            _jwtTokenProvider = jwtTokenProvider;
             _mapper = mapper;
         }
 
         /// <summary>
-        /// Check username and password of an account
+        /// Check email and password of an account
         /// </summary>
         /// <remarks>
         /// Sample Request:
         /// 
         ///     POST {
-        ///         "Email" : "1"
-        ///         "Password" : "1"
+        ///         "Email" : "abcdef@gmail.com"
+        ///         "Password" : "123456"
         ///     }
         /// </remarks>
         /// <returns>Return the account with the corresponding id</returns>
@@ -42,7 +44,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpPost("login")]
-        public ActionResult<AccountVM> CheckLogin(AuthWebLogin authAccount)
+        public async Task<ActionResult<AccountVM>> CheckLogin(AuthWebLogin authAccount)
         {
             var account = _accountService.CheckLogin(authAccount.Email, authAccount.Password);
 
@@ -51,7 +53,17 @@ namespace IPSB.Controllers
                 return Unauthorized();
             }
 
-            var rtnAccount = _mapper.Map<AccountVM>(account);
+            var rtnAccount = _mapper.Map<AuthLoginSuccess>(account);
+
+            // Claims for generating JWT
+            var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(account);
+           
+            string accessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
+           
+            string refreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
+
+            rtnAccount.AccessToken = accessToken;
+            rtnAccount.RefreshToken = refreshToken;
 
             return Ok(rtnAccount);
         }
@@ -65,7 +77,7 @@ namespace IPSB.Controllers
         /// 
         ///     POST {
         ///         "AccountId": "1"
-        ///         "Password" : "1"
+        ///         "Password" : "123456"
         ///     }
         /// </remarks>
         /// <returns>Return the account with the corresponding id</returns>
