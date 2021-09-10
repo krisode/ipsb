@@ -48,7 +48,7 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<BuildingVM> GetBuildingById(int id)
         {
-            var building = _service.GetByIdAsync(_ => _.Id == id, _ => _.Admin, _ => _.Manager, _ => _.FloorPlans, _ => _.Stores, _ => _.VisitRoutes).Result;
+            var building = _service.GetByIdAsync(_ => _.Id == id, _ => _.Manager).Result;
 
             if (building == null)
             {
@@ -81,7 +81,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<BuildingVM>> GetAllBuildings([FromQuery] BuildingSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<Building> list = _service.GetAll(_ => _.Admin, _ => _.Manager, _ => _.FloorPlans, _ => _.Stores, _ => _.VisitRoutes);
+            IQueryable<Building> list = _service.GetAll( _ => _.Manager);
 
             if (model.ManagerId != 0)
             {
