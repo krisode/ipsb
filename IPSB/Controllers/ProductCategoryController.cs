@@ -19,7 +19,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/product-categories")]
     [ApiController]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public class ProductCategoryController : AuthorizeController
     {
         private readonly IProductCategoryService _service;
@@ -63,11 +63,11 @@ namespace IPSB.Controllers
                 return NotFound();
             }
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, proCate, Operations.Read);
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, proCate, Operations.Read);
             if (!authorizedResult.Succeeded)
             {
                 return Forbid($"Not authorized to access product category with id: {id}");
-            }
+            }*/
 
             var rtnProCate = _mapper.Map<ProductCategoryVM>(proCate);
 
@@ -134,11 +134,11 @@ namespace IPSB.Controllers
 
             ProductCategory crtProCateType = _mapper.Map<ProductCategory>(proCateModel);
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, crtProCateType, Operations.Create);
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, crtProCateType, Operations.Create);
             if (!authorizedResult.Succeeded)
             {
                 return Forbid($"Not authorized to create product category: {proCateModel.Name}");
-            }
+            }*/
 
             try
             {

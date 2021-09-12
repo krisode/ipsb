@@ -197,11 +197,11 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, couponInUse, Operations.Create);
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, couponInUse, Operations.Create);
             if (!authorizedResult.Succeeded)
             {
                 return new ObjectResult($"Not authorize to create coupon in use") { StatusCode = 403 };
-            }
+            }*/
 
             CouponInUse crtCouponInUse = _mapper.Map<CouponInUse>(model);
 

@@ -65,11 +65,11 @@ namespace IPSB.Controllers
                 return NotFound();
             }
             
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Read);
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Read);
             if (!authorizedResult.Succeeded)
             {
-                return Forbid($"Not authorized to accesss building with id: {id}");
-            }
+                return new ObjectResult($"Not authorize to access building with id: {id}") { StatusCode = 403 };
+            }*/
 
             var rtnBuilding = _mapper.Map<BuildingVM>(building);
 
@@ -185,11 +185,11 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Create);
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Create);
             if (!authorizedResult.Succeeded)
             {
                 return new ObjectResult($"Not authorize to create building") { StatusCode = 403 };
-            }
+            }*/
 
             Building crtBuilding = _mapper.Map<Building>(model);
             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "building", "building-detail");

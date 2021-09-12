@@ -203,11 +203,11 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, locatorTag, Operations.Create);
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, locatorTag, Operations.Create);
             if (!authorizedResult.Succeeded)
             {
                 return new ObjectResult($"Not authorize to create locator tag") { StatusCode = 403 };
-            }
+            }*/
 
             LocatorTag crtLocatorTag = _mapper.Map<LocatorTag>(model);
             DateTime currentDateTime = DateTime.Now;

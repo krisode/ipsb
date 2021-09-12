@@ -191,11 +191,11 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, product, Operations.Create);
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, product, Operations.Create);
             if (!authorizedResult.Succeeded)
             {
                 return new ObjectResult($"Not authorize to create product") { StatusCode = 403 };
-            }
+            }*/
 
             Product crtProduct = _mapper.Map<Product>(model);
             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "product", "product-detail");

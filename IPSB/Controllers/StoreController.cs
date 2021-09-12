@@ -62,11 +62,11 @@ namespace IPSB.Controllers
                 return NotFound();
             }
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, store, Operations.Read);
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, store, Operations.Read);
             if (!authorizedResult.Succeeded)
             {
                 return new ObjectResult($"Not authorize to access store with id: {id}") { StatusCode = 403 };
-            }
+            }*/
 
             var rtnStore = _mapper.Map<StoreVM>(store);
 
@@ -231,6 +231,12 @@ namespace IPSB.Controllers
             {
                 return Conflict();
             }
+
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, store, Operations.Create);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to create store") { StatusCode = 403 };
+            }*/
 
             Store crtStore = _mapper.Map<Store>(model);
 

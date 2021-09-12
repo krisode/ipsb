@@ -155,11 +155,11 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, floorPlan, Operations.Create);
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, floorPlan, Operations.Create);
             if (!authorizedResult.Succeeded)
             {
                 return new ObjectResult($"Not authorize to create floor plan") { StatusCode = 403 };
-            }
+            }*/
 
             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "floor-plan", "floor-plan-map");
             FloorPlan crtFloorPlan = _mapper.Map<FloorPlan>(model);

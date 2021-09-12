@@ -204,7 +204,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> PutEdge(int id, [FromBody] LocationUM model)
+        public async Task<ActionResult> PutLocation(int id, [FromBody] LocationUM model)
         {
             Location updLocation = await _service.GetByIdAsync(_ => _.Id == id);
             if (updLocation == null || id != model.Id)

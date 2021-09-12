@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
@@ -178,6 +179,12 @@ namespace IPSB.Controllers
             if (updEdge == null || id != model.Id)
             {
                 return BadRequest();
+            }
+
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updEdge, Operations.Update);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to update edge with id: {id}") { StatusCode = 403 };
             }
 
             try

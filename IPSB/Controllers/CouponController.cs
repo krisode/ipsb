@@ -257,11 +257,11 @@ namespace IPSB.Controllers
 
             Coupon crtCoupon = _mapper.Map<Coupon>(model);
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, crtCoupon, Operations.Create);
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, crtCoupon, Operations.Create);
             if (!authorizedResult.Succeeded)
             {
                 return new ObjectResult($"Not authorize to create coupon") { StatusCode = 403 };
-            }
+            }*/
 
             // Default POST Status = "New"
             crtCoupon.Status = Constants.Status.NEW;
