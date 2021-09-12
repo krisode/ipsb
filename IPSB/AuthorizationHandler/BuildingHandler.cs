@@ -15,18 +15,20 @@ namespace IPSB.AuthorizationHandler
                 context.Succeed(requirement);
                 return Task.CompletedTask;
             }
-
             if (!context.User.IsInRole(Constants.Role.BUILDING_MANAGER))
             {
                 context.Fail();
                 return Task.CompletedTask;
             }
-
+            bool isDeleteOperation = requirement.Equals(Operations.Delete);
+            if (isDeleteOperation)
+            {
+                context.Fail();
+                return Task.CompletedTask;
+            }
             bool isUpdateOperation = requirement.Equals(Operations.Update);
-            bool needAuthorized = isUpdateOperation;
-
             int buildingManagerId = int.Parse(context.User.Identity.Name);
-            if (needAuthorized && !resource.ManagerId.Equals(buildingManagerId))
+            if (isUpdateOperation && !resource.ManagerId.Equals(buildingManagerId))
             {
                 context.Fail();
                 return Task.CompletedTask;
