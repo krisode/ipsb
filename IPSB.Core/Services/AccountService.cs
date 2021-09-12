@@ -2,6 +2,7 @@
 using IPSB.Infrastructure.Contexts;
 using IPSB.Infrastructure.Repositories;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ namespace IPSB.Core.Services
         Account CheckLogin(string email, string password);
 
         Account CheckEmail(string email);
+
     }
 
     public class AccountService : IAccountService
@@ -63,5 +65,7 @@ namespace IPSB.Core.Services
         {
             _iRepository.Update(entity);
         }
+
+       
     }
 }

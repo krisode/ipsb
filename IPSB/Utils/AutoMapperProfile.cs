@@ -16,6 +16,10 @@ namespace IPSB.Utils
             //CreateMap<ServiceVM, Service>();
             //CreateMap<ServiceCM, Service>();
             //#endregion
+            #region AuthModel
+            CreateMap<Account, AuthLoginSuccess>();
+            #endregion
+
             #region AccountModel
             CreateMap<Account, AccountRefModel>();
             CreateMap<Account, AccountStoreRefModel>();
