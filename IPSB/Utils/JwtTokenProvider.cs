@@ -3,6 +3,7 @@ using IPSB.Infrastructure.Contexts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -17,7 +18,7 @@ namespace IPSB.Utils
         Task<string> GetAccessToken(List<Claim> additionalClaims);
         Task<string> GetRefreshToken(List<Claim> additionalClaims);
         List<Claim> GetAdditionalClaims(Account account);
-        Task<string> GetPayloadFromToken(string tokenString, string key);
+        int GetIdFromToken(string tokenString);
 
     }
     public class JwtTokenProvider : IJwtTokenProvider
@@ -76,9 +77,17 @@ namespace IPSB.Utils
             return additionalClaims;
         }
 
-        public Task<string> GetPayloadFromToken(string tokenString, string key)
+        public int GetIdFromToken(string tokenString)
         {
-            return Task.Run(() => (string)_jwtSecurityTokenHandler.ReadJwtToken(tokenString).Payload[key]);
+            _jwtSecurityTokenHandler.ValidateToken(
+               tokenString,
+               JwtBearerTokenConfig.GetTokenValidationParameters(_configuration),
+               out SecurityToken validatedToken
+            );
+            var jwtToken = (JwtSecurityToken)validatedToken;
+            var accountId = int.Parse(jwtToken.Claims.First(x => x.Type == "id").Value);
+            // return account id from JWT token if validation successful
+            return accountId;
         }
     }
 }

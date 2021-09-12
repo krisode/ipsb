@@ -79,8 +79,6 @@ namespace IPSB.Controllers
         /// Sample Request:
         /// 
         ///     POST {
-        ///         "Phone" : "02323232323"
-        ///         "Email" : "abcdef@gmail.com"
         ///         "IdToken": "ddasdadad"
         ///     }
         /// </remarks>
@@ -104,7 +102,7 @@ namespace IPSB.Controllers
                 phone = decodedToken.Claims[TokenClaims.PHONE_NUMBER].ToString();
                 email = decodedToken.Claims[TokenClaims.EMAIL].ToString();
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return Unauthorized("Invalid login, please try again!");
             }
@@ -123,13 +121,13 @@ namespace IPSB.Controllers
                 string name = decodedToken.Claims[TokenClaims.NAME].ToString();
                 accountCreate ??= new Account() { Email = email, Name = name, ImageUrl = picture };
             }
-            accountCreate.Role = Constants.Role.VISITOR;
-            accountCreate.Status = Constants.Status.ACTIVE;
-
+            
             if(accountCreate.Id == 0)
             {
                 try
                 {
+                    accountCreate.Role = Constants.Role.VISITOR;
+                    accountCreate.Status = Constants.Status.ACTIVE;
                     await _accountService.AddAsync(accountCreate);
                     await _accountService.Save();
                 }
@@ -138,16 +136,63 @@ namespace IPSB.Controllers
                     return StatusCode(StatusCodes.Status500InternalServerError);
                 }                
             }
-            //var rtnAccount = _mapper.Map<AuthLoginSuccess>(accountCreate);
 
-            //string accessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
+            var rtnAccount = _mapper.Map<AuthLoginSuccess>(accountCreate);
 
-            //string refreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
+            var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(accountCreate);
+            string accessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
+            string refreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
 
-            //rtnAccount.AccessToken = accessToken;
-            //rtnAccount.RefreshToken = refreshToken;
+            rtnAccount.AccessToken = accessToken;
+            rtnAccount.RefreshToken = refreshToken;
+            
+            return Ok(rtnAccount);
+        }
 
-            return CreatedAtAction("LoginWithFirebase", new { id = accountCreate.Id }, accountCreate);
+        /// <summary>
+        /// Return new access token for user if refreshToken is valid
+        /// </summary>
+        /// <remarks>
+        /// Sample Request:
+        /// 
+        ///     POST {
+        ///         "RefreshToken": "sadajsdasjdasjd"
+        ///     }
+        /// </remarks>
+        /// <returns>Return the account with the corresponding id</returns>
+        /// <response code="200">Refresh token is valid</response>
+        /// <response code="401">Refresh token is invalid or expired!</response>
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult> RefreshToken(AuthRefreshToken authAccount)
+        {
+            int accountId;
+            try
+            {
+                accountId = _jwtTokenProvider.GetIdFromToken(authAccount.RefreshToken);
+            }
+            catch (Exception)
+            {
+                return Unauthorized();
+            }
+
+            Account accountFound = await _accountService.GetByIdAsync(_ => _.Id == accountId);
+            if (accountFound.Status.Equals(Status.INACTIVE))
+            {
+                return Unauthorized();
+            }
+
+            var rtnAccount = _mapper.Map<AuthLoginSuccess>(accountFound);
+
+            var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(accountFound);
+            string accessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
+            string refreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
+
+            rtnAccount.AccessToken = accessToken;
+            rtnAccount.RefreshToken = refreshToken;
+            return Ok(rtnAccount);
         }
 
         /// <summary>
@@ -192,7 +237,6 @@ namespace IPSB.Controllers
 
             return NoContent();
         }
-
-
     }
+
 }

@@ -11,6 +11,11 @@ namespace IPSB.ViewModels
         [Required]
         public string IdToken { get; set; }
     }
+    public class AuthRefreshToken
+    {
+        [Required]
+        public string RefreshToken { get; set; }
+    }
     public class AuthWebLogin
     {
         [DataType(DataType.EmailAddress)]

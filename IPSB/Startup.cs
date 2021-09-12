@@ -23,6 +23,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using static IPSB.Utils.Constants;
 
 namespace IPSB
 {
@@ -113,15 +114,7 @@ namespace IPSB
             {
                 options.RequireHttpsMetadata = false;
                 options.SaveToken = true;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration[Constants.Config.KEY])),
-                    ValidIssuer = Configuration[Constants.Config.ISSUER],
-                    ValidAudience = Configuration[Constants.Config.AUDIENCE],
-                };
+                options.TokenValidationParameters = JwtBearerTokenConfig.GetTokenValidationParameters(Configuration);
             });
             #endregion
 

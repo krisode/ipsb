@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
+using System.Text;
 
 namespace IPSB.Utils
 {
@@ -82,6 +84,20 @@ namespace IPSB.Utils
         public static class QueryKeys
         {
             public const string BUILDING_MANAGER_ID = "buildingManagerId";
+        }
+
+        public static class JwtBearerTokenConfig {
+            public static TokenValidationParameters GetTokenValidationParameters(IConfiguration _configuration) { 
+                return new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration[Constants.Config.KEY])),
+                    ValidIssuer = _configuration[Constants.Config.ISSUER],
+                    ValidAudience = _configuration[Constants.Config.AUDIENCE],
+                };
+            }  
         }
         
     }
