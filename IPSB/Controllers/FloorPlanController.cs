@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -15,19 +17,22 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/floor-plans")]
     [ApiController]
+    [Authorize(Roles = "Building Manager, Visitor")]
     public class FloorPlanController : AuthorizeController
     {
         private readonly IFloorPlanService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<FloorPlan> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public FloorPlanController(IFloorPlanService service, IMapper mapper, IPagingSupport<FloorPlan> pagingSupport, IUploadFileService uploadFileService)
+        public FloorPlanController(IFloorPlanService service, IMapper mapper, IPagingSupport<FloorPlan> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
+            _authorizationService = authorizationService;
         }
 
         /// <summary>
@@ -47,7 +52,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id}")]
-        public ActionResult<FloorPlanVM> GetFloorPlanById(int id)
+        public async Task<ActionResult<FloorPlanVM>> GetFloorPlanById(int id)
         {
             var floorPlan = _service.GetByIdAsync(_ => _.Id == id, _ => _.Building, _ => _.LocatorTags, _ => _.Stores).Result;
 
@@ -55,6 +60,12 @@ namespace IPSB.Controllers
             {
                 return NotFound();
             }
+
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, floorPlan, Operations.Read);
+            if (!authorizedResult.Succeeded)
+            {
+                return Forbid($"Not authorized to access floor plan with id: {id}");
+            }*/
 
             var rtnEdge = _mapper.Map<FloorPlanVM>(floorPlan);
 
@@ -144,6 +155,12 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, floorPlan, Operations.Create);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to create floor plan") { StatusCode = 403 };
+            }
+
             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "floor-plan", "floor-plan-map");
             FloorPlan crtFloorPlan = _mapper.Map<FloorPlan>(model);
             crtFloorPlan.ImageUrl = imageURL;
@@ -191,6 +208,12 @@ namespace IPSB.Controllers
             if (model.FloorNumber < 0)
             {
                 return BadRequest();
+            }
+
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updLocationType, Operations.Update);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to update floor plan with id: {id}") { StatusCode = 403 };
             }
 
             string imageURL = updLocationType.ImageUrl;

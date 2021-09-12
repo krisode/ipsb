@@ -4,6 +4,7 @@ using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -21,7 +22,7 @@ namespace IPSB.Controllers
         private readonly IMapper _mapper;
         private readonly IPagingSupport<ProductGroup> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
-
+        private readonly IAuthorizationService _authorizationService;
         public ProductGroupController(IProductGroupService service, IMapper mapper, IPagingSupport<ProductGroup> pagingSupport, IUploadFileService uploadFileService)
         {
             _service = service;

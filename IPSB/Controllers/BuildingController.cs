@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -15,18 +17,21 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/buildings")]
     [ApiController]
+    [Authorize(Roles = "Building Manager")]
     public class BuildingController : AuthorizeController
     {
         private readonly IBuildingService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<Building> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
-        public BuildingController(IBuildingService service, IMapper mapper, IPagingSupport<Building> pagingSupport, IUploadFileService uploadFileService)
+        private readonly IAuthorizationService _authorizationService;
+        public BuildingController(IBuildingService service, IMapper mapper, IPagingSupport<Building> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
+            _authorizationService = authorizationService;
         }
 
         /// <summary>
@@ -46,18 +51,29 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id}")]
-        public ActionResult<BuildingVM> GetBuildingById(int id)
+        public async Task<ActionResult<BuildingVM>> GetBuildingById(int id)
         {
-            var building = _service.GetByIdAsync(_ => _.Id == id, _ => _.Admin, _ => _.Manager, _ => _.FloorPlans, _ => _.Stores, _ => _.VisitRoutes).Result;
+            var building = _service.GetByIdAsync(_ => _.Id == id, 
+                _ => _.Admin, 
+                _ => _.Manager, 
+                _ => _.FloorPlans, 
+                _ => _.Stores, 
+                _ => _.VisitRoutes).Result;
 
             if (building == null)
             {
                 return NotFound();
             }
+            
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Read);
+            if (!authorizedResult.Succeeded)
+            {
+                return Forbid($"Not authorized to accesss building with id: {id}");
+            }
 
-            var rtnEdge = _mapper.Map<BuildingVM>(building);
+            var rtnBuilding = _mapper.Map<BuildingVM>(building);
 
-            return Ok(rtnEdge);
+            return Ok(rtnBuilding);
         }
 
         /// <summary>
@@ -169,6 +185,12 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Create);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to create building") { StatusCode = 403 };
+            }
+
             Building crtBuilding = _mapper.Map<Building>(model);
             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "building", "building-detail");
             crtBuilding.ImageUrl = imageURL;
@@ -209,7 +231,13 @@ namespace IPSB.Controllers
         {
 
             Building updBuilding = await _service.GetByIdAsync(_ => _.Id == id);
-            
+
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updBuilding, Operations.Update);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to update building with id: {id}") { StatusCode = 403 };
+            }
+
             if (updBuilding == null || id != model.Id)
             {
                 return BadRequest();

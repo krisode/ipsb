@@ -1,5 +1,4 @@
-﻿
-using IPSB.Infrastructure.Contexts;
+﻿using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;

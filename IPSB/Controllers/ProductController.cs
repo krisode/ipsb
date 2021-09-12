@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -15,19 +17,21 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/products")]
     [ApiController]
+    [Authorize(Roles = "Store Owner, Visitor")]
     public class ProductController : AuthorizeController
     {
         private readonly IProductService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<Product> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
-
-        public ProductController(IProductService service, IMapper mapper, IPagingSupport<Product> pagingSupport, IUploadFileService uploadFileService)
+        private readonly IAuthorizationService _authorizationService;
+        public ProductController(IProductService service, IMapper mapper, IPagingSupport<Product> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
+            _authorizationService = authorizationService;
         }
 
         /// <summary>
@@ -47,7 +51,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id}")]
-        public ActionResult<ProductVM> GetProductById(int id)
+        public async Task<ActionResult<ProductVM>> GetProductById(int id)
         {
             var product = _service.GetByIdAsync(_ => _.Id == id, _ => _.ProductCategory, _ => _.ProductGroup, _ => _.Store).Result;
 
@@ -55,6 +59,12 @@ namespace IPSB.Controllers
             {
                 return NotFound();
             }
+
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, product, Operations.Read);
+            if (!authorizedResult.Succeeded)
+            {
+                return Forbid($"Not authorized to access product with id: {id}");
+            }*/
 
             var rtnEdge = _mapper.Map<ProductVM>(product);
 
@@ -181,13 +191,11 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            //if (!string.IsNullOrEmpty(model.Status))
-            //{
-            //    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-            //    {
-            //        return BadRequest();
-            //    }
-            //}
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, product, Operations.Create);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to create product") { StatusCode = 403 };
+            }
 
             Product crtProduct = _mapper.Map<Product>(model);
             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "product", "product-detail");
@@ -250,6 +258,12 @@ namespace IPSB.Controllers
                 {
                     return BadRequest();
                 }
+            }
+
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updProduct, Operations.Update);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to update product with id: {id}") { StatusCode = 403 };
             }
 
             string imageURL = updProduct.ImageUrl;

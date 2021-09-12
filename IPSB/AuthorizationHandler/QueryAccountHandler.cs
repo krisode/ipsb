@@ -1,14 +1,7 @@
-﻿using IPSB.Core.Services;
-using IPSB.Infrastructure.Contexts;
-using IPSB.Utils;
+﻿using IPSB.Utils;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace IPSB.AuthorizationHandler

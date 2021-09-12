@@ -3,6 +3,7 @@ using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,7 +20,7 @@ namespace IPSB.Controllers
         private readonly IVisitPointService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<VisitPoint> _pagingSupport;
-
+        private readonly IAuthorizationService _authorizationService;
         public VisitPointController(IVisitPointService service, IMapper mapper, IPagingSupport<VisitPoint> pagingSupport)
         {
             _service = service;

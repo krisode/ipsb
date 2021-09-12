@@ -63,8 +63,25 @@ namespace IPSB
 
             #region Authorization Handler
             services.AddSingleton<IAuthorizationHandler, StoreOwnerHandler>();
-            services.AddSingleton<IAuthorizationHandler, StoreHandler>();
             services.AddSingleton<IAuthorizationHandler, QueryAccountHandler>();
+            services.AddSingleton<IAuthorizationHandler, BuildingHandler>();
+            services.AddSingleton<IAuthorizationHandler, CouponHandler>();
+            services.AddSingleton<IAuthorizationHandler, CouponInUseHandler>();
+            /*services.AddSingleton<IAuthorizationHandler, CouponInUseActionHandler>();*/
+            services.AddSingleton<IAuthorizationHandler, EdgeHandler>();
+            /*services.AddSingleton<IAuthorizationHandler, FavoriteStoreHandler>();*/
+            services.AddSingleton<IAuthorizationHandler, FloorPlanHandler>();
+            /*services.AddSingleton<IAuthorizationHandler, LocationHandler>();
+            services.AddSingleton<IAuthorizationHandler, LocationTypeHandler>();*/
+            services.AddSingleton<IAuthorizationHandler, LocatorTagHandler>();
+            services.AddSingleton<IAuthorizationHandler, ProductCategoryHandler>();
+            /*services.AddSingleton<IAuthorizationHandler, ProductGroupHandler>();*/
+            services.AddSingleton<IAuthorizationHandler, ProductHandler>();
+
+            services.AddSingleton<IAuthorizationHandler, StoreHandler>();
+            /*services.AddSingleton<IAuthorizationHandler, VisitPointHandler>();
+            services.AddSingleton<IAuthorizationHandler, VisitRouteHandler>();*/
+
             #endregion
 
             #region DB Services

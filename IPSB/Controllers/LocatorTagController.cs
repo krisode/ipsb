@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -14,17 +16,19 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/locator-tags")]
     [ApiController]
+    [Authorize(Roles = "Building Manager")]
     public class LocatorTagController : AuthorizeController
     {
         private readonly ILocatorTagService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<LocatorTag> _pagingSupport;
-
-        public LocatorTagController(ILocatorTagService service, IMapper mapper, IPagingSupport<LocatorTag> pagingSupport)
+        private readonly IAuthorizationService _authorizationService;
+        public LocatorTagController(ILocatorTagService service, IMapper mapper, IPagingSupport<LocatorTag> pagingSupport, IAuthorizationService authorizationService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
+            _authorizationService = authorizationService;
         }
 
         /// <summary>
@@ -44,7 +48,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id}")]
-        public ActionResult<LocatorTagVM> GetLocatorTagById(int id)
+        public async Task<ActionResult<LocatorTagVM>> GetLocatorTagById(int id)
         {
             var locatorTag = _service.GetByIdAsync(_ => _.Id == id, _ => _.FloorPlan, _ => _.Location).Result;
 
@@ -52,6 +56,12 @@ namespace IPSB.Controllers
             {
                 return NotFound();
             }
+
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, locatorTag, Operations.Read);
+            if (!authorizedResult.Succeeded)
+            {
+                return Forbid($"Not authorized to access locator tag with id: {id}");
+            }*/
 
             var rtnLocatorTag = _mapper.Map<LocatorTagVM>(locatorTag);
 
@@ -193,13 +203,11 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            //if (!string.IsNullOrEmpty(model.Status))
-            //{
-            //    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-            //    {
-            //        return BadRequest();
-            //    }
-            //}
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, locatorTag, Operations.Create);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to create locator tag") { StatusCode = 403 };
+            }
 
             LocatorTag crtLocatorTag = _mapper.Map<LocatorTag>(model);
             DateTime currentDateTime = DateTime.Now;
@@ -252,6 +260,12 @@ namespace IPSB.Controllers
                 {
                     return BadRequest();
                 }
+            }
+
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updLocatorTag, Operations.Read);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to update locator tag with id: {id}") { StatusCode = 403 };
             }
 
             DateTime currentDateTime = DateTime.Now;

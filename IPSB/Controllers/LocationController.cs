@@ -3,6 +3,7 @@ using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,6 +20,7 @@ namespace IPSB.Controllers
         private readonly ILocationService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<Location> _pagingSupport;
+        private readonly IAuthorizationService _authorizationService;
 
         public LocationController(ILocationService service, IMapper mapper, IPagingSupport<Location> pagingSupport)
         {
@@ -81,8 +83,6 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<LocationVM>> GetAllLocations([FromQuery] LocationSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            //IQueryable<Location> list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store,
-            //    _ => _.Store.Products, _ => _.EdgeFromLocations, _ => _.EdgeToLocations, _ => _.LocatorTags, _ => _.VisitPoints);
             IQueryable<Location> list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store);
             if(model.BuildingId != 0)
             {

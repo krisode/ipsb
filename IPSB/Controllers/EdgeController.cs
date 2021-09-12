@@ -3,6 +3,7 @@ using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -14,17 +15,20 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/edges")]
     [ApiController]
+    [Authorize(Roles = "Building Manager, Visitor")]
     public class EdgeController : AuthorizeController
     {
         private readonly IEdgeService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<Edge> _pagingSupport;
+        private readonly IAuthorizationService _authorizationService;
 
-        public EdgeController(IEdgeService service, IMapper mapper, IPagingSupport<Edge> pagingSupport)
+        public EdgeController(IEdgeService service, IMapper mapper, IPagingSupport<Edge> pagingSupport, IAuthorizationService authorizationService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
+            _authorizationService = authorizationService;
         }
 
         /// <summary>

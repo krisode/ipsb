@@ -3,6 +3,7 @@ using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,6 +20,7 @@ namespace IPSB.Controllers
         private readonly ILocationTypeService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<LocationType> _pagingSupport;
+        private readonly IAuthorizationService _authorizationService;
 
         public LocationTypeController(ILocationTypeService service, IMapper mapper, IPagingSupport<LocationType> pagingSupport)
         {

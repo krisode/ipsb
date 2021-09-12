@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -15,19 +17,22 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/coupon-in-uses")]
     [ApiController]
+    [Authorize(Roles = "Store Owner, Visitor")]
     public class CouponInUseController : AuthorizeController
     {
         private readonly ICouponInUseService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<CouponInUse> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public CouponInUseController(ICouponInUseService service, IMapper mapper, IPagingSupport<CouponInUse> pagingSupport, IUploadFileService uploadFileService)
+        public CouponInUseController(ICouponInUseService service, IMapper mapper, IPagingSupport<CouponInUse> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
+            _authorizationService = authorizationService;
         }
 
         /// <summary>
@@ -47,7 +52,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id}")]
-        public ActionResult<CouponInUseVM> GetCouponInUseById(int id)
+        public async Task<ActionResult<CouponInUseVM>> GetCouponInUseById(int id)
         {
             var couponInUse = _service.GetByIdAsync(_ => _.Id == id, _ => _.Coupon, _ => _.Visitor).Result;
 
@@ -55,6 +60,12 @@ namespace IPSB.Controllers
             {
                 return NotFound();
             }
+
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, couponInUse, Operations.Read);
+            if (!authorizedResult.Succeeded)
+            {
+                return Forbid($"Not authorized to access coupon in use with id: {id}");
+            }*/
 
             var rtnCouponInUse = _mapper.Map<CouponInUseVM>(couponInUse);
 
@@ -186,13 +197,11 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            //if (!string.IsNullOrEmpty(model.Status))
-            //{
-            //    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-            //    {
-            //        return BadRequest();
-            //    }
-            //}
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, couponInUse, Operations.Create);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to create coupon in use") { StatusCode = 403 };
+            }
 
             CouponInUse crtCouponInUse = _mapper.Map<CouponInUse>(model);
 
@@ -237,7 +246,6 @@ namespace IPSB.Controllers
                 return BadRequest();
             }
 
-            
 
             if (!string.IsNullOrEmpty(model.Status))
             {
@@ -245,6 +253,12 @@ namespace IPSB.Controllers
                 {
                     return BadRequest();
                 }
+            }
+
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updCouponInUse, Operations.Update);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to update coupon in use with id: {id}") { StatusCode = 403 };
             }
 
             if (updCouponInUse.CouponId == model.CouponId && updCouponInUse.VisitorId == updCouponInUse.VisitorId)
