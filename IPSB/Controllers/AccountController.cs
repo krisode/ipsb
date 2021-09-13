@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
@@ -18,7 +18,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/accounts")]
     [ApiController]
-    [Authorize(Roles = "Admin, Building Manager")]
+    //[Authorize(Roles = "Admin, Building Manager")]
     public class AccountController : AuthorizeController
     {
         private readonly IAccountService _service;
