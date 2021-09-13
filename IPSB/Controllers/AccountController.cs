@@ -63,11 +63,11 @@ namespace IPSB.Controllers
                 return NotFound();
             }
             // resouce-based imperative authorization
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, account, Operations.Read);
-            if (!authorizedResult.Succeeded)
-            {
-                return Forbid($"Not authorized to access account with id: {id}");
-            }
+            //var authorizedResult = await _authorizationService.AuthorizeAsync(User, account, Operations.Read);
+            //if (!authorizedResult.Succeeded)
+            //{
+            //    return Forbid($"Not authorized to access account with id: {id}");
+            //}
 
             var rtnAccount = _mapper.Map<AccountVM>(account);
 
@@ -93,7 +93,7 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = Policies.QUERY_ACCOUNT)]
+        //[Authorize(Policy = Policies.QUERY_ACCOUNT)]
         public ActionResult<IEnumerable<AccountVM>> GetAllAccounts([FromQuery] AccountSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             IQueryable<Account> list = _service.GetAll();

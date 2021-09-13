@@ -99,6 +99,11 @@ namespace IPSB.Utils
                 };
             }  
         }
+
+        public static class CookieKey
+        {
+            public const string REFRESH_TOKEN = "X-Refresh-Token";
+        }
         
     }
 }

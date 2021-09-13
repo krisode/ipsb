@@ -7,7 +7,6 @@ using IPSB.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using static IPSB.Utils.Constants;
@@ -67,6 +66,16 @@ namespace IPSB.Controllers
 
             rtnAccount.AccessToken = accessToken;
             rtnAccount.RefreshToken = refreshToken;
+            Response.Cookies.Append(
+                CookieKey.REFRESH_TOKEN,
+                rtnAccount.RefreshToken,
+                new CookieOptions()
+                {
+                    HttpOnly = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.Now.AddDays(TokenParams.DAY_TO_EXPIRES)
+                }
+            );
 
             return Ok(rtnAccount);
         }
@@ -91,7 +100,7 @@ namespace IPSB.Controllers
         [HttpPost("login-firebase")]
         public async Task<ActionResult<AccountVM>> CheckLoginFirebase(AuthFirebaseLogin authAccount)
         {
-            var auth = FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance;
+            var auth = FirebaseAuth.DefaultInstance;
 
             string phone = null;
             string email = null;
@@ -102,7 +111,7 @@ namespace IPSB.Controllers
                 phone = decodedToken.Claims[TokenClaims.PHONE_NUMBER].ToString();
                 email = decodedToken.Claims[TokenClaims.EMAIL].ToString();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return Unauthorized("Invalid login, please try again!");
             }
@@ -140,12 +149,18 @@ namespace IPSB.Controllers
             var rtnAccount = _mapper.Map<AuthLoginSuccess>(accountCreate);
 
             var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(accountCreate);
-            string accessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
-            string refreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
+            rtnAccount.AccessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
+            rtnAccount.RefreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
 
-            rtnAccount.AccessToken = accessToken;
-            rtnAccount.RefreshToken = refreshToken;
-            
+            Response.Cookies.Append(
+                CookieKey.REFRESH_TOKEN, 
+                rtnAccount.RefreshToken, 
+                new CookieOptions() { 
+                    HttpOnly = true, 
+                    SameSite = SameSiteMode.Strict, 
+                    Expires =  DateTimeOffset.Now.AddDays(TokenParams.DAY_TO_EXPIRES)
+                }
+            );
             return Ok(rtnAccount);
         }
 
@@ -168,10 +183,17 @@ namespace IPSB.Controllers
         [HttpPost("refresh-token")]
         public async Task<ActionResult> RefreshToken(AuthRefreshToken authAccount)
         {
+            string tokenFromReqBody = authAccount.RefreshToken;
+            string tokenFromCookie = Request.Cookies[CookieKey.REFRESH_TOKEN];
+            if(tokenFromReqBody != null && tokenFromCookie != null)
+            {
+                return BadRequest("Refresh Token appeared in both cookie and request body!");
+            }
+            string refreshToken = tokenFromReqBody ?? tokenFromCookie;
             int accountId;
             try
             {
-                accountId = _jwtTokenProvider.GetIdFromToken(authAccount.RefreshToken);
+                accountId = _jwtTokenProvider.GetIdFromToken(refreshToken);
             }
             catch (Exception)
             {
@@ -186,12 +208,20 @@ namespace IPSB.Controllers
 
             var rtnAccount = _mapper.Map<AuthLoginSuccess>(accountFound);
 
-            var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(accountFound);
-            string accessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
-            string refreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
+            var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(accountFound);  
 
-            rtnAccount.AccessToken = accessToken;
-            rtnAccount.RefreshToken = refreshToken;
+            rtnAccount.AccessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
+            rtnAccount.RefreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
+            Response.Cookies.Append(
+                CookieKey.REFRESH_TOKEN,
+                rtnAccount.RefreshToken,
+                new CookieOptions()
+                {
+                    HttpOnly = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTime.Now.AddDays(TokenParams.DAY_TO_EXPIRES)
+                }
+            );
             return Ok(rtnAccount);
         }
 
@@ -234,7 +264,6 @@ namespace IPSB.Controllers
             {
                 return BadRequest(e);
             }
-
             return NoContent();
         }
     }
