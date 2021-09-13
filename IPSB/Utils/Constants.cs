@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
+using System.Text;
 
 namespace IPSB.Utils
 {
@@ -7,8 +9,6 @@ namespace IPSB.Utils
         public static readonly int PAGE_SIZE = 50;
 
         public static readonly int MAXIMUM_PAGE_SIZE = 250;
-
-        public static readonly string EXPIRES_IN_DAY = "86400";
 
         public static class Role
         {
@@ -20,16 +20,27 @@ namespace IPSB.Utils
             public static readonly string[] ROLE_LIST = { ADMIN, STORE_OWNER, BUILDING_MANAGER, VISITOR };
         }
 
-        public static class PrefixPolicy
+        public static class TokenParams
         {
-            public const string REQUIRED_ROLE = "RequiredRole";
+            public const int MINUTE_TO_EXPIRES = 30;
+            public const int DAY_TO_EXPIRES = 15;
         }
-
+        
         public static class TokenClaims
         {
             public const string ROLE = "role";
             public const string UID = "uid";
+            public const string PICTURE = "picture";
             public const string EMAIL = "email";
+            public const string NAME = "name";
+            public const string PHONE_NUMBER = "phone_number";
+        }
+        
+        public static class Config
+        {
+            public const string ISSUER = "jwt:Issuer";
+            public const string AUDIENCE = "jwt:Audience";
+            public const string KEY = "jwt:Key";
         }
 
         public static class HeaderClaims
@@ -69,5 +80,30 @@ namespace IPSB.Utils
             public const string FirebaseAuthPassword = "Firebase:Password";
 
         }
+
+        public static class QueryKeys
+        {
+            public const string BUILDING_MANAGER_ID = "buildingManagerId";
+        }
+
+        public static class JwtBearerTokenConfig {
+            public static TokenValidationParameters GetTokenValidationParameters(IConfiguration _configuration) { 
+                return new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration[Constants.Config.KEY])),
+                    ValidIssuer = _configuration[Constants.Config.ISSUER],
+                    ValidAudience = _configuration[Constants.Config.AUDIENCE],
+                };
+            }  
+        }
+
+        public static class CookieKey
+        {
+            public const string REFRESH_TOKEN = "X-Refresh-Token";
+        }
+        
     }
 }

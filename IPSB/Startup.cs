@@ -1,7 +1,7 @@
-using BeautyAtHome;
+
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
-using IPSB.Authorization;
+using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
@@ -23,6 +23,8 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
+using static IPSB.Utils.Constants;
 
 namespace IPSB
 {
@@ -40,26 +42,34 @@ namespace IPSB
         {
             services.AddCors();
 
-            services.AddAutoMapper(typeof(Startup));
+            // DB Context
+            services.AddDbContext<IndoorPositioningContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("IPSBDatabase")));
+            // Repository
+            services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
 
+            #region Firebase Initial
             var pathToKey = Path.Combine(Directory.GetCurrentDirectory(), "Keys", "firebase_admin_sdk.json");
             FirebaseApp.Create(new AppOptions
             {
                 Credential = GoogleCredential.FromFile(pathToKey)
             });
+            #endregion
 
-            services.AddDbContext<IndoorPositioningContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("IPSBDatabase")));
-
-            services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
-
+            #region Utilities
+            services.AddAutoMapper(typeof(Startup));
             services.AddScoped(typeof(IPagingSupport<>), typeof(PagingSupport<>));
-
-            services.AddSingleton<IAuthorizationPolicyProvider, RequiredRolePolicyProvider>();
-            services.AddSingleton<IAuthorizationHandler, RequiredRoleHandler>();
             services.AddSingleton<IUploadFileService, UploadFileService>();
             services.AddSingleton<IJwtTokenProvider, JwtTokenProvider>();
+            #endregion
 
+            #region Authorization Handler
+            services.AddSingleton<IAuthorizationHandler, StoreOwnerHandler>();
+            services.AddSingleton<IAuthorizationHandler, StoreHandler>();
+            services.AddSingleton<IAuthorizationHandler, QueryAccountHandler>();
+            #endregion
+
+            #region DB Services
             // Add AccountService
             services.AddTransient<IAccountService, AccountService>();
             // Add BuildingService
@@ -92,27 +102,28 @@ namespace IPSB
             services.AddTransient<IVisitPointService, VisitPointService>();
             // Add VisitRouteService
             services.AddTransient<IVisitRouteService, VisitRouteService>();
+            #endregion
 
-
-
-
-
-
-
+            #region Authentication JWT Bearer
             services
-            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddAuthentication(options => 
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
             .AddJwtBearer(options =>
             {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["jwt:Key"])),
-                    ValidAudience = Configuration["jwt:Audience"],
-                    ValidIssuer = Configuration["jwt:Issuer"],
-                };
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = JwtBearerTokenConfig.GetTokenValidationParameters(Configuration);
             });
+            #endregion
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(Policies.QUERY_ACCOUNT, policy => policy.Requirements.Add(new QueryAccountRequirement()));
+            });
+
             services.AddControllers().AddNewtonsoftJson(options =>
             {
                 options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
@@ -122,7 +133,7 @@ namespace IPSB
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Indoor Positioning System", Version = "v1.0" });
                 c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
                 {
-                    Description = "Enter **_ONLY JWT Bearer token in the text box below.",
+                    Description = "Enter JWT Bearer token in the text box below. ",
                     In = ParameterLocation.Header,
                     Name = "Authorization",
                     Type = SecuritySchemeType.Http,
