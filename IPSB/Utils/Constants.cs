@@ -1,6 +1,8 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
 using System.Text;
+using Microsoft.AspNetCore.Http;
+using System;
 
 namespace IPSB.Utils
 {
@@ -93,16 +95,27 @@ namespace IPSB.Utils
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = true,
                     ValidateAudience = true,
+                    ClockSkew = TimeSpan.Zero,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration[Constants.Config.KEY])),
                     ValidIssuer = _configuration[Constants.Config.ISSUER],
                     ValidAudience = _configuration[Constants.Config.AUDIENCE],
+                    
                 };
             }  
         }
 
-        public static class CookieKey
+        public static class CookieConfig
         {
             public const string REFRESH_TOKEN = "X-Refresh-Token";
+            public static CookieOptions AUTH_COOKIE_OPTIONS = new CookieOptions()
+            {
+                Path = "/",
+                Expires = DateTimeOffset.UtcNow.AddDays(TokenParams.DAY_TO_EXPIRES),
+                IsEssential = true,
+                HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                Secure = true,
+            };
         }
         
     }

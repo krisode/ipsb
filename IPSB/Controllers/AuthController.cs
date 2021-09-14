@@ -66,16 +66,8 @@ namespace IPSB.Controllers
 
             rtnAccount.AccessToken = accessToken;
             rtnAccount.RefreshToken = refreshToken;
-            var cookieOptions = new CookieOptions()
-            {
-                Path = "/",
-                Expires = DateTimeOffset.UtcNow.AddDays(TokenParams.DAY_TO_EXPIRES),
-                IsEssential = true,
-                HttpOnly = true,
-                SameSite = SameSiteMode.None,
-                Secure = true,
-            };
-            Response.Cookies.Append(CookieKey.REFRESH_TOKEN, rtnAccount.RefreshToken, cookieOptions);
+           
+            Response.Cookies.Append(CookieConfig.REFRESH_TOKEN, rtnAccount.RefreshToken, CookieConfig.AUTH_COOKIE_OPTIONS);
 
             return Ok(rtnAccount);
         }
@@ -152,16 +144,7 @@ namespace IPSB.Controllers
             rtnAccount.AccessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
             rtnAccount.RefreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
 
-            var cookieOptions = new CookieOptions()
-            {
-                Path = "/",
-                Expires = DateTimeOffset.UtcNow.AddDays(TokenParams.DAY_TO_EXPIRES),
-                IsEssential = true,
-                HttpOnly = true,
-                SameSite = SameSiteMode.None,
-                Secure = true,
-            };
-            Response.Cookies.Append(CookieKey.REFRESH_TOKEN, rtnAccount.RefreshToken, cookieOptions);
+            Response.Cookies.Append(CookieConfig.REFRESH_TOKEN, rtnAccount.RefreshToken, CookieConfig.AUTH_COOKIE_OPTIONS);
             return Ok(rtnAccount);
         }
 
@@ -185,7 +168,7 @@ namespace IPSB.Controllers
         public async Task<ActionResult> RefreshToken(AuthRefreshToken authAccount)
         {
             string tokenFromReqBody = authAccount.RefreshToken;
-            string tokenFromCookie = Request.Cookies[CookieKey.REFRESH_TOKEN];
+            string tokenFromCookie = Request.Cookies[CookieConfig.REFRESH_TOKEN];
             if(tokenFromReqBody != null && tokenFromCookie != null)
             {
                 return BadRequest("Refresh Token appeared in both cookie and request body!");
@@ -217,16 +200,8 @@ namespace IPSB.Controllers
 
             rtnAccount.AccessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
             rtnAccount.RefreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
-            var cookieOptions = new CookieOptions()
-            {
-                Path = "/",
-                Expires = DateTimeOffset.UtcNow.AddDays(TokenParams.DAY_TO_EXPIRES),
-                IsEssential = true,
-                HttpOnly = true,
-                SameSite = SameSiteMode.None,
-                Secure = true,
-            };
-            Response.Cookies.Append(CookieKey.REFRESH_TOKEN, rtnAccount.RefreshToken, cookieOptions);
+          
+            Response.Cookies.Append(CookieConfig.REFRESH_TOKEN, rtnAccount.RefreshToken, CookieConfig.AUTH_COOKIE_OPTIONS);
             return Ok(rtnAccount);
         }
 
