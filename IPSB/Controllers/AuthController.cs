@@ -100,10 +100,12 @@ namespace IPSB.Controllers
             try
             {
                 decodedToken = await auth.VerifyIdTokenAsync(authAccount.IdToken);
-                phone = decodedToken.Claims[TokenClaims.PHONE_NUMBER].ToString();
-                email = decodedToken.Claims[TokenClaims.EMAIL].ToString();
+                decodedToken.Claims.TryGetValue(TokenClaims.PHONE_NUMBER, out var phoneVar);
+                decodedToken.Claims.TryGetValue(TokenClaims.EMAIL, out var emailvar);
+                phone = (string)phoneVar;
+                email = (string)emailvar;
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return Unauthorized("Invalid login, please try again!");
             }
@@ -112,15 +114,21 @@ namespace IPSB.Controllers
             {
                 accountCreate = _accountService.GetAll()
                     .Where(_ => _.Phone == phone)
-                    .First();
+                    .FirstOrDefault();
                 accountCreate ??= new Account() { Phone = phone };
             }
             if(email != null)
             {
-                accountCreate = _accountService.GetAll().Where(_ => _.Email == email).First();
-                string picture = decodedToken.Claims[TokenClaims.PICTURE].ToString();
-                string name = decodedToken.Claims[TokenClaims.NAME].ToString();
-                accountCreate ??= new Account() { Email = email, Name = name, ImageUrl = picture };
+                accountCreate = _accountService.GetAll()
+                    .Where(_ => _.Email == email)
+                    .FirstOrDefault();
+                decodedToken.Claims.TryGetValue(TokenClaims.PICTURE, out var picture);
+                decodedToken.Claims.TryGetValue(TokenClaims.NAME, out var name);
+                accountCreate ??= new Account() { 
+                    Email = email, 
+                    Name = (string)name, 
+                    ImageUrl = (string)picture 
+                };
             }
             
             if(accountCreate.Id == 0)
@@ -139,7 +147,6 @@ namespace IPSB.Controllers
             }
 
             var rtnAccount = _mapper.Map<AuthLoginSuccess>(accountCreate);
-
             var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(accountCreate);
             rtnAccount.AccessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
             rtnAccount.RefreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
