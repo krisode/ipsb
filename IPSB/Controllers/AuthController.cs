@@ -137,10 +137,11 @@ namespace IPSB.Controllers
                 {
                     accountCreate.Role = Constants.Role.VISITOR;
                     accountCreate.Status = Constants.Status.ACTIVE;
+                    accountCreate.Phone = "";
                     await _accountService.AddAsync(accountCreate);
                     await _accountService.Save();
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     return StatusCode(StatusCodes.Status500InternalServerError);
                 }                

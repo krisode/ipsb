@@ -64,7 +64,7 @@ namespace IPSB
             #endregion
 
             #region Authorization Handler
-            services.AddSingleton<IAuthorizationHandler, StoreOwnerHandler>();
+            services.AddSingleton<IAuthorizationHandler, AccountHandler>();
             services.AddSingleton<IAuthorizationHandler, StoreHandler>();
             services.AddSingleton<IAuthorizationHandler, QueryAccountHandler>();
             #endregion

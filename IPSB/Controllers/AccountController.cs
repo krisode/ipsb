@@ -18,6 +18,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/accounts")]
     [ApiController]
+    [Authorize]
     public class AccountController : AuthorizeController
     {
         private readonly IAccountService _service;
@@ -55,18 +56,18 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<AccountVM>> GetAccountById(int id)
         {
-            var account = _service.GetByIdAsync(_ => _.Id == id).Result;
+            var account = await _service.GetByIdAsync(_ => _.Id == id);
 
             if (account == null)
             {
                 return NotFound();
             }
             // resouce-based imperative authorization
-            //var authorizedResult = await _authorizationService.AuthorizeAsync(User, account, Operations.Read);
-            //if (!authorizedResult.Succeeded)
-            //{
-            //    return Forbid($"Not authorized to access account with id: {id}");
-            //}
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, account, Operations.Read);
+            if (!authorizedResult.Succeeded)
+            {
+                return Forbid();
+            }
 
             var rtnAccount = _mapper.Map<AccountVM>(account);
 
@@ -172,7 +173,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<AccountCM>> CreateAccount([FromForm] AccountCM model)
         {
-            Account account = _service.GetByIdAsync(_ => _.Email == model.Email).Result;
+            Account account = await _service.GetByIdAsync(_ => _.Email == model.Email);
             if (account is not null)
             {
                 return Conflict();
@@ -233,8 +234,14 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutAccount(int id, [FromForm] AccountUM model)
         {
+            
 
             Account updAccount = await _service.GetByIdAsync(_ => _.Id == id);
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updAccount, Operations.Update);
+            if (!authorizedResult.Succeeded)
+            {
+                return Forbid();
+            }
 
             if (updAccount == null || id != model.Id)
             {
