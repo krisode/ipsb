@@ -18,7 +18,6 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/accounts")]
     [ApiController]
-    //[Authorize(Roles = "Admin, Building Manager")]
     public class AccountController : AuthorizeController
     {
         private readonly IAccountService _service;

@@ -66,16 +66,16 @@ namespace IPSB.Controllers
 
             rtnAccount.AccessToken = accessToken;
             rtnAccount.RefreshToken = refreshToken;
-            Response.Cookies.Append(
-                CookieKey.REFRESH_TOKEN,
-                rtnAccount.RefreshToken,
-                new CookieOptions()
-                {
-                    HttpOnly = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTimeOffset.Now.AddDays(TokenParams.DAY_TO_EXPIRES)
-                }
-            );
+            var cookieOptions = new CookieOptions()
+            {
+                Path = "/",
+                Expires = DateTimeOffset.UtcNow.AddDays(TokenParams.DAY_TO_EXPIRES),
+                IsEssential = true,
+                HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                Secure = true,
+            };
+            Response.Cookies.Append(CookieKey.REFRESH_TOKEN, rtnAccount.RefreshToken, cookieOptions);
 
             return Ok(rtnAccount);
         }
@@ -152,15 +152,16 @@ namespace IPSB.Controllers
             rtnAccount.AccessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
             rtnAccount.RefreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
 
-            Response.Cookies.Append(
-                CookieKey.REFRESH_TOKEN, 
-                rtnAccount.RefreshToken, 
-                new CookieOptions() { 
-                    HttpOnly = true, 
-                    SameSite = SameSiteMode.Strict, 
-                    Expires =  DateTimeOffset.Now.AddDays(TokenParams.DAY_TO_EXPIRES)
-                }
-            );
+            var cookieOptions = new CookieOptions()
+            {
+                Path = "/",
+                Expires = DateTimeOffset.UtcNow.AddDays(TokenParams.DAY_TO_EXPIRES),
+                IsEssential = true,
+                HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                Secure = true,
+            };
+            Response.Cookies.Append(CookieKey.REFRESH_TOKEN, rtnAccount.RefreshToken, cookieOptions);
             return Ok(rtnAccount);
         }
 
@@ -189,6 +190,10 @@ namespace IPSB.Controllers
             {
                 return BadRequest("Refresh Token appeared in both cookie and request body!");
             }
+            if (tokenFromReqBody == null && tokenFromCookie == null)
+            {
+                return BadRequest("Require Token in cookie or in request body!");
+            }
             string refreshToken = tokenFromReqBody ?? tokenFromCookie;
             int accountId;
             try
@@ -212,16 +217,16 @@ namespace IPSB.Controllers
 
             rtnAccount.AccessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
             rtnAccount.RefreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
-            Response.Cookies.Append(
-                CookieKey.REFRESH_TOKEN,
-                rtnAccount.RefreshToken,
-                new CookieOptions()
-                {
-                    HttpOnly = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTime.Now.AddDays(TokenParams.DAY_TO_EXPIRES)
-                }
-            );
+            var cookieOptions = new CookieOptions()
+            {
+                Path = "/",
+                Expires = DateTimeOffset.UtcNow.AddDays(TokenParams.DAY_TO_EXPIRES),
+                IsEssential = true,
+                HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                Secure = true,
+            };
+            Response.Cookies.Append(CookieKey.REFRESH_TOKEN, rtnAccount.RefreshToken, cookieOptions);
             return Ok(rtnAccount);
         }
 

@@ -4,6 +4,7 @@ using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -15,6 +16,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/buildings")]
     [ApiController]
+    [Authorize(Roles = "Admin, Building Manager")]
     public class BuildingController : AuthorizeController
     {
         private readonly IBuildingService _service;

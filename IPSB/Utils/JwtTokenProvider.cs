@@ -79,14 +79,12 @@ namespace IPSB.Utils
 
         public int GetIdFromToken(string tokenString)
         {
-            _jwtSecurityTokenHandler.ValidateToken(
-               tokenString,
-               JwtBearerTokenConfig.GetTokenValidationParameters(_configuration),
-               out SecurityToken validatedToken
-            );
-            var jwtToken = (JwtSecurityToken)validatedToken;
-            var accountId = int.Parse(jwtToken.Claims.First(x => x.Type == "id").Value);
-            // return account id from JWT token if validation successful
+            var handler = new JwtSecurityTokenHandler();
+            var claims = handler.ValidateToken(tokenString, 
+                JwtBearerTokenConfig.GetTokenValidationParameters(_configuration), 
+                out var tokenSecure
+                );
+            var accountId = int.Parse(claims.Identity.Name);
             return accountId;
         }
     }

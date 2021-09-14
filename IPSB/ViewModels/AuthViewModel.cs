@@ -30,6 +30,7 @@ namespace IPSB.ViewModels
         public string Phone { get; set; }
         public string ImageUrl { get; set; }
         public string Role { get; set; }
+        public string Status { get; set; }
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }
     }

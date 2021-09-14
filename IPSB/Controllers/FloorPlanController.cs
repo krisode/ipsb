@@ -4,6 +4,7 @@ using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -15,6 +16,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/floor-plans")]
     [ApiController]
+    [Authorize(Roles = "Visitor, Building Manager")]
     public class FloorPlanController : AuthorizeController
     {
         private readonly IFloorPlanService _service;

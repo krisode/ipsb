@@ -3,6 +3,7 @@ using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -14,6 +15,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/edges")]
     [ApiController]
+    [Authorize(Roles = "Visitor, Building Manager")]
     public class EdgeController : AuthorizeController
     {
         private readonly IEdgeService _service;
