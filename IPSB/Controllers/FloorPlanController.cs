@@ -16,7 +16,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/floor-plans")]
     [ApiController]
-    [Authorize(Roles = "Visitor, Building Manager")]
+    [Authorize(Roles = "Building Manager")]
     public class FloorPlanController : AuthorizeController
     {
         private readonly IFloorPlanService _service;
@@ -48,6 +48,7 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public ActionResult<FloorPlanVM> GetFloorPlanById(int id)
         {
@@ -79,6 +80,7 @@ namespace IPSB.Controllers
         /// <response code="200">Returns all floor plans</response>
         /// <response code="404">No floor plans found</response>
         [HttpGet]
+        [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

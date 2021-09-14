@@ -48,6 +48,7 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public ActionResult<ProductVM> GetProductById(int id)
         {
@@ -79,6 +80,7 @@ namespace IPSB.Controllers
         /// <response code="200">Returns all products</response>
         /// <response code="404">No products found</response>
         [HttpGet]
+        [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
