@@ -45,6 +45,7 @@ namespace IPSB.Controllers
         /// <response code="200">Returns the building with the specified id</response>
         /// <response code="404">No buildings found with the specified id</response>
         [Produces("application/json")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id}")]
@@ -78,6 +79,7 @@ namespace IPSB.Controllers
         /// <response code="200">Returns all buildings</response>
         /// <response code="404">No buildings found</response>
         [HttpGet]
+        [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

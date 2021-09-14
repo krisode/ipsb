@@ -15,7 +15,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/edges")]
     [ApiController]
-    [Authorize(Roles = "Visitor, Building Manager")]
+    [Authorize(Roles = "Building Manager")]
     public class EdgeController : AuthorizeController
     {
         private readonly IEdgeService _service;
@@ -76,6 +76,7 @@ namespace IPSB.Controllers
         /// <response code="200">Returns all edges</response>
         /// <response code="404">No edges found</response>
         [HttpGet]
+        [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

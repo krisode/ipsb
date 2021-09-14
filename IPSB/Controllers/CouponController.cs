@@ -46,6 +46,7 @@ namespace IPSB.Controllers
         /// <response code="200">Returns the coupon with the specified id</response>
         /// <response code="404">No coupons found with the specified id</response>
         [Produces("application/json")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id}")]
@@ -79,6 +80,7 @@ namespace IPSB.Controllers
         /// <response code="200">Returns all coupons</response>
         /// <response code="404">No coupons found</response>
         [HttpGet]
+        [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

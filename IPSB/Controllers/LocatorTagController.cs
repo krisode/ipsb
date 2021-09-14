@@ -76,6 +76,7 @@ namespace IPSB.Controllers
         /// <response code="200">Returns all locator tags</response>
         /// <response code="404">No locator tags found</response>
         [HttpGet]
+        [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
