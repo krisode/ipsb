@@ -59,15 +59,12 @@ namespace IPSB.Infrastructure.Contexts
                     .IsUnicode(true);
 
                 entity.Property(e => e.ImageUrl)
-                    .IsRequired()
                     .IsUnicode(false);
 
                 entity.Property(e => e.Name)
-                    .IsRequired()
                     .HasMaxLength(200);
 
                 entity.Property(e => e.Phone)
-                    .IsRequired()
                     .HasMaxLength(15)
                     .IsUnicode(false);
 
@@ -77,6 +74,7 @@ namespace IPSB.Infrastructure.Contexts
                     .IsUnicode(false);
 
                 entity.Property(e => e.Status)
+                    .IsRequired()
                     .HasMaxLength(30)
                     .IsUnicode(false);
             });

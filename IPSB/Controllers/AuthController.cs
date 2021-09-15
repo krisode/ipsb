@@ -115,7 +115,9 @@ namespace IPSB.Controllers
                 accountCreate = _accountService.GetAll()
                     .Where(_ => _.Phone == phone)
                     .FirstOrDefault();
-                accountCreate ??= new Account() { Phone = phone };
+                accountCreate ??= new Account() { 
+                    Phone = phone, Status = Status.NEW,
+                };
             }
             if(email != null)
             {
@@ -127,7 +129,8 @@ namespace IPSB.Controllers
                 accountCreate ??= new Account() { 
                     Email = email, 
                     Name = (string)name, 
-                    ImageUrl = (string)picture 
+                    ImageUrl = (string)picture,
+                    Status = Status.ACTIVE
                 };
             }
             
@@ -136,8 +139,6 @@ namespace IPSB.Controllers
                 try
                 {
                     accountCreate.Role = Constants.Role.VISITOR;
-                    accountCreate.Status = Constants.Status.ACTIVE;
-                    accountCreate.Phone = "";
                     await _accountService.AddAsync(accountCreate);
                     await _accountService.Save();
                 }
@@ -145,6 +146,9 @@ namespace IPSB.Controllers
                 {
                     return StatusCode(StatusCodes.Status500InternalServerError);
                 }                
+            } else if(accountCreate.Status != Status.ACTIVE)
+            {
+                return Unauthorized();
             }
 
             var rtnAccount = _mapper.Map<AuthLoginSuccess>(accountCreate);
