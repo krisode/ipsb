@@ -285,11 +285,11 @@ namespace IPSB.Controllers
             //}
 
             //crtStore.ImageUrl = imageUrl;
-            if(model.ImageUrl != null)
+            if (model.ImageUrl != null)
             {
                 crtStore.ImageUrl = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "store", "store-detail");
             }
-            
+
 
             string productCategoryIds = "";
             if (model.ProductCategoryIds is not null && model.ProductCategoryIds.Length > 0)
@@ -304,7 +304,7 @@ namespace IPSB.Controllers
                 await _service.AddAsync(crtStore);
                 await _service.Save();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }

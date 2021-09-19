@@ -87,11 +87,11 @@ namespace IPSB.Controllers
             //IQueryable<Location> list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store,
             //    _ => _.Store.Products, _ => _.EdgeFromLocations, _ => _.EdgeToLocations, _ => _.LocatorTags, _ => _.VisitPoints);
             IQueryable<Location> list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store);
-            if(model.BuildingId != 0)
+            if (model.BuildingId != 0)
             {
                 list = list.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
             }
-            
+
             if (model.X != 0)
             {
                 list = list.Where(_ => _.X == model.X);
@@ -117,11 +117,11 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.LocationTypeId == model.LocationTypeId);
             }
 
-            if(model.NotLocationTypeId != 0)
+            if (model.NotLocationTypeId != 0)
             {
                 list = list.Where(_ => _.LocationTypeId != model.NotLocationTypeId);
             }
-            if(model.LocationTypeIds != null && model.LocationTypeIds.Length > 0)
+            if (model.LocationTypeIds != null && model.LocationTypeIds.Length > 0)
             {
                 list = list.Where(_ => model.LocationTypeIds.Contains(_.LocationTypeId));
             }
@@ -185,7 +185,7 @@ namespace IPSB.Controllers
                 await _service.AddRangeAsync(list);
                 await _service.Save();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
@@ -253,7 +253,7 @@ namespace IPSB.Controllers
 
                 await _service.Save();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }

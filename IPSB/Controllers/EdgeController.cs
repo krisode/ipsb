@@ -196,7 +196,7 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-       
+
 
         // DELETE api/<EdgeController>?id=1&id=3
         // Change Status to Inactive
@@ -207,7 +207,8 @@ namespace IPSB.Controllers
             {
                 _service.DeleteRange(model.Ids);
                 await _service.Save();
-            }catch(Exception e)
+            }
+            catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }

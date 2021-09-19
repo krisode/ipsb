@@ -49,7 +49,7 @@ namespace IPSB.Controllers
         public async Task<ActionResult<AccountVM>> CheckLogin(AuthWebLogin authAccount)
         {
             var account = _accountService.CheckLogin(authAccount.Email, authAccount.Password);
-            
+
             if (account == null)
             {
                 return Unauthorized();
@@ -58,14 +58,14 @@ namespace IPSB.Controllers
 
             // Claims for generating JWT
             var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(account);
-           
+
             string accessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
-           
+
             string refreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
 
             rtnAccount.AccessToken = accessToken;
             rtnAccount.RefreshToken = refreshToken;
-           
+
             Response.Cookies.Append(CookieConfig.REFRESH_TOKEN, rtnAccount.RefreshToken, CookieConfig.AUTH_COOKIE_OPTIONS);
 
             return Ok(rtnAccount);
@@ -95,7 +95,7 @@ namespace IPSB.Controllers
 
             string phone = null;
             string email = null;
-            FirebaseToken decodedToken = null; 
+            FirebaseToken decodedToken = null;
             try
             {
                 decodedToken = await auth.VerifyIdTokenAsync(authAccount.IdToken);
@@ -104,36 +104,39 @@ namespace IPSB.Controllers
                 phone = (string)phoneVar;
                 email = (string)emailvar;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return Unauthorized("Invalid login, please try again!");
             }
             Account accountCreate = null;
-            if(phone != null)
+            if (phone != null)
             {
                 accountCreate = _accountService.GetAll()
                     .Where(_ => _.Phone == phone)
                     .FirstOrDefault();
-                accountCreate ??= new Account() { 
-                    Phone = phone, Status = Status.NEW,
+                accountCreate ??= new Account()
+                {
+                    Phone = phone,
+                    Status = Status.NEW,
                 };
             }
-            if(email != null)
+            if (email != null)
             {
                 accountCreate = _accountService.GetAll()
                     .Where(_ => _.Email == email)
                     .FirstOrDefault();
                 decodedToken.Claims.TryGetValue(TokenClaims.PICTURE, out var picture);
                 decodedToken.Claims.TryGetValue(TokenClaims.NAME, out var name);
-                accountCreate ??= new Account() { 
-                    Email = email, 
-                    Name = (string)name, 
+                accountCreate ??= new Account()
+                {
+                    Email = email,
+                    Name = (string)name,
                     ImageUrl = (string)picture,
                     Status = Status.ACTIVE
                 };
             }
-            
-            if(accountCreate.Id == 0)
+
+            if (accountCreate.Id == 0)
             {
                 try
                 {
@@ -141,11 +144,12 @@ namespace IPSB.Controllers
                     await _accountService.AddAsync(accountCreate);
                     await _accountService.Save();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     return StatusCode(StatusCodes.Status500InternalServerError);
-                }                
-            } else if(accountCreate.Status != Status.ACTIVE)
+                }
+            }
+            else if (accountCreate.Status != Status.ACTIVE)
             {
                 return Unauthorized();
             }
@@ -180,7 +184,7 @@ namespace IPSB.Controllers
         {
             string tokenFromReqBody = authAccount.RefreshToken;
             string tokenFromCookie = Request.Cookies[CookieConfig.REFRESH_TOKEN];
-            if(tokenFromReqBody != null && tokenFromCookie != null)
+            if (tokenFromReqBody != null && tokenFromCookie != null)
             {
                 return BadRequest("Refresh Token appeared in both cookie and request body!");
             }
@@ -207,11 +211,11 @@ namespace IPSB.Controllers
 
             var rtnAccount = _mapper.Map<AuthLoginSuccess>(accountFound);
 
-            var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(accountFound);  
+            var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(accountFound);
 
             rtnAccount.AccessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
             rtnAccount.RefreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
-          
+
             Response.Cookies.Append(CookieConfig.REFRESH_TOKEN, rtnAccount.RefreshToken, CookieConfig.AUTH_COOKIE_OPTIONS);
             return Ok(rtnAccount);
         }
