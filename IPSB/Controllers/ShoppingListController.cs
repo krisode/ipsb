@@ -76,6 +76,10 @@ namespace IPSB.Controllers
             {
                 result.Where(_ => _.BuildingId == model.BuildingId);
             }
+            if (model.AccountId > 0)
+            {
+                result.Where(_ => _.AccountId == model.AccountId);
+            }
             if (model.Name != null)
             {
                 result.Where(_ => _.Name.Contains(model.Name));

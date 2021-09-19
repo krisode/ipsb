@@ -426,6 +426,12 @@ namespace IPSB.Infrastructure.Contexts
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
+                entity.HasOne(d => d.Account)
+                    .WithMany(p => p.ShoppingLists)
+                    .HasForeignKey(d => d.AccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_ShoppingList_Account");
+
                 entity.HasOne(d => d.Building)
                     .WithMany(p => p.ShoppingLists)
                     .HasForeignKey(d => d.BuildingId)
