@@ -16,7 +16,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/locations")]
     [ApiController]
     [Authorize(Roles = "Building Manager")]
-    public class LocationController : AuthorizeController
+    public class LocationController : Controller
     {
         private readonly ILocationService _service;
         private readonly IMapper _mapper;
@@ -171,7 +171,7 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<LocationCM>> CreateLocation([FromBody] List<LocationCM> listModel)
+        public async Task<ActionResult> CreateLocation([FromBody] List<LocationCM> listModel)
         {
             List<Location> list = listModel.Select(model => _mapper.Map<Location>(model))
                 .ToList()
@@ -190,7 +190,8 @@ namespace IPSB.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
-            return CreatedAtAction("CreateLocation", list);
+            var rtnItemIds = list.Select(_ => _.Id);
+            return CreatedAtAction("CreateLocation", rtnItemIds);
         }
 
         /// <summary>
@@ -260,9 +261,6 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        protected override bool IsAuthorize()
-        {
-            throw new NotImplementedException();
-        }
+
     }
 }

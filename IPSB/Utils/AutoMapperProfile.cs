@@ -120,6 +120,16 @@ namespace IPSB.Utils
             CreateMap<VisitRoute, VisitRouteVM>();
             CreateMap<VisitRouteCM, VisitRoute>();
             #endregion
+
+            #region ShoppingList
+            CreateMap<ShoppingList, ShoppingListVM>();
+            CreateMap<ShoppingListCM, ShoppingList>();
+            #endregion
+
+            #region ShoppingItem
+            CreateMap<ShoppingItem, ShoppingItemVM>();
+            CreateMap<ShoppingItemCM, ShoppingItem>();
+            #endregion
         }
     }
 }

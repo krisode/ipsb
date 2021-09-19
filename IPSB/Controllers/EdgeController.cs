@@ -16,7 +16,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/edges")]
     [ApiController]
     [Authorize(Roles = "Building Manager")]
-    public class EdgeController : AuthorizeController
+    public class EdgeController : Controller
     {
         private readonly IEdgeService _service;
         private readonly IMapper _mapper;
@@ -141,7 +141,7 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<EdgeCM>> CreateEdge([FromBody] List<EdgeCM> listModel)
+        public async Task<ActionResult> CreateEdge([FromBody] List<EdgeCM> listModel)
         {
             List<Edge> list = listModel.Select(model => _mapper.Map<Edge>(model)).ToList();
             try
@@ -153,8 +153,8 @@ namespace IPSB.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-
-            return CreatedAtAction("CreateEdge", list);
+            var rtnEdgeIds = list.Select(_ => _.Id);
+            return CreatedAtAction("CreateEdge", rtnEdgeIds);
         }
 
         /// <summary>
@@ -215,9 +215,6 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        protected override bool IsAuthorize()
-        {
-            throw new NotImplementedException();
-        }
+
     }
 }
