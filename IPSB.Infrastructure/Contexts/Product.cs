@@ -7,6 +7,11 @@ namespace IPSB.Infrastructure.Contexts
 {
     public partial class Product
     {
+        public Product()
+        {
+            ShoppingItems = new HashSet<ShoppingItem>();
+        }
+
         public int Id { get; set; }
         public string Name { get; set; }
         public int StoreId { get; set; }
@@ -20,5 +25,6 @@ namespace IPSB.Infrastructure.Contexts
         public virtual ProductCategory ProductCategory { get; set; }
         public virtual ProductGroup ProductGroup { get; set; }
         public virtual Store Store { get; set; }
+        public virtual ICollection<ShoppingItem> ShoppingItems { get; set; }
     }
 }
