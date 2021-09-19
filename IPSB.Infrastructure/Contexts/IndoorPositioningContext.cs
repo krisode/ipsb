@@ -30,6 +30,8 @@ namespace IPSB.Infrastructure.Contexts
         public virtual DbSet<Product> Products { get; set; }
         public virtual DbSet<ProductCategory> ProductCategories { get; set; }
         public virtual DbSet<ProductGroup> ProductGroups { get; set; }
+        public virtual DbSet<ShoppingItem> ShoppingItems { get; set; }
+        public virtual DbSet<ShoppingList> ShoppingLists { get; set; }
         public virtual DbSet<Store> Stores { get; set; }
         public virtual DbSet<VisitPoint> VisitPoints { get; set; }
         public virtual DbSet<VisitRoute> VisitRoutes { get; set; }
@@ -38,6 +40,7 @@ namespace IPSB.Infrastructure.Contexts
         {
             if (!optionsBuilder.IsConfigured)
             {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
                 optionsBuilder.UseSqlServer("Server=indoor-positioning.cm4zyhsrdgxp.ap-southeast-1.rds.amazonaws.com, 1433;Initial Catalog=indoor_positioning_main;User ID=admin;Password=TheHien2407abcX123");
             }
         }
@@ -53,16 +56,12 @@ namespace IPSB.Infrastructure.Contexts
                 entity.Property(e => e.Email)
                     .HasMaxLength(255)
                     .IsUnicode(false);
-                
-                entity.Property(e => e.Password)
-                    .HasMaxLength(100)
-                    .IsUnicode(true);
 
-                entity.Property(e => e.ImageUrl)
-                    .IsUnicode(false);
+                entity.Property(e => e.ImageUrl).IsUnicode(false);
 
-                entity.Property(e => e.Name)
-                    .HasMaxLength(200);
+                entity.Property(e => e.Name).HasMaxLength(200);
+
+                entity.Property(e => e.Password).HasMaxLength(100);
 
                 entity.Property(e => e.Phone)
                     .HasMaxLength(15)
@@ -388,6 +387,51 @@ namespace IPSB.Infrastructure.Contexts
                     .HasForeignKey(d => d.StoreId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_ProductGroup_Store");
+            });
+
+            modelBuilder.Entity<ShoppingItem>(entity =>
+            {
+                entity.ToTable("ShoppingItem");
+
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.Note).HasMaxLength(100);
+
+                entity.HasOne(d => d.Product)
+                    .WithMany(p => p.ShoppingItems)
+                    .HasForeignKey(d => d.ProductId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_ShoppingItem_Product");
+
+                entity.HasOne(d => d.ShoppingList)
+                    .WithMany(p => p.ShoppingItems)
+                    .HasForeignKey(d => d.ShoppingListId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_ShoppingItem_ShoppingList");
+            });
+
+            modelBuilder.Entity<ShoppingList>(entity =>
+            {
+                entity.ToTable("ShoppingList");
+
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.ShoppingDate).HasColumnType("datetime");
+
+                entity.Property(e => e.Status)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.Building)
+                    .WithMany(p => p.ShoppingLists)
+                    .HasForeignKey(d => d.BuildingId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_ShoppingList_Building");
             });
 
             modelBuilder.Entity<Store>(entity =>

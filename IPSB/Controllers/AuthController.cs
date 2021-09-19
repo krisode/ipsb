@@ -49,12 +49,11 @@ namespace IPSB.Controllers
         public async Task<ActionResult<AccountVM>> CheckLogin(AuthWebLogin authAccount)
         {
             var account = _accountService.CheckLogin(authAccount.Email, authAccount.Password);
-
+            
             if (account == null)
             {
                 return Unauthorized();
             }
-
             var rtnAccount = _mapper.Map<AuthLoginSuccess>(account);
 
             // Claims for generating JWT
