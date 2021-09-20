@@ -31,6 +31,13 @@ namespace IPSB.ViewModels
         public StoreRefModel Store { get; set; }
     }
 
+    public class LocationRefModelForStore
+    {
+        public int Id { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
+        public int FloorPlanId { get; set; }
+    }
     public class LocationRefModelForEdge
     {
         public int Id { get; set; }

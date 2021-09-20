@@ -58,6 +58,7 @@ namespace IPSB.Controllers
                                 .ThenInclude(_ => _.Product)
                                 .ThenInclude(_ => _.Store)
                                 .ThenInclude(_ => _.Locations)
+                                .AsSplitQuery()
                                 .FirstOrDefault(_ => _.Id == id);
             if (result == null)
             {
