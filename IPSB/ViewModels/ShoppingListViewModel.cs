@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace IPSB.ViewModels
@@ -32,6 +33,7 @@ namespace IPSB.ViewModels
         public DateTime ShoppingDate { get; set; }
         public string Status { get; set; }
         public BuildingRefModel Building { get; set; }
+        public List<ShoppingItemVM> ShoppingItems { get; set; }
     }
 
     public class ShoppingListSM
@@ -39,8 +41,8 @@ namespace IPSB.ViewModels
         public string Name { get; set; }
         public int BuildingId { get; set; }
         public int AccountId { get; set; }
-        public DateTime StartShoppingDate { get; set; }
-        public DateTime EndShoppingDate { get; set; }
+        public DateTime? StartShoppingDate { get; set; }
+        public DateTime? EndShoppingDate { get; set; }
         public string Status { get; set; }
     }
 }

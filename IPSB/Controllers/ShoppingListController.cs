@@ -3,6 +3,7 @@ using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,16 +16,18 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/shopping-lists")]
     [ApiController]
-    [Authorize(Roles = "Visitor")]
+    // [Authorize(Roles = "Visitor")]
     public class ShoppingListController : Controller
     {
         private readonly IShoppingListService _service;
+        private readonly IShoppingItemService _shoppingItemService;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<ShoppingList> _pagingSupport;
 
-        public ShoppingListController(IShoppingListService service, IMapper mapper, IPagingSupport<ShoppingList> pagingSupport)
+        public ShoppingListController(IShoppingListService service, IShoppingItemService shoppingItemService, IMapper mapper, IPagingSupport<ShoppingList> pagingSupport)
         {
             _service = service;
+            _shoppingItemService = shoppingItemService;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
         }
@@ -48,13 +51,17 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [AllowAnonymous]
         [HttpGet("{id}")]
-        public async Task<ActionResult<ShoppingListVM>> GetShoppingListById(int id)
+        public ActionResult GetShoppingListById(int id)
         {
-            var result = await _service.GetByIdAsync(_ => _.Id == id, _ => _.Building);
+            var result = _service.GetAll(_ => _.Building)
+                                .Include(_ => _.ShoppingItems)
+                                .ThenInclude(_ => _.Product)
+                                .FirstOrDefault(_ => _.Id == id);
             if (result == null)
             {
                 return NotFound();
             }
+
             var rtnShoppingList = _mapper.Map<ShoppingListVM>(result);
             return Ok(rtnShoppingList);
         }
@@ -71,7 +78,10 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<ShoppingListVM>> GetAllShoppingLists([FromQuery] ShoppingListSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            var result = _service.GetAll(_ => _.Building);
+            var result = _service.GetAll(_ => _.Building)
+                                .Include(_ => _.ShoppingItems)
+                                .ThenInclude(_ => _.Product);
+
             if (model.BuildingId > 0)
             {
                 result.Where(_ => _.BuildingId == model.BuildingId);
@@ -125,7 +135,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<StoreCM>> CreateShoppingList([FromBody] ShoppingListCM model)
+        public async Task<ActionResult> CreateShoppingList([FromBody] ShoppingListCM model)
         {
             var dataToInsert = _mapper.Map<ShoppingList>(model);
             try

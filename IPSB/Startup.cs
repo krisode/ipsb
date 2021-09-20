@@ -102,11 +102,15 @@ namespace IPSB
             services.AddTransient<IVisitPointService, VisitPointService>();
             // Add VisitRouteService
             services.AddTransient<IVisitRouteService, VisitRouteService>();
+            // Add ShoppingListService
+            services.AddTransient<IShoppingListService, ShoppingListService>();
+            // Add ShoppingItemService
+            services.AddTransient<IShoppingItemService, ShoppingItemService>();
             #endregion
 
             #region Authentication JWT Bearer
             services
-            .AddAuthentication(options => 
+            .AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;

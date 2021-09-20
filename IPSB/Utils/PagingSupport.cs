@@ -59,23 +59,20 @@ namespace IPSB.Utils
             _pageIndex = pageIndex;
             _pageSize = pageSize;
 
-            if (!isAll)
-            {
-                _sourcePageSize = _source.Skip((pageIndex - 1) * pageSize).Take(pageSize);
-            }
-            else {
-                _sourcePageSize = _source;
-            } 
-            
             if (sortOrder)
             {
-                _sourcePageSize = _sourcePageSize.OrderBy(selector);
+                _sourcePageSize = _source.OrderBy(selector);
             }
             else
             {
-                _sourcePageSize = _sourcePageSize.OrderByDescending(selector);
+                _sourcePageSize = _source.OrderByDescending(selector);
             }
-           
+
+            if (!isAll)
+            {
+                _sourcePageSize = _sourcePageSize.Skip((pageIndex - 1) * pageSize).Take(pageSize);
+            }
+
             return this;
         }
 
