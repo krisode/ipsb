@@ -29,7 +29,7 @@ namespace IPSB.Utils
 
             #region BuildingModel
             CreateMap<Building, BuildingRefModel>();
-            CreateMap<Building, BuildingStoreRefModel>();
+            CreateMap<Building, BuildingRefModelForStore>();
             CreateMap<Building, BuildingVM>();
             CreateMap<BuildingCM, Building>();
             #endregion

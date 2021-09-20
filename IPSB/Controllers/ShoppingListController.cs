@@ -79,10 +79,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<ShoppingListVM>> GetAllShoppingLists([FromQuery] ShoppingListSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            var result = _service.GetAll(_ => _.Building)
-                                .Include(_ => _.ShoppingItems)
-                                .ThenInclude(_ => _.Product)
-                                .ThenInclude(_ => _.Store);
+            var result = _service.GetAll(_ => _.Building);
             if (model.BuildingId > 0)
             {
                 result.Where(_ => _.BuildingId == model.BuildingId);

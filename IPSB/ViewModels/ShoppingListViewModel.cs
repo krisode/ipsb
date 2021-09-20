@@ -24,6 +24,13 @@ namespace IPSB.ViewModels
         [Required]
         public DateTime ShoppingDate { get; set; }
     }
+    public class ShoppingListRefModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public DateTime ShoppingDate { get; set; }
+        public BuildingRefModelForShoppingList Building { get; set; }
+    }
     public class ShoppingListVM
     {
         public int Id { get; set; }

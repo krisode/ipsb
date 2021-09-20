@@ -18,7 +18,7 @@ namespace IPSB.ViewModels
         public string Status { get; set; }
 
         public virtual AccountStoreRefModel Account { get; set; }
-        public virtual BuildingStoreRefModel Building { get; set; }
+        public virtual BuildingRefModelForStore Building { get; set; }
         public virtual FloorPlanStoreRefModel FloorPlan { get; set; }
         //public virtual ICollection<CouponRefModel> Coupons { get; set; }
         //public ICollection<ProductCategoryRefModel> ProductCategories { get; set; }
