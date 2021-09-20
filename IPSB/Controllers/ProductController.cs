@@ -88,17 +88,20 @@ namespace IPSB.Controllers
         {
             IQueryable<Product> list = _service.GetAll(_ => _.ProductCategory, _ => _.ProductGroup, _ => _.Store);
 
-            if (model.StoreId != 0)
+            if (model.StoreId > 0)
             {
                 list = list.Where(_ => _.StoreId == model.StoreId);
             }
-            
-            if (model.ProductCategoryId != 0)
+            if (model.BuildingId > 0)
+            {
+                list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
+            }
+            if (model.ProductCategoryId > 0)
             {
                 list = list.Where(_ => _.ProductCategoryId == model.ProductCategoryId);
             }
-            
-            if (model.ProductGroupId != 0)
+
+            if (model.ProductGroupId > 0)
             {
                 list = list.Where(_ => _.ProductGroupId == model.ProductGroupId);
             }
@@ -113,12 +116,12 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.Description.Contains(model.Description));
             }
 
-            if (model.LowerPrice != 0)
+            if (model.LowerPrice > 0)
             {
                 list = list.Where(_ => _.Price >= model.LowerPrice);
             }
 
-            if (model.UpperPrice != 0)
+            if (model.UpperPrice > 0)
             {
                 list = list.Where(_ => _.Price <= model.UpperPrice);
             }
