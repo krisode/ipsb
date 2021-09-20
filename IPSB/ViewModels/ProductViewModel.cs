@@ -30,7 +30,20 @@ namespace IPSB.ViewModels
         public double Price { get; set; }
         public int ProductGroupId { get; set; }
         public string Status { get; set; }
+
     }
+    public class ProductRefModelForShoppingItem
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string ImageUrl { get; set; }
+        public string Description { get; set; }
+        public double Price { get; set; }
+        public string Status { get; set; }
+        public StoreRefModelForProduct Store { get; set; }
+
+    }
+
     public class ProductSM
     {
         public string Name { get; set; }

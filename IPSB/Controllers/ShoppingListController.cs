@@ -56,6 +56,7 @@ namespace IPSB.Controllers
             var result = _service.GetAll(_ => _.Building)
                                 .Include(_ => _.ShoppingItems)
                                 .ThenInclude(_ => _.Product)
+                                .ThenInclude(_ => _.Store)
                                 .FirstOrDefault(_ => _.Id == id);
             if (result == null)
             {
@@ -80,8 +81,8 @@ namespace IPSB.Controllers
         {
             var result = _service.GetAll(_ => _.Building)
                                 .Include(_ => _.ShoppingItems)
-                                .ThenInclude(_ => _.Product);
-
+                                .ThenInclude(_ => _.Product)
+                                .ThenInclude(_ => _.Store);
             if (model.BuildingId > 0)
             {
                 result.Where(_ => _.BuildingId == model.BuildingId);
