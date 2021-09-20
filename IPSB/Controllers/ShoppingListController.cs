@@ -57,6 +57,7 @@ namespace IPSB.Controllers
                                 .Include(_ => _.ShoppingItems)
                                 .ThenInclude(_ => _.Product)
                                 .ThenInclude(_ => _.Store)
+                                .ThenInclude(_ => _.Locations)
                                 .FirstOrDefault(_ => _.Id == id);
             if (result == null)
             {
