@@ -125,23 +125,28 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<EdgeVM>>> GetAllEdges([FromQuery] EdgeSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            var cacheId = new CacheKey<Edge>(Utils.Constants.DefaultValue.INTEGER);
-            var cacheObjectType = new Edge();
+            var cacheId = new CacheKey<EdgeVM>(Utils.Constants.DefaultValue.INTEGER);
+            var cacheObjectType = new EdgeVM();
             var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
             try
             {
-                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
-                {
-                    var list = _service.GetAll(_ => _.FromLocation.FloorPlan,
+                // var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                // {
+                //     var list = _service.GetAll(_ => _.FromLocation.FloorPlan,
+                //         _ => _.ToLocation.FloorPlan,
+                //         _ => _.FromLocation.Store,
+                //         _ => _.ToLocation.Store);
+
+                //     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                //     return Task.FromResult(list);
+
+                // }, ifModifiedSince);
+
+                var list = _service.GetAll(_ => _.FromLocation.FloorPlan,
                         _ => _.ToLocation.FloorPlan,
                         _ => _.FromLocation.Store,
                         _ => _.ToLocation.Store);
-
-                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
-
-                    return Task.FromResult(list);
-
-                }, ifModifiedSince);
 
                 if (model.FromLocationId != 0)
                 {
@@ -171,13 +176,23 @@ namespace IPSB.Controllers
                 if (model.BuildingId != 0)
                 {
                     list = list.Where(_ => _.FromLocation.FloorPlan.BuildingId == model.BuildingId);
+
                 }
 
-                var pagedModel = _pagingSupport.From(list)
-                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
-                    .Paginate<EdgeVM>();
+                var data = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                {
+                    var pagedModel = _pagingSupport.From(list)
+                            .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
+                            .Paginate<EdgeVM>();
 
-                return Ok(pagedModel);
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                    return Task.FromResult(pagedModel);
+
+                }, ifModifiedSince);
+
+
+                return Ok(data);
             }
             catch (Exception e)
             {
@@ -267,7 +282,7 @@ namespace IPSB.Controllers
                 if (await _service.Save() > 0)
                 {
                     #region Updating cache
-                    var cacheId = new CacheKey<Edge>(id);
+                    var cacheId = new CacheKey<Edge>("");
                     await _cacheStore.Remove(cacheId);
                     #endregion
                 }

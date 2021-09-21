@@ -124,15 +124,16 @@ namespace IPSB.Controllers
             var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
             try
             {
-                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
-                {
-                    var list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store);
+                var list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store);
+                // var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                // {
+                //     var list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store);
 
-                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+                //     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
 
-                    return Task.FromResult(list);
+                //     return Task.FromResult(list);
 
-                }, ifModifiedSince);
+                // }, ifModifiedSince);
 
                 if (model.BuildingId != 0)
                 {

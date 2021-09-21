@@ -138,15 +138,16 @@ namespace IPSB.Controllers
 
             try
             {
-                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
-                {
-                    var list = _service.GetAll();
+                var list = _service.GetAll();
+                // var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                // {
+                //     var list = _service.GetAll();
 
-                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+                //     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
 
-                    return Task.FromResult(list);
+                //     return Task.FromResult(list);
 
-                }, ifModifiedSince);
+                // }, ifModifiedSince);
 
                 if (model.BuildingId != 0)
                 {
