@@ -95,7 +95,7 @@ namespace IPSB.Cache
 
             }
 
-            string updateTime = DateTime.Now.ToString("ddd, dd MMM yyy HH’:’mm’:’ss ‘GMT’");
+            string updateTime = DateTime.Now.ToString("ddd, dd MMM yyy HH:mm:ss") + " GMT";
 
             var newItem = await func(updateTime);
 
