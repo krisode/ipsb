@@ -138,6 +138,7 @@ namespace IPSB.Controllers
 
             try
             {
+
                 var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
                     var list = _service.GetAll();
@@ -146,7 +147,11 @@ namespace IPSB.Controllers
 
                     return Task.FromResult(list);
 
-                }, ifModifiedSince);
+                }, setLastModified: (cachedTime) =>
+                 {
+                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
+                     return cachedTime;
+                 }, ifModifiedSince);
 
                 if (model.BuildingId != 0)
                 {

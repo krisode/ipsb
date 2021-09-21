@@ -70,12 +70,13 @@ namespace IPSB.Cache
             return newItem;
         }
 
-        public async Task<IQueryable<TItem>> GetAllOrSetAsync<TItem>(TItem item, CacheKey<TItem> key, Func<string, Task<IQueryable<TItem>>> func, string ifModifiedSince)
+        public async Task<IQueryable<TItem>> GetAllOrSetAsync<TItem>(TItem item, CacheKey<TItem> key, Func<string, Task<IQueryable<TItem>>> func, Func<string, string> setLastModified, string ifModifiedSince)
         {
             var cachedObjectName = item.GetType().Name;
             var cachedItem = await _distributedCache.GetStringAsync(key.CacheAll);
             var cachedItemTime = await _distributedCache.GetStringAsync(key.CacheAllTime);
             var timespan = _expirationConfiguration[cachedObjectName];
+
 
 
             if (!string.IsNullOrEmpty(cachedItem))
@@ -87,14 +88,15 @@ namespace IPSB.Cache
                         throw new Exception("Not-modified");
                     }
                 }
+                setLastModified(cachedItemTime);
                 return JsonConvert.DeserializeObject<List<TItem>>(cachedItem).AsQueryable();
                 /* JsonSerializer.Deserialize<TItem>(cachedItem) can not be used here
                  * because it caused "A possible object cycle was detected" exception.*/
 
             }
 
-            string updateTime = DateTime.Now.ToString("ddd, dd MMM yyy HH:mm:ss") + " GMT";
 
+            string updateTime = DateTime.Now.ToString("ddd, dd MMM yyy HH:mm:ss") + " GMT";
             var newItem = await func(updateTime);
 
             if (newItem != null)

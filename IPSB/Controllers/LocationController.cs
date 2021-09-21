@@ -132,7 +132,11 @@ namespace IPSB.Controllers
 
                     return Task.FromResult(list);
 
-                }, ifModifiedSince);
+                }, setLastModified: (cachedTime) =>
+                 {
+                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
+                     return cachedTime;
+                 }, ifModifiedSince);
 
                 if (model.BuildingId != 0)
                 {

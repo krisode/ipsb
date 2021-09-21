@@ -129,7 +129,7 @@ namespace IPSB.Controllers
         {
             var cacheId = new CacheKey<Building>(Utils.Constants.DefaultValue.INTEGER);
             var cacheObjectType = new Building();
-            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
+            string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
 
             try
             {
@@ -141,7 +141,12 @@ namespace IPSB.Controllers
 
                     return Task.FromResult(list);
 
+                }, setLastModified: (cachedTime) =>
+                {
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
+                    return cachedTime;
                 }, ifModifiedSince);
+
 
                 if (!string.IsNullOrEmpty(model.Status))
                 {
