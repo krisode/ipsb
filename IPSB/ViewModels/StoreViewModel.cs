@@ -49,6 +49,7 @@ namespace IPSB.ViewModels
         public string Name { get; set; }
         public string Description { get; set; }
         public string ImageUrl { get; set; }
+        public int FloorPlanId { get; set; }
         public ICollection<LocationRefModelForStore> Locations { get; set; }
     }
     public class StoreRefModelForEdge

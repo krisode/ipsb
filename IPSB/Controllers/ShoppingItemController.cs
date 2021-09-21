@@ -116,24 +116,19 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> CreateShoppingItem([FromBody] List<ShoppingItemCM> listModel)
+        public async Task<ActionResult> CreateShoppingItem([FromBody] ShoppingItemCM model)
         {
-            if (listModel == null || listModel.Count == 0)
-            {
-                return BadRequest();
-            }
-            List<ShoppingItem> items = listModel.Select(model => _mapper.Map<ShoppingItem>(model)).ToList();
+            var item = _mapper.Map<ShoppingItem>(model);
             try
             {
-                await _service.AddRangeAsync(items);
+                await _service.AddAsync(item);
                 await _service.Save();
             }
             catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            var rtnItemIds = items.Select(_ => _.Id).ToList();
-            return CreatedAtAction("CreateShoppingItems", rtnItemIds);
+            return CreatedAtAction("CreateShoppingItems", new { Id = item.Id }, item);
         }
 
         /// <summary>
