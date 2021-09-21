@@ -11,8 +11,11 @@ namespace IPSB.Utils
         public static class Role
         {
             public const string ADMIN = "Admin";
+
             public const string STORE_OWNER = "Store Owner";
+
             public const string BUILDING_MANAGER = "Building Manager";
+
             public const string VISITOR = "Visitor";
 
             public static readonly string[] ROLE_LIST = { ADMIN, STORE_OWNER, BUILDING_MANAGER, VISITOR };
@@ -73,6 +76,31 @@ namespace IPSB.Utils
         {
             public const string BUILDING_MANAGER_ID = "buildingManagerId";
         }
+        
+        public static class DefaultValue
+        {
+            public const int INTEGER = default;
+            public const string STRING = default;
+            public const float FLOAT = default;
+            public const bool BOOLEAN = default;
+        }
+
+        public static class Request
+        {
+            public const string IF_MODIFIED_SINCE = "if-modified-since";
+        }
+
+        public static class Response
+        {
+            public const string LAST_MODIFIED = "last-modified";
+        }
+        
+        public static class ExceptionMessage
+        {
+            public const string NOT_MODIFIED = "Not-modified";
+        }
+
+
         
     }
 }

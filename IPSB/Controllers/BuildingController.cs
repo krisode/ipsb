@@ -2,6 +2,7 @@
 using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
+using IPSB.Cache;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
@@ -17,7 +18,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/buildings")]
     [ApiController]
-    [Authorize(Roles = "Building Manager")]
+    [Authorize(Roles = "Admin, Building Manager")]
     public class BuildingController : AuthorizeController
     {
         private readonly IBuildingService _service;
@@ -25,13 +26,16 @@ namespace IPSB.Controllers
         private readonly IPagingSupport<Building> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
         private readonly IAuthorizationService _authorizationService;
-        public BuildingController(IBuildingService service, IMapper mapper, IPagingSupport<Building> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService)
+        private readonly ICacheStore _cacheStore;
+        public BuildingController(IBuildingService service, IMapper mapper, IPagingSupport<Building> pagingSupport,
+            IUploadFileService uploadFileService, IAuthorizationService authorizationService, ICacheStore cacheStore)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
             _authorizationService = authorizationService;
+            _cacheStore = cacheStore;
         }
 
         /// <summary>
@@ -53,27 +57,51 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<BuildingVM>> GetBuildingById(int id)
         {
-            var building = _service.GetByIdAsync(_ => _.Id == id, 
-                _ => _.Admin, 
-                _ => _.Manager, 
-                _ => _.FloorPlans, 
-                _ => _.Stores, 
-                _ => _.VisitRoutes).Result;
-
-            if (building == null)
-            {
-                return NotFound();
-            }
+            var cacheId = new CacheKey<Building>(id);
+            var cacheObjectType = new Building();
+            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
             
-            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Read);
-            if (!authorizedResult.Succeeded)
+            try
             {
-                return new ObjectResult($"Not authorize to access building with id: {id}") { StatusCode = 403 };
-            }*/
+                var building = await _cacheStore.GetOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                {
+                    var building = _service.GetByIdAsync(_ => _.Id == id,
+                        _ => _.Admin,
+                        _ => _.Manager,
+                        _ => _.FloorPlans,
+                        _ => _.Stores,
+                        _ => _.VisitRoutes).Result;
 
-            var rtnBuilding = _mapper.Map<BuildingVM>(building);
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+                    
+                    return Task.FromResult(building);
 
-            return Ok(rtnBuilding);
+                }, ifModifiedSince);
+
+
+                if (building == null)
+                {
+                    return NotFound();
+                }
+
+                /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Read);
+                if (!authorizedResult.Succeeded)
+                {
+                    return new ObjectResult($"Not authorize to access building with id: {id}") { StatusCode = 403 };
+                }*/
+
+                var rtnBuilding = _mapper.Map<BuildingVM>(building);
+
+                return Ok(rtnBuilding);
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         /// <summary>
@@ -95,61 +123,87 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<BuildingVM>> GetAllBuildings([FromQuery] BuildingSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
+        public async Task<ActionResult<IEnumerable<BuildingVM>>> GetAllBuildings([FromQuery] BuildingSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<Building> list = _service.GetAll(_ => _.Admin, _ => _.Manager, _ => _.FloorPlans, _ => _.Stores, _ => _.VisitRoutes);
+            var cacheId = new CacheKey<Building>(Utils.Constants.DefaultValue.INTEGER);
+            var cacheObjectType = new Building();
+            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
 
-            if (model.ManagerId != 0)
+            try
             {
-                list = list.Where(_ => _.ManagerId == model.ManagerId);
-            }
-
-            if (model.AdminId != 0)
-            {
-                list = list.Where(_ => _.AdminId == model.AdminId);
-            }
-
-            if (!string.IsNullOrEmpty(model.Name))
-            {
-                list = list.Where(_ => _.Name.Contains(model.Name));
-            }
-
-            if (model.NumberOfFloor != 0)
-            {
-                list = list.Where(_ => _.NumberOfFloor == model.NumberOfFloor);
-            }
-
-            if (!string.IsNullOrEmpty(model.Address))
-            {
-                list = list.Where(_ => _.Address.Contains(model.Address));
-            }
-
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
-                    return BadRequest();
-                }
-                
-                else
+                    var list = _service.GetAll(_ => _.Admin, _ => _.Manager, _ => _.FloorPlans, _ => _.Stores, _ => _.VisitRoutes);
+
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                    return Task.FromResult(list);
+
+                }, ifModifiedSince);
+
+                if (!string.IsNullOrEmpty(model.Status))
                 {
-                    if (model.Status == Constants.Status.ACTIVE)
+                    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
+                        return BadRequest();
                     }
 
-                    if (model.Status == Constants.Status.INACTIVE)
+                    else
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
+                        if (model.Status == Constants.Status.ACTIVE)
+                        {
+                            list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
+                        }
+
+                        if (model.Status == Constants.Status.INACTIVE)
+                        {
+                            list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
+                        }
                     }
                 }
-            } 
 
-            var pagedModel = _pagingSupport.From(list)
-                .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
-                .Paginate<BuildingVM>();
+                if (model.ManagerId != 0)
+                {
+                    list = list.Where(_ => _.ManagerId == model.ManagerId);
+                }
 
-            return Ok(pagedModel);
+                if (model.AdminId != 0)
+                {
+                    list = list.Where(_ => _.AdminId == model.AdminId);
+                }
+
+                if (!string.IsNullOrEmpty(model.Name))
+                {
+                    list = list.Where(_ => _.Name.Contains(model.Name));
+                }
+
+                if (model.NumberOfFloor != 0)
+                {
+                    list = list.Where(_ => _.NumberOfFloor == model.NumberOfFloor);
+                }
+
+                if (!string.IsNullOrEmpty(model.Address))
+                {
+                    list = list.Where(_ => _.Address.Contains(model.Address));
+                }
+
+                var pagedModel = _pagingSupport.From(list)
+                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
+                    .Paginate<BuildingVM>();
+
+                return Ok(pagedModel);
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            /*IQueryable<Building> list = _service.GetAll(_ => _.Admin, _ => _.Manager, _ => _.FloorPlans, _ => _.Stores, _ => _.VisitRoutes);*/
+          
         }
 
         /// <summary>
@@ -229,15 +283,20 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutBuilding(int id, [FromForm] BuildingUM model)
         {
-
+            #region Get building by ID
             Building updBuilding = await _service.GetByIdAsync(_ => _.Id == id);
+            #endregion
 
+            #region Authorization(Role = "Building Manager, Admin")
             var authorizedResult = await _authorizationService.AuthorizeAsync(User, updBuilding, Operations.Update);
+
             if (!authorizedResult.Succeeded)
             {
                 return new ObjectResult($"Not authorize to update building with id: {id}") { StatusCode = 403 };
             }
+            #endregion
 
+            #region Checking whether request is valid
             if (updBuilding == null || id != model.Id)
             {
                 return BadRequest();
@@ -250,14 +309,18 @@ namespace IPSB.Controllers
                     return BadRequest();
                 }
             }
+            #endregion
 
+            #region If building has image, set it as new image in case inputted image request is null
             string imageURL = updBuilding.ImageUrl;
 
             if (model.ImageUrl is not null && model.ImageUrl.Length > 0)
             {
                 imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "building", "building-detail");
             }
-            
+            #endregion
+
+            #region Updating building
             try
             {
                 updBuilding.Id = model.Id;
@@ -268,15 +331,24 @@ namespace IPSB.Controllers
                 updBuilding.NumberOfFloor = model.NumberOfFloor;
                 updBuilding.Address = model.Address;
                 updBuilding.Status = model.Status;
-                
+
                 _service.Update(updBuilding);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    #region Updating cache
+                    var cacheId = new CacheKey<Building>(id);
+                    await _cacheStore.Remove(cacheId);
+                    #endregion
+                }
+
             }
             catch (Exception e)
             {
                 return BadRequest(e);
             }
+            #endregion
 
+            // Success
             return NoContent();
         }
 

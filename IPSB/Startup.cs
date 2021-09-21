@@ -4,6 +4,7 @@ using Google.Apis.Auth.OAuth2;
 using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
+using IPSB.Infrastructure.Cache;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Infrastructure.Repositories;
 using IPSB.Utils;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,7 +22,9 @@ using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Filters;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -38,13 +42,44 @@ namespace IPSB
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            #region NewtonsoftJson Configuration to ignore reference loop handling for Controller
+            services.AddControllers().AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+            });
+
+            #endregion
+
+            #region NewtonsoftJson Configuration to ignore reference loop handling for ControllerWithViews
+            services.AddControllersWithViews()
+            .AddNewtonsoftJson(options =>
+            options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+            #endregion
+
             services.AddCors();
 
-            // DB Context
+            #region AWS SQL Database Connection
             services.AddDbContext<IndoorPositioningContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("IPSBDatabase")));
-            // Repository
+            #endregion
+
+            #region Redis Cache Connection
+            services.AddStackExchangeRedisCache(setupAction =>  
+            {  
+                setupAction.Configuration = Configuration.GetConnectionString("RedisConnectionString");  
+            });
+            #endregion
+
+            #region Redis Cache Configuration
+            var children = Configuration.GetSection("Caching").GetChildren();
+            Dictionary<string, TimeSpan> configuration =
+            children.ToDictionary(child => child.Key, child => TimeSpan.Parse(child.Value));
+            services.AddSingleton<ICacheStore>(x => new RedisCacheStore(x.GetService<IDistributedCache>(), configuration));
+            #endregion
+
+            #region Repository
             services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
+            #endregion
 
             #region Firebase Initial
             var pathToKey = Path.Combine(Directory.GetCurrentDirectory(), "Keys", "firebase_admin_sdk.json");
@@ -142,15 +177,14 @@ namespace IPSB
             });
             #endregion
 
+            #region Authorization Policies
             services.AddAuthorization(options =>
             {
                 options.AddPolicy(Policies.QUERY_ACCOUNT, policy => policy.Requirements.Add(new QueryAccountRequirement()));
             });
+            #endregion
 
-            services.AddControllers().AddNewtonsoftJson(options =>
-            {
-                options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-            });
+            #region Swagger Configuration
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Indoor Positioning System", Version = "v1.0" });
@@ -167,10 +201,8 @@ namespace IPSB
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
             });
-
-            services.AddControllersWithViews()
-            .AddNewtonsoftJson(options =>
-            options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+            #endregion
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
