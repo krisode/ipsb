@@ -19,13 +19,13 @@ namespace IPSB.Cache
             _expirationConfiguration = expirationConfiguration;
         }
 
-        public async Task<TItem> GetOrSetAsync<TItem>(TItem item, CacheKey<TItem> key, Func<string,Task<TItem>> func, string ifModifiedSince)
+        public async Task<TItem> GetOrSetAsync<TItem>(TItem item, CacheKey<TItem> key, Func<string, Task<TItem>> func, string ifModifiedSince)
         {
             var cachedObjectName = item.GetType().Name;
             var cachedItem = await _distributedCache.GetStringAsync(key.CacheId);
             var cachedItemTime = await _distributedCache.GetStringAsync(key.CacheIDTime);
             var timespan = _expirationConfiguration[cachedObjectName];
-            
+
 
             if (!string.IsNullOrEmpty(cachedItem))
             {
@@ -44,13 +44,13 @@ namespace IPSB.Cache
 
             }
 
-            string updateTime = DateTime.Now.ToString("ddd, dd MMM yyy HH’:’mm’:’ss ‘GMT’");
+            string updateTime = DateTime.Now.ToString("ddd, dd MMM yyy HH:mm:ss") + " GMT";
 
             var newItem = await func(updateTime);
 
             if (newItem != null)
             {
-                
+
                 var cacheEntryOptions = new DistributedCacheEntryOptions()
                                         .SetSlidingExpiration(timespan);
 
@@ -70,13 +70,13 @@ namespace IPSB.Cache
             return newItem;
         }
 
-        public async Task<IQueryable<TItem>> GetAllOrSetAsync<TItem>(TItem item, CacheKey<TItem> key, Func<string,Task<IQueryable<TItem>>> func, string ifModifiedSince)
+        public async Task<IQueryable<TItem>> GetAllOrSetAsync<TItem>(TItem item, CacheKey<TItem> key, Func<string, Task<IQueryable<TItem>>> func, string ifModifiedSince)
         {
             var cachedObjectName = item.GetType().Name;
             var cachedItem = await _distributedCache.GetStringAsync(key.CacheAll);
             var cachedItemTime = await _distributedCache.GetStringAsync(key.CacheAllTime);
             var timespan = _expirationConfiguration[cachedObjectName];
-            
+
 
             if (!string.IsNullOrEmpty(cachedItem))
             {
@@ -101,7 +101,7 @@ namespace IPSB.Cache
 
             if (newItem != null)
             {
-                
+
                 var cacheEntryOptions = new DistributedCacheEntryOptions()
                                         .SetSlidingExpiration(timespan);
 
@@ -129,7 +129,7 @@ namespace IPSB.Cache
                 await _distributedCache.RemoveAsync(key.CacheId);
                 await _distributedCache.RemoveAsync(key.CacheIDTime);
 
-                var cachedAllItem = await _distributedCache.GetStringAsync(key.CacheAll); 
+                var cachedAllItem = await _distributedCache.GetStringAsync(key.CacheAll);
 
                 if (!string.IsNullOrEmpty(cachedAllItem))
                 {
