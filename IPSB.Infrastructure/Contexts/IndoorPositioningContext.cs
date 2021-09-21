@@ -392,8 +392,6 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("ShoppingItem");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
-
                 entity.Property(e => e.Note).HasMaxLength(100);
 
                 entity.HasOne(d => d.Product)
@@ -412,8 +410,6 @@ namespace IPSB.Infrastructure.Contexts
             modelBuilder.Entity<ShoppingList>(entity =>
             {
                 entity.ToTable("ShoppingList");
-
-                entity.Property(e => e.Id).ValueGeneratedNever();
 
                 entity.Property(e => e.Name)
                     .IsRequired()

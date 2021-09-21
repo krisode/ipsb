@@ -148,7 +148,7 @@ namespace IPSB.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            return CreatedAtAction("GetShoppingListById", new { id = dataToInsert.Id }, dataToInsert);
+            return CreatedAtAction("CreateShoppingList", new { id = dataToInsert.Id }, dataToInsert);
         }
 
         /// <summary>
@@ -209,7 +209,9 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
-            var dataToDelete = await _service.GetByIdAsync(_ => _.Id == id);
+            var dataToDelete = _service.GetAll()
+                                        .Include(_ => _.ShoppingItems)
+                                        .FirstOrDefault(_ => _.Id == id);
             if (dataToDelete == null)
             {
 
@@ -218,10 +220,10 @@ namespace IPSB.Controllers
             try
             {
                 dataToDelete.Status = Constants.Status.INACTIVE;
-                _service.Update(dataToDelete);
+                _service.Delete(dataToDelete);
                 await _service.Save();
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }

@@ -124,11 +124,11 @@ namespace IPSB.Controllers
                 await _service.AddAsync(item);
                 await _service.Save();
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            return CreatedAtAction("CreateShoppingItems", new { Id = item.Id }, item);
+            return CreatedAtAction("CreateShoppingItem", new { Id = item.Id }, item);
         }
 
         /// <summary>
