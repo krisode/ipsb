@@ -87,9 +87,7 @@ namespace IPSB.Cache
                         throw new Exception("Not-modified");
                     }
                 }
-
-                return JsonConvert.DeserializeObject<IQueryable<TItem>>(cachedItem);
-
+                return JsonConvert.DeserializeObject<List<TItem>>(cachedItem).AsQueryable();
                 /* JsonSerializer.Deserialize<TItem>(cachedItem) can not be used here
                  * because it caused "A possible object cycle was detected" exception.*/
 
