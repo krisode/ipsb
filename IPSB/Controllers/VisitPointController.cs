@@ -3,6 +3,7 @@ using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,7 +20,7 @@ namespace IPSB.Controllers
         private readonly IVisitPointService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<VisitPoint> _pagingSupport;
-
+        // private readonly IAuthorizationService _authorizationService;
         public VisitPointController(IVisitPointService service, IMapper mapper, IPagingSupport<VisitPoint> pagingSupport)
         {
             _service = service;
@@ -95,7 +96,7 @@ namespace IPSB.Controllers
             {
                 list = list.Where(_ => _.RecordTime >= model.LowerRecordTime);
             }
-            
+
             if (model.UpperRecordTime.HasValue)
             {
                 list = list.Where(_ => _.RecordTime <= model.UpperRecordTime);
@@ -129,7 +130,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<VisitPointCM>> CreateVisitPoint([FromBody] VisitPointCM model)
         {
-            
+
             VisitPoint crtVisitPoint = _mapper.Map<VisitPoint>(model);
             DateTime currentDateTime = DateTime.Now;
             crtVisitPoint.RecordTime = currentDateTime;
@@ -177,7 +178,7 @@ namespace IPSB.Controllers
                 updVisitPoint.LocationId = model.LocationId;
                 updVisitPoint.VisitRouteId = model.VisitRouteId;
                 updVisitPoint.RecordTime = model.RecordTime.Value;
-                
+
                 _service.Update(updVisitPoint);
                 await _service.Save();
             }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
@@ -23,13 +24,15 @@ namespace IPSB.Controllers
         private readonly IMapper _mapper;
         private readonly IPagingSupport<CouponInUse> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public CouponInUseController(ICouponInUseService service, IMapper mapper, IPagingSupport<CouponInUse> pagingSupport, IUploadFileService uploadFileService)
+        public CouponInUseController(ICouponInUseService service, IMapper mapper, IPagingSupport<CouponInUse> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
+            _authorizationService = authorizationService;
         }
 
         /// <summary>
@@ -57,6 +60,12 @@ namespace IPSB.Controllers
             {
                 return NotFound();
             }
+
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, couponInUse, Operations.Read);
+            if (!authorizedResult.Succeeded)
+            {
+                return Forbid($"Not authorized to access coupon in use with id: {id}");
+            }*/
 
             var rtnCouponInUse = _mapper.Map<CouponInUseVM>(couponInUse);
 
@@ -141,7 +150,7 @@ namespace IPSB.Controllers
                     }
                 }
             }
-            if(model.StoreId != 0)
+            if (model.StoreId != 0)
             {
                 list = list.Where(_ => _.Coupon.StoreId == model.StoreId);
             }
@@ -188,13 +197,11 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            //if (!string.IsNullOrEmpty(model.Status))
-            //{
-            //    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-            //    {
-            //        return BadRequest();
-            //    }
-            //}
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, couponInUse, Operations.Create);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to create coupon in use") { StatusCode = 403 };
+            }*/
 
             CouponInUse crtCouponInUse = _mapper.Map<CouponInUse>(model);
 
@@ -239,7 +246,6 @@ namespace IPSB.Controllers
                 return BadRequest();
             }
 
-            
 
             if (!string.IsNullOrEmpty(model.Status))
             {
@@ -247,6 +253,12 @@ namespace IPSB.Controllers
                 {
                     return BadRequest();
                 }
+            }
+
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updCouponInUse, Operations.Update);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to update coupon in use with id: {id}") { StatusCode = 403 };
             }
 
             if (updCouponInUse.CouponId == model.CouponId && updCouponInUse.VisitorId == updCouponInUse.VisitorId)
@@ -258,10 +270,10 @@ namespace IPSB.Controllers
                     updCouponInUse.VisitorId = model.VisitorId;
                     updCouponInUse.ApplyDate = model.ApplyDate.Value;
                     updCouponInUse.Status = model.Status;
-                    if(model.RateScore != null)
+                    if (model.RateScore != null)
                     {
                         updCouponInUse.FeedbackDate = DateTime.Now;
-                        if(model.ImageUrl != null)
+                        if (model.ImageUrl != null)
                         {
                             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "coupon-in-use", "feedback-image");
                             updCouponInUse.FeedbackImage = imageURL;
@@ -277,10 +289,11 @@ namespace IPSB.Controllers
                 {
                     return StatusCode(StatusCodes.Status500InternalServerError);
                 }
-            } else
+            }
+            else
             {
-                    return BadRequest();
-           
+                return BadRequest();
+
             }
             return NoContent();
         }

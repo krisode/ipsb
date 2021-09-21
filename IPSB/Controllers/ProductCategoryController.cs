@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -17,12 +19,13 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/product-categories")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class ProductCategoryController : AuthorizeController
     {
         private readonly IProductCategoryService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<ProductCategory> _pagingSupport;
-
+        // private readonly IAuthorizationService _authorizationService;
         public ProductCategoryController(IProductCategoryService service, IMapper mapper, IPagingSupport<ProductCategory> pagingSupport)
         {
             _service = service;
@@ -54,11 +57,17 @@ namespace IPSB.Controllers
             //var proCate = proList.FirstOrDefault(_ => _.Id == id);
 
             var proCate = _service.GetByIdAsync(_ => _.Id == id, _ => _.Products).Result;
-        
+
             if (proCate == null)
             {
                 return NotFound();
             }
+
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, proCate, Operations.Read);
+            if (!authorizedResult.Succeeded)
+            {
+                return Forbid($"Not authorized to access product category with id: {id}");
+            }*/
 
             var rtnProCate = _mapper.Map<ProductCategoryVM>(proCate);
 
@@ -125,6 +134,12 @@ namespace IPSB.Controllers
 
             ProductCategory crtProCateType = _mapper.Map<ProductCategory>(proCateModel);
 
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, crtProCateType, Operations.Create);
+            if (!authorizedResult.Succeeded)
+            {
+                return Forbid($"Not authorized to create product category: {proCateModel.Name}");
+            }*/
+
             try
             {
                 /*crtService.CreatedDate = crtDate;
@@ -163,6 +178,12 @@ namespace IPSB.Controllers
             {
                 return BadRequest();
             }
+
+            // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updProCate, Operations.Create);
+            // if (!authorizedResult.Succeeded)
+            // {
+            //     return Forbid($"Not authorized to update product category: {updProCate.Name}");
+            // }
 
             try
             {

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
@@ -16,20 +17,22 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/coupons")]
     [ApiController]
-    [Authorize(Roles = "Store Owner")]
+    [Authorize(Roles = "Store Owner, Visitor")]
     public class CouponController : AuthorizeController
     {
         private readonly ICouponService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<Coupon> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public CouponController(ICouponService service, IMapper mapper, IPagingSupport<Coupon> pagingSupport, IUploadFileService uploadFileService)
+        public CouponController(ICouponService service, IMapper mapper, IPagingSupport<Coupon> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
+            _authorizationService = authorizationService;
         }
 
         /// <summary>
@@ -58,6 +61,12 @@ namespace IPSB.Controllers
             {
                 return NotFound();
             }
+
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, coupon, Operations.Read);
+            if (!authorizedResult.Succeeded)
+            {
+                return Forbid($"Not authorized to access coupon with id: {id}");
+            }*/
 
             var rtnCoupon = _mapper.Map<CouponVM>(coupon);
 
@@ -88,7 +97,7 @@ namespace IPSB.Controllers
         {
             IQueryable<Coupon> list = _service.GetAll(_ => _.Store, _ => _.CouponInUses);
 
-            if(model.BuildingId != 0)
+            if (model.BuildingId != 0)
             {
                 list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
             }
@@ -157,7 +166,7 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.MinSpend <= model.MinSpend);
             }
 
-            
+
             if (model.ProductInclude is not null && model.ProductInclude.Length > 0)
             {
                 foreach (var include in model.ProductInclude)
@@ -165,13 +174,13 @@ namespace IPSB.Controllers
                     list = list.Where(_ => _.ProductInclude.Contains(include));
                 }
             }
-            
+
             if (model.ProductExclude is not null && model.ProductExclude.Length > 0)
             {
                 foreach (var exclude in model.ProductExclude)
                 {
                     list = list.Where(_ => _.ProductExclude.Contains(exclude));
-                }   
+                }
             }
 
             if (model.LowerLimit != 0)
@@ -247,31 +256,14 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<CouponCM>> CreateCoupon([FromForm] CouponCM model)
         {
-            //DateTime currentDateTime = DateTime.Now;
-
-            //if (model.PublishDate.Value < currentDateTime || model.ExpireDate.Value < currentDateTime 
-            //    || model.PublishDate < model.ExpireDate) 
-            //{
-            //    return BadRequest();
-            //}
-            
-
-            //Coupon productGroup = _service.GetByIdAsync(_ => _.Status == Constants.Status.ACTIVE).Result;
-            
-            //if (productGroup is not null)
-            //{
-            //    return Conflict();
-            //}
-
-            //if (!string.IsNullOrEmpty(model.Status))
-            //{
-            //    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-            //    {
-            //        return BadRequest();
-            //    }
-            //}
 
             Coupon crtCoupon = _mapper.Map<Coupon>(model);
+
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, crtCoupon, Operations.Create);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to create coupon") { StatusCode = 403 };
+            }*/
 
             // Default POST Status = "New"
             crtCoupon.Status = Constants.Status.NEW;
@@ -338,17 +330,13 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutCoupon(int id, [FromForm] CouponUM model)
         {
-
             Coupon updCoupon = await _service.GetByIdAsync(_ => _.Id == id);
 
-            //if (!updProduct.Name.ToUpper().Equals(model.Name.ToUpper()))
-            //{
-            //    Product product = _service.GetByIdAsync(_ => _.Name.ToUpper() == model.Name.ToUpper()).Result;
-            //    if (product is not null)
-            //    {
-            //        return Conflict();
-            //    }
-            //}
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updCoupon, Operations.Update);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to update coupon with id: {id}") { StatusCode = 403 };
+            }
 
             if (updCoupon == null || id != model.Id)
             {
@@ -435,6 +423,13 @@ namespace IPSB.Controllers
         public async Task<ActionResult> DeleteCoupon(int id)
         {
             Coupon coupon = await _service.GetByIdAsync(_ => _.Id == id);
+
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, coupon, Operations.Delete);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to delete coupon with id: {id}") { StatusCode = 403 };
+            }
+
             if (coupon is not null)
             {
                 return BadRequest();

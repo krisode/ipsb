@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using IPSB.Cache;
 using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
@@ -21,12 +22,16 @@ namespace IPSB.Controllers
         private readonly ILocationService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<Location> _pagingSupport;
+        // private readonly IAuthorizationService _authorizationService;
+        private readonly ICacheStore _cacheStore;
 
-        public LocationController(ILocationService service, IMapper mapper, IPagingSupport<Location> pagingSupport)
+        public LocationController(ILocationService service, IMapper mapper, IPagingSupport<Location> pagingSupport,
+            ICacheStore cacheStore)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
+            _cacheStore = cacheStore;
         }
 
         /// <summary>
@@ -46,20 +51,50 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id}")]
-        public ActionResult<LocationVM> GetLocationById(int id)
+        public async Task<ActionResult<LocationVM>> GetLocationById(int id)
         {
-            var location = _service.GetByIdAsync(_ => _.Id == id, _ => _.FloorPlan, _ => _.LocationType, _ => _.Store,
-                _ => _.Store.Products,
-                _ => _.EdgeFromLocations, _ => _.EdgeToLocations, _ => _.LocatorTags, _ => _.VisitPoints).Result;
+            var cacheId = new CacheKey<Location>(id);
+            var cacheObjectType = new Location();
+            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
 
-            if (location == null)
+            try
             {
-                return NotFound();
+                var location = await _cacheStore.GetOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                {
+                    var location = _service.GetByIdAsync(_ => _.Id == id,
+                        _ => _.FloorPlan,
+                        _ => _.LocationType,
+                        _ => _.Store,
+                        _ => _.Store.Products,
+                        _ => _.EdgeFromLocations,
+                        _ => _.EdgeToLocations,
+                        _ => _.LocatorTags,
+                        _ => _.VisitPoints).Result;
+
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                    return Task.FromResult(location);
+
+                }, ifModifiedSince);
+
+                if (location == null)
+                {
+                    return NotFound();
+                }
+
+                var rtnLocation = _mapper.Map<LocationVM>(location);
+
+                return Ok(rtnLocation);
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
-            var rtnLocation = _mapper.Map<LocationVM>(location);
-
-            return Ok(rtnLocation);
         }
 
         /// <summary>
@@ -82,71 +117,94 @@ namespace IPSB.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<LocationVM>> GetAllLocations([FromQuery] LocationSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
+        public async Task<ActionResult<IEnumerable<LocationVM>>> GetAllLocations([FromQuery] LocationSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            //IQueryable<Location> list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store,
-            //    _ => _.Store.Products, _ => _.EdgeFromLocations, _ => _.EdgeToLocations, _ => _.LocatorTags, _ => _.VisitPoints);
-            IQueryable<Location> list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store);
-            if (model.BuildingId != 0)
+            var cacheId = new CacheKey<Location>(Utils.Constants.DefaultValue.INTEGER);
+            var cacheObjectType = new Location();
+            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
+            try
             {
-                list = list.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
+                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                {
+                    var list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store);
+
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                    return Task.FromResult(list);
+
+                }, ifModifiedSince);
+
+                if (model.BuildingId != 0)
+                {
+                    list = list.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
+                }
+
+                if (model.X != 0)
+                {
+                    list = list.Where(_ => _.X == model.X);
+                }
+
+                if (model.Y != 0)
+                {
+                    list = list.Where(_ => _.Y == model.Y);
+                }
+
+                if (model.FloorPlanId != 0)
+                {
+                    list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
+                }
+
+                if (model.StoreId != 0)
+                {
+                    list = list.Where(_ => _.StoreId == model.StoreId);
+                }
+
+                if (model.LocationTypeId != 0)
+                {
+                    list = list.Where(_ => _.LocationTypeId == model.LocationTypeId);
+                }
+
+                if (model.NotLocationTypeId != 0)
+                {
+                    list = list.Where(_ => _.LocationTypeId != model.NotLocationTypeId);
+                }
+                if (model.LocationTypeIds != null && model.LocationTypeIds.Length > 0)
+                {
+                    list = list.Where(_ => model.LocationTypeIds.Contains(_.LocationTypeId));
+                }
+
+                if (!string.IsNullOrEmpty(model.LocationTypeName))
+                {
+                    list = list.Where(_ => _.LocationType.Name.Contains(model.LocationTypeName));
+                }
+
+                if (!string.IsNullOrEmpty(model.StoreName))
+                {
+                    list = list.Where(_ => _.Store.Name.Contains(model.StoreName));
+                }
+
+                if (!string.IsNullOrEmpty(model.ProductName))
+                {
+
+                    list = list.Where(_ => _.Store.Products.Any(_ => _.Name.Contains(model.ProductName)));
+                }
+
+                var pagedModel = _pagingSupport.From(list)
+                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
+                    .Paginate<LocationVM>();
+
+                return Ok(pagedModel);
+
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
-            if (model.X != 0)
-            {
-                list = list.Where(_ => _.X == model.X);
-            }
-
-            if (model.Y != 0)
-            {
-                list = list.Where(_ => _.Y == model.Y);
-            }
-
-            if (model.FloorPlanId != 0)
-            {
-                list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
-            }
-
-            if (model.StoreId != 0)
-            {
-                list = list.Where(_ => _.StoreId == model.StoreId);
-            }
-
-            if (model.LocationTypeId != 0)
-            {
-                list = list.Where(_ => _.LocationTypeId == model.LocationTypeId);
-            }
-
-            if (model.NotLocationTypeId != 0)
-            {
-                list = list.Where(_ => _.LocationTypeId != model.NotLocationTypeId);
-            }
-            if (model.LocationTypeIds != null && model.LocationTypeIds.Length > 0)
-            {
-                list = list.Where(_ => model.LocationTypeIds.Contains(_.LocationTypeId));
-            }
-
-            if (!string.IsNullOrEmpty(model.LocationTypeName))
-            {
-                list = list.Where(_ => _.LocationType.Name.Contains(model.LocationTypeName));
-            }
-
-            if (!string.IsNullOrEmpty(model.StoreName))
-            {
-                list = list.Where(_ => _.Store.Name.Contains(model.StoreName));
-            }
-
-            if (!string.IsNullOrEmpty(model.ProductName))
-            {
-
-                list = list.Where(_ => _.Store.Products.Any(_ => _.Name.Contains(model.ProductName)));
-            }
-
-            var pagedModel = _pagingSupport.From(list)
-                .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
-                .Paginate<LocationVM>();
-
-            return Ok(pagedModel);
         }
 
         /// <summary>
@@ -208,7 +266,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> PutEdge(int id, [FromBody] LocationUM model)
+        public async Task<ActionResult> PutLocation(int id, [FromBody] LocationUM model)
         {
             Location updLocation = await _service.GetByIdAsync(_ => _.Id == id);
             if (updLocation == null || id != model.Id)
@@ -225,7 +283,14 @@ namespace IPSB.Controllers
                 updLocation.StoreId = model.StoreId;
                 updLocation.LocationTypeId = model.LocationTypeId;
                 _service.Update(updLocation);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    #region Updating cache
+                    var cacheId = new CacheKey<Location>(id);
+                    await _cacheStore.Remove(cacheId);
+                    #endregion
+                }
+
             }
             catch (Exception e)
             {

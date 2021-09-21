@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
+using IPSB.Cache;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
@@ -16,20 +18,25 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/floor-plans")]
     [ApiController]
-    [Authorize(Roles = "Building Manager")]
+    [Authorize(Roles = "Building Manager, Visitor")]
     public class FloorPlanController : AuthorizeController
     {
         private readonly IFloorPlanService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<FloorPlan> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
+        private readonly IAuthorizationService _authorizationService;
+        private readonly ICacheStore _cacheStore;
 
-        public FloorPlanController(IFloorPlanService service, IMapper mapper, IPagingSupport<FloorPlan> pagingSupport, IUploadFileService uploadFileService)
+        public FloorPlanController(IFloorPlanService service, IMapper mapper, IPagingSupport<FloorPlan> pagingSupport,
+            IUploadFileService uploadFileService, IAuthorizationService authorizationService, ICacheStore cacheStore)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
+            _authorizationService = authorizationService;
+            _cacheStore = cacheStore;
         }
 
         /// <summary>
@@ -50,18 +57,52 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [AllowAnonymous]
         [HttpGet("{id}")]
-        public ActionResult<FloorPlanVM> GetFloorPlanById(int id)
+        public async Task<ActionResult<FloorPlanVM>> GetFloorPlanById(int id)
         {
-            var floorPlan = _service.GetByIdAsync(_ => _.Id == id, _ => _.Building, _ => _.LocatorTags, _ => _.Stores).Result;
+            var cacheId = new CacheKey<FloorPlan>(id);
+            var cacheObjectType = new FloorPlan();
+            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
 
-            if (floorPlan == null)
+            try
             {
-                return NotFound();
+                var floorPlan = await _cacheStore.GetOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                {
+                    var floorPlan = _service.GetByIdAsync(_ => _.Id == id,
+                        _ => _.Building,
+                        _ => _.LocatorTags,
+                        _ => _.Stores).Result;
+
+
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                    return Task.FromResult(floorPlan);
+
+                }, ifModifiedSince);
+
+                if (floorPlan == null)
+                {
+                    return NotFound();
+                }
+
+                /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, floorPlan, Operations.Read);
+                if (!authorizedResult.Succeeded)
+                {
+                    return Forbid($"Not authorized to access floor plan with id: {id}");
+                }*/
+
+                var rtnFloorPlan = _mapper.Map<FloorPlanVM>(floorPlan);
+
+                return Ok(rtnFloorPlan);
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
-            var rtnEdge = _mapper.Map<FloorPlanVM>(floorPlan);
-
-            return Ok(rtnEdge);
         }
 
         /// <summary>
@@ -84,38 +125,59 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<FloorPlanVM>> GetAllFloorPlans([FromQuery] FloorPlanSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
+        public async Task<ActionResult<IEnumerable<FloorPlanVM>>> GetAllFloorPlans([FromQuery] FloorPlanSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             if (model.FloorNumber < 0)
             {
                 return BadRequest();
             }
 
-            //IQueryable<FloorPlan> list = _service.GetAll(_ => _.Building, _ => _.LocatorTags, _ => _.Stores);
+            var cacheId = new CacheKey<FloorPlan>(Utils.Constants.DefaultValue.INTEGER);
+            var cacheObjectType = new FloorPlan();
+            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
 
-            IQueryable<FloorPlan> list = _service.GetAll();
-
-            if (model.BuildingId != 0)
+            try
             {
-                list = list.Where(_ => _.BuildingId == model.BuildingId);
+                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                {
+                    var list = _service.GetAll();
+
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                    return Task.FromResult(list);
+
+                }, ifModifiedSince);
+
+                if (model.BuildingId != 0)
+                {
+                    list = list.Where(_ => _.BuildingId == model.BuildingId);
+                }
+
+                if (!string.IsNullOrEmpty(model.FloorCode))
+                {
+                    list = list.Where(_ => _.FloorCode.Contains(model.FloorCode));
+                }
+
+                if (model.FloorNumber > 0)
+                {
+                    list = list.Where(_ => _.FloorNumber == model.FloorNumber);
+                }
+
+                var pagedModel = _pagingSupport.From(list)
+                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
+                    .Paginate<FloorPlanVM>();
+
+                return Ok(pagedModel);
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
-            if (!string.IsNullOrEmpty(model.FloorCode))
-            {
-                list = list.Where(_ => _.FloorCode.Contains(model.FloorCode));
-            }
-
-            if (model.FloorNumber > 0)
-            {
-                list = list.Where(_ => _.FloorNumber == model.FloorNumber);
-            }
-
-
-            var pagedModel = _pagingSupport.From(list)
-                .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
-                .Paginate<FloorPlanVM>();
-
-            return Ok(pagedModel);
         }
 
         /// <summary>
@@ -147,6 +209,12 @@ namespace IPSB.Controllers
             {
                 return Conflict();
             }
+
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, floorPlan, Operations.Create);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to create floor plan") { StatusCode = 403 };
+            }*/
 
             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "floor-plan", "floor-plan-map");
             FloorPlan crtFloorPlan = _mapper.Map<FloorPlan>(model);
@@ -197,6 +265,12 @@ namespace IPSB.Controllers
                 return BadRequest();
             }
 
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updLocationType, Operations.Update);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to update floor plan with id: {id}") { StatusCode = 403 };
+            }
+
             string imageURL = updLocationType.ImageUrl;
 
             if (model.ImageUrl is not null && model.ImageUrl.Length > 0)
@@ -212,7 +286,14 @@ namespace IPSB.Controllers
                 updLocationType.FloorCode = model.FloorCode;
                 updLocationType.FloorNumber = model.FloorNumber;
                 _service.Update(updLocationType);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    #region Updating cache
+                    var cacheId = new CacheKey<FloorPlan>(id);
+                    await _cacheStore.Remove(cacheId);
+                    #endregion
+                }
+
             }
             catch (Exception e)
             {

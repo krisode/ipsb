@@ -107,7 +107,7 @@ namespace IPSB.Controllers
         ///     ]
         ///
         /// </remarks>
-        /// <param name="listModel">Information applied to create shopping items</param>
+        /// <param name="model">Information applied to create shopping items</param>
         /// <response code="201">Created a new shopping items</response>
         /// <response code="400">Bad request body when create items</response>
         /// <response code="500">Failed to save request</response>

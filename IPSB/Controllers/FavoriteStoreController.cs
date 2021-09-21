@@ -3,6 +3,7 @@ using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,6 +20,7 @@ namespace IPSB.Controllers
         private readonly IFavoriteStoreService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<FavoriteStore> _pagingSupport;
+        // private readonly IAuthorizationService _authorizationService;
 
         public FavoriteStoreController(IFavoriteStoreService service, IMapper mapper, IPagingSupport<FavoriteStore> pagingSupport)
         {
@@ -80,7 +82,7 @@ namespace IPSB.Controllers
         public ActionResult<IEnumerable<FavoriteStoreVM>> GetAllFavoriteStores([FromQuery] FavoriteStoreSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             IQueryable<FavoriteStore> list = _service.GetAll(_ => _.Store, _ => _.Store.Building);
-   
+
             if (model.StoreId != 0)
             {
                 list = list.Where(_ => _.StoreId == model.StoreId);

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
@@ -24,14 +25,15 @@ namespace IPSB.Controllers
         private readonly IMapper _mapper;
         private readonly IPagingSupport<Store> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
-
-        public StoreController(IStoreService service, IMapper mapper, IPagingSupport<Store> pagingSupport, IUploadFileService uploadFileService, IProductCategoryService productCategoryService)
+        private readonly IAuthorizationService _authorizationService;
+        public StoreController(IStoreService service, IMapper mapper, IPagingSupport<Store> pagingSupport, IUploadFileService uploadFileService, IProductCategoryService productCategoryService, IAuthorizationService authorizationService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
             _productCategoryService = productCategoryService;
+            _authorizationService = authorizationService;
         }
 
         /// <summary>
@@ -54,9 +56,6 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<StoreVM>> GetStoreById(int id)
         {
-            //var store = _service.GetByIdAsync(_ => _.Id == id, _ => _.Account, _ => _.Building,
-            //    _ => _.FloorPlan, _ => _.Coupons, _ => _.FavoriteStores, _ => _.Locations,
-            //    _ => _.ProductGroups, _ => _.Products).Result;
             var store = await _service.GetByIdAsync(_ => _.Id == id, _ => _.Account, _ => _.Building, _ => _.FloorPlan);
 
             if (store == null)
@@ -64,31 +63,13 @@ namespace IPSB.Controllers
                 return NotFound();
             }
 
-            //if (store.ProductCategoryIds.Length > 1)
-            //{
-            //    foreach (var productCategoryId in store.ProductCategoryIds)
-            //    {
-            //        ProductGroup productGroup = _productGroupService.GetByIdAsync(_ => _.Id == productCategoryId).Result;
-            //        store.ProductGroups.Add(productGroup);
-            //    }
-            //}
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, store, Operations.Read);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to access store with id: {id}") { StatusCode = 403 };
+            }*/
 
             var rtnStore = _mapper.Map<StoreVM>(store);
-            //rtnStore.ProductCategories = new List<ProductCategoryRefModel>();
-            //foreach (var productCategoryId in store.ProductCategoryIds)
-            //{
-
-            //    int idd = 0;
-            //    if (!productCategoryId.ToString().Equals(","))
-            //    {
-            //        idd = int.Parse(productCategoryId.ToString());
-            //        ProductCategory productCategory = _productCategoryService.GetByIdAsync(_ => _.Id == idd).Result;
-            //        ProductCategoryRefModel productCategoryRefModel = _mapper.Map<ProductCategoryRefModel>(productCategory);
-            //        rtnStore.ProductCategories.Add(productCategoryRefModel);
-            //    }
-
-            //}
-
 
             return Ok(rtnStore);
         }
@@ -253,38 +234,17 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
-            //if (!string.IsNullOrEmpty(model.Status))
-            //{
-            //    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-            //    {
-            //        return BadRequest();
-            //    }
-            //}
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, store, Operations.Create);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to create store") { StatusCode = 403 };
+            }*/
 
             Store crtStore = _mapper.Map<Store>(model);
 
             // Default POST Status = "Active"
             crtStore.Status = Constants.Status.ACTIVE;
 
-            //string imageUrl = "";
-
-            //if (model.ImageUrl is not null && model.ImageUrl.Count > 0)
-            //{
-            //    //List<string> imageUrls = new List<string>();
-            //    var task = model.ImageUrl.ToList().Select(_ => _uploadFileService.UploadFile("123456798", _, "store", "store-detail")).ToArray();
-            //    var imageUrls = await Task.WhenAll(task);
-            //    //var testList = task.Select<string>(_ => _.);
-
-            //    imageUrl = string.Join(",", imageUrls);
-
-            //    //foreach (var url in model.ImageUrl)
-            //    //{
-            //    //    imageUrl = await _uploadFileService.UploadFile("123456798", url, "store", "store-detail");
-            //    //    imageUrls.Add(imageUrl);
-            //    //}
-            //}
-
-            //crtStore.ImageUrl = imageUrl;
             if (model.ImageUrl != null)
             {
                 crtStore.ImageUrl = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "store", "store-detail");
@@ -333,6 +293,12 @@ namespace IPSB.Controllers
 
             Store updStore = await _service.GetByIdAsync(_ => _.Id == id);
 
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updStore, Operations.Update);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to update store with id: {id}") { StatusCode = 403 };
+            }
+
             if (!updStore.Name.ToUpper().Equals(model.Name.ToUpper()))
             {
                 Store store = _service.GetByIdAsync(_ => _.Name.ToUpper() == model.Name.ToUpper()).Result;
@@ -354,19 +320,6 @@ namespace IPSB.Controllers
                     return BadRequest();
                 }
             }
-
-            //string imageUrl = updStore.ImageUrl;
-
-            //if (model.ImageUrl is not null && model.ImageUrl.Count > 0)
-            //{
-            //    List<string> imageUrls = new List<string>();
-            //    foreach (var url in model.ImageUrl)
-            //    {
-            //        imageUrl = await _uploadFileService.UploadFile("123456798", url, "store", "store-detail");
-            //        imageUrls.Add(imageUrl);
-            //    }
-            //    imageUrl = string.Join(",", imageUrls);
-            //}
 
             if (model.ImageUrl != null)
             {
