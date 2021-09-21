@@ -114,8 +114,8 @@ namespace IPSB.Cache
                 /* JsonSerializer.Serialize(newItem) can not be used here
                 * because it caused "A possible object cycle was detected" exception.*/
 
-                await _distributedCache.SetStringAsync(key.CacheId, serializedItem, cacheEntryOptions);
-                await _distributedCache.SetStringAsync(key.CacheIDTime, updateTime.ToString(), cacheEntryOptions);
+                await _distributedCache.SetStringAsync(key.CacheAll, serializedItem, cacheEntryOptions);
+                await _distributedCache.SetStringAsync(key.CacheAllTime, updateTime.ToString(), cacheEntryOptions);
             }
 
             return newItem;
