@@ -193,6 +193,7 @@ namespace IPSB.Controllers
 
         // DELETE api/<ProductCategoryController>/5
         // Change Status to Inactive
+        // Future PLan
         [HttpDelete("{id}")]
         public void Delete(int id)
         {

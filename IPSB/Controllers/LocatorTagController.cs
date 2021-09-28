@@ -292,12 +292,52 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        // DELETE api/<ProductCategoryController>/5
-        // Change Status to Inactive
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        /// <summary>
+        /// Delete locator tag
+        /// </summary>
+        /// <param name="id">Locator tag's id</param>
+        /// <response code="204">Update locator tag's status successfully</response>
+        /// <response code="400">Locator tag's id does not exist</response>
+        /// <response code="500">Failed to update</response>
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpDelete]
+        [Route("{id}")]
+        [Produces("application/json")]
+        public async Task<ActionResult> Delete(int id)
         {
+            LocatorTag locatorTag = await _service.GetByIdAsync(_ => _.Id == id);
 
+            var authorizedResult = await _authorizationService.AuthorizeAsync(User, locatorTag, Operations.Delete);
+            
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to delete locator tag with id: {id}") { StatusCode = 403 };
+            }
+
+            if (locatorTag is not null)
+            {
+                return BadRequest();
+            }
+
+            /*if (locatorTag.Status.Equals(Constants.Status.INACTIVE))
+            {
+                return BadRequest();
+            }
+
+            locatorTag.Status = Constants.Status.INACTIVE;*/
+
+            try
+            {
+                _service.Delete(locatorTag);
+                await _service.Save();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            return NoContent();
         }
 
         protected override bool IsAuthorize()

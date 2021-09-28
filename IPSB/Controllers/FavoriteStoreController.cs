@@ -203,9 +203,20 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        // DELETE api/<ProductCategoryController>/5
-        // Change Status to Inactive
-        [HttpDelete("{id}")]
+        /*/// <summary>
+        /// Change the status of favorite store to inactive
+        /// </summary>
+        /// <param name="id">Coupon's id</param>
+        /// <response code="204">Update coupon's status successfully</response>
+        /// <response code="400">Coupon's id does not exist</response>
+        /// <response code="500">Failed to update</response>
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpDelete]
+        [Route("{id}")]
+        [Produces("application/json")]*/
+        // Future Plan
         public void Delete(int id)
         {
 

@@ -359,12 +359,51 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        // DELETE api/<ProductCategoryController>/5
-        // Change Status to Inactive
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        /// <summary>
+        /// Change the status of building to inactive
+        /// </summary>
+        /// <param name="id">Coupon's id</param>
+        /// <response code="204">Update building's status successfully</response>
+        /// <response code="400">Building's id does not exist</response>
+        /// <response code="500">Failed to update</response>
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpDelete]
+        [Route("{id}")]
+        [Produces("application/json")]
+        public async Task<ActionResult> Delete(int id)
         {
+            Building building = await _service.GetByIdAsync(_ => _.Id == id);
 
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Delete);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to delete building with id: {id}") { StatusCode = 403 };
+            }*/
+
+            if (building is not null)
+            {
+                return BadRequest();
+            }
+
+            if (building.Status.Equals(Constants.Status.INACTIVE))
+            {
+                return BadRequest();
+            }
+
+            building.Status = Constants.Status.INACTIVE;
+            try
+            {
+                _service.Update(building);
+                await _service.Save();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return NoContent();
         }
 
         protected override bool IsAuthorize()

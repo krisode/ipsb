@@ -17,7 +17,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/coupons")]
     [ApiController]
-    [Authorize(Roles = "Store Owner, Visitor")]
+    [Authorize(Roles = "Building Manager, Store Owner, Visitor")]
     public class CouponController : AuthorizeController
     {
         private readonly ICouponService _service;
@@ -450,6 +450,7 @@ namespace IPSB.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
+
             return NoContent();
         }
 
