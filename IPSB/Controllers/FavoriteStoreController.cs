@@ -203,7 +203,7 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        /*/// <summary>
+        /// <summary>
         /// Change the status of favorite store to inactive
         /// </summary>
         /// <param name="id">Coupon's id</param>
@@ -215,7 +215,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete]
         [Route("{id}")]
-        [Produces("application/json")]*/
+        [Produces("application/json")]
         // Future Plan
         public void Delete(int id)
         {
