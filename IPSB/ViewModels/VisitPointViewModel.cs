@@ -24,6 +24,10 @@ namespace IPSB.ViewModels
     {
         public int LocationId { get; set; }
         public int VisitRouteId { get; set; }
+        public int BuildingId { get; set; }
+
+        public int LocationTypeId { get; set; }
+        public int StoreId { get; set; }
         public DateTime? LowerRecordTime { get; set; }
         public DateTime? UpperRecordTime { get; set; }
     }

@@ -47,7 +47,7 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<VisitPointVM> GetVisitPointById(int id)
         {
-            var visitPoint = _service.GetByIdAsync(_ => _.Id == id, _ => _.Location, _ => _.VisitRoute).Result;
+            var visitPoint = _service.GetByIdAsync(_ => _.Id == id, _ => _.Location.Store.Building, _ => _.VisitRoute).Result;
 
             if (visitPoint is null)
             {
@@ -80,7 +80,22 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<VisitPointVM>> GetAllVisitPoints([FromQuery] VisitPointSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<VisitPoint> list = _service.GetAll(_ => _.Location, _ => _.VisitRoute);
+            IQueryable<VisitPoint> list = _service.GetAll(_ => _.Location.Store.Building, _ => _.VisitRoute);
+
+            if (model.LocationTypeId != 0)
+            {
+                list = list.Where(_ => _.Location.LocationTypeId == model.LocationTypeId);
+            }
+            
+            if (model.StoreId != 0)
+            {
+                list = list.Where(_ => _.Location.StoreId == model.StoreId);
+            }
+            
+            if (model.BuildingId != 0)
+            {
+                list = list.Where(_ => _.Location.Store.BuildingId == model.BuildingId);
+            }
 
             if (model.LocationId != 0)
             {
