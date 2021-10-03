@@ -138,6 +138,8 @@ namespace IPSB
             services.AddTransient<IFloorPlanService, FloorPlanService>();
             // Add LocationService
             services.AddTransient<ILocationService, LocationService>();
+            // Add FacilityService
+            services.AddTransient<IFacilityService, FacilityService>();
             // Add LocationTypeService
             services.AddTransient<ILocationTypeService, LocationTypeService>();
             // Add LocatorTagService
