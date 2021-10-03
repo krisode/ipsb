@@ -121,9 +121,9 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.Code.Contains(model.Code));
             }
 
-            if (!string.IsNullOrEmpty(model.DiscountType))
+            if (model.CouponTypeId > 0)
             {
-                list = list.Where(_ => _.DiscountType.Contains(model.DiscountType));
+                list = list.Where(_ => _.CouponTypeId == model.CouponTypeId);
             }
 
             if (model.LowerPublishDate.HasValue)
@@ -387,7 +387,7 @@ namespace IPSB.Controllers
                 updCoupon.Description = model.Description;
                 updCoupon.StoreId = model.StoreId;
                 updCoupon.Code = model.Code;
-                updCoupon.DiscountType = model.DiscountType;
+                updCoupon.CouponTypeId = model.CouponTypeId;
                 updCoupon.Amount = model.Amount;
                 updCoupon.MaxDiscount = model.MaxDiscount;
                 updCoupon.MinSpend = model.MinSpend;

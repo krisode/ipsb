@@ -26,6 +26,7 @@ namespace IPSB.Infrastructure.Contexts
         public virtual FloorPlan FloorPlan { get; set; }
         public virtual LocationType LocationType { get; set; }
         public virtual Store Store { get; set; }
+        public virtual Facility Facility { get; set; }
         public virtual ICollection<Edge> EdgeFromLocations { get; set; }
         public virtual ICollection<Edge> EdgeToLocations { get; set; }
         public virtual ICollection<LocatorTag> LocatorTags { get; set; }
