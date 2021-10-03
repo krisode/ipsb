@@ -8,35 +8,38 @@ using IPSB.Infrastructure.Repositories;
 
 namespace IPSB.Core.Services
 {
-    public interface ICouponTypeService : IService<CouponType, int>
+
+    public interface IFacilityService : IService<Facility, int>
     {
 
     }
-    public class CouponTypeService : ICouponTypeService
-    {
-        private readonly IRepository<CouponType, int> _iRepository;
 
-        public CouponTypeService(IRepository<CouponType, int> iRepository)
+    public class FacilityService : IFacilityService
+
+    {
+        private readonly IRepository<Facility, int> _iRepository;
+
+        public FacilityService(IRepository<Facility, int> iRepository)
         {
             _iRepository = iRepository;
         }
 
-        public Task<CouponType> AddAsync(CouponType entity)
+        public Task<Facility> AddAsync(Facility entity)
         {
             return _iRepository.AddAsync(entity);
         }
 
-        public void Delete(CouponType entity)
+        public void Delete(Facility entity)
         {
             _iRepository.Delete(entity);
         }
 
-        public IQueryable<CouponType> GetAll(params Expression<Func<CouponType, object>>[] includes)
+        public IQueryable<Facility> GetAll(params Expression<Func<Facility, object>>[] includes)
         {
             return _iRepository.GetAll(includes);
         }
 
-        public Task<CouponType> GetByIdAsync(Expression<Func<CouponType, bool>> predicate, params Expression<Func<CouponType, object>>[] includes)
+        public Task<Facility> GetByIdAsync(Expression<Func<Facility, bool>> predicate, params Expression<Func<Facility, object>>[] includes)
         {
             return _iRepository.GetByIdAsync(predicate, includes);
         }
@@ -46,12 +49,10 @@ namespace IPSB.Core.Services
             return _iRepository.Save();
         }
 
-        public void Update(CouponType entity)
+        public void Update(Facility entity)
         {
             _iRepository.Update(entity);
         }
     }
 
 }
-
-

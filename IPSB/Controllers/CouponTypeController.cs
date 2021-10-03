@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
@@ -114,7 +115,7 @@ namespace IPSB.Controllers
         /// <response code="400">Required create data is missing</response>
         /// <response code="500">Failed to save request</response>
         [HttpPost]
-        // [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -139,6 +140,16 @@ namespace IPSB.Controllers
         /// <summary>
         /// Update coupon type with specified id
         /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     PUT 
+        ///     {
+        ///         "name": "Coupon type's name",   
+        ///         "description": "Coupon type's description",   
+        ///     }
+        ///
+        /// </remarks>
         /// <param name="id">Coupon type's id</param>
         /// <param name="model">Information applied to updated coupon type</param>
         /// <response code="204">Update coupon type successfully</response>
@@ -146,7 +157,7 @@ namespace IPSB.Controllers
         /// <response code="500">Failed to update</response>
         [HttpPut]
         [Route("{id}")]
-        // [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -177,19 +188,19 @@ namespace IPSB.Controllers
         /// <response code="204">Delete coupon type successfully</response>
         /// <response code="500">Failed to delete</response>
         [HttpDelete]
-        // [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [Route("{id}")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
-            var updateCouponType = await _service.GetByIdAsync(_ => _.Id == id);
+            var deleteCouponType = await _service.GetByIdAsync(_ => _.Id == id);
 
             try
             {
-                updateCouponType.Status = Constants.Status.INACTIVE;
-                _service.Update(updateCouponType);
+                deleteCouponType.Status = Constants.Status.INACTIVE;
+                _service.Update(deleteCouponType);
                 await _service.Save();
             }
             catch (Exception)
@@ -199,7 +210,6 @@ namespace IPSB.Controllers
 
             return NoContent();
         }
-
     }
 
 }
