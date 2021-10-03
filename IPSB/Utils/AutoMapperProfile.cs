@@ -40,6 +40,11 @@ namespace IPSB.Utils
             CreateMap<CouponCM, Coupon>();
             #endregion
 
+            #region CouponTypeModel
+            CreateMap<CouponType, CouponTypeVM>();
+            CreateMap<CouponTypeCM, CouponType>();
+            #endregion
+
             #region CouponInUseModel
             CreateMap<CouponInUse, CouponInUseRefModel>();
             CreateMap<CouponInUse, CouponInUseVM>();
