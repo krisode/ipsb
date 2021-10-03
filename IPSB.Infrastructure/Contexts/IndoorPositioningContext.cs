@@ -21,8 +21,9 @@ namespace IPSB.Infrastructure.Contexts
         public virtual DbSet<Building> Buildings { get; set; }
         public virtual DbSet<Coupon> Coupons { get; set; }
         public virtual DbSet<CouponInUse> CouponInUses { get; set; }
+        public virtual DbSet<CouponType> CouponTypes { get; set; }
         public virtual DbSet<Edge> Edges { get; set; }
-        public virtual DbSet<FavoriteStore> FavoriteStores { get; set; }
+        public virtual DbSet<Facility> Facilities { get; set; }
         public virtual DbSet<FloorPlan> FloorPlans { get; set; }
         public virtual DbSet<Location> Locations { get; set; }
         public virtual DbSet<LocationType> LocationTypes { get; set; }
@@ -121,10 +122,6 @@ namespace IPSB.Infrastructure.Contexts
 
                 entity.Property(e => e.Description).IsRequired();
 
-                entity.Property(e => e.DiscountType)
-                    .IsRequired()
-                    .HasMaxLength(50);
-
                 entity.Property(e => e.ExpireDate).HasColumnType("datetime");
 
                 entity.Property(e => e.ImageUrl)
@@ -149,6 +146,11 @@ namespace IPSB.Infrastructure.Contexts
                     .IsRequired()
                     .HasMaxLength(20)
                     .IsUnicode(false);
+
+                entity.HasOne(d => d.CouponType)
+                    .WithMany(p => p.Coupons)
+                    .HasForeignKey(d => d.CouponTypeId)
+                    .HasConstraintName("FK_Coupon_CouponType");
 
                 entity.HasOne(d => d.Store)
                     .WithMany(p => p.Coupons)
@@ -189,6 +191,19 @@ namespace IPSB.Infrastructure.Contexts
                     .HasConstraintName("FK_CouponInUse_Account");
             });
 
+            modelBuilder.Entity<CouponType>(entity =>
+            {
+                entity.ToTable("CouponType");
+
+                entity.Property(e => e.Description)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(30);
+            });
+
             modelBuilder.Entity<Edge>(entity =>
             {
                 entity.ToTable("Edge");
@@ -206,17 +221,26 @@ namespace IPSB.Infrastructure.Contexts
                     .HasConstraintName("FK_Edge_Location1");
             });
 
-            modelBuilder.Entity<FavoriteStore>(entity =>
+            modelBuilder.Entity<Facility>(entity =>
             {
-                entity.ToTable("FavoriteStore");
+                entity.ToTable("Facility");
 
-                entity.Property(e => e.RecordDate).HasColumnType("datetime");
+                entity.HasIndex(e => e.LocationId, "IX_Facility")
+                    .IsUnique();
 
-                entity.HasOne(d => d.Store)
-                    .WithMany(p => p.FavoriteStores)
-                    .HasForeignKey(d => d.StoreId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_FavoriteStore_Store");
+                entity.Property(e => e.Description).HasMaxLength(200);
+
+                entity.Property(e => e.Name).HasMaxLength(100);
+
+                entity.Property(e => e.Status)
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.Location)
+                    .WithOne(p => p.Facility)
+                    .HasForeignKey<Facility>(d => d.LocationId)
+                    .HasConstraintName("FK_Facility_Location");
             });
 
             modelBuilder.Entity<FloorPlan>(entity =>

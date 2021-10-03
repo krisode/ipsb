@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using IPSB.Infrastructure.Contexts;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -13,7 +14,7 @@ namespace IPSB.ViewModels
         public string Description { get; set; }
         public int StoreId { get; set; }
         public string Code { get; set; }
-        public string DiscountType { get; set; }
+        public CouponType CouponType { get; set; }
         public DateTime PublishDate { get; set; }
         public DateTime ExpireDate { get; set; }
         public double Amount { get; set; }
@@ -35,7 +36,7 @@ namespace IPSB.ViewModels
         public string Description { get; set; }
         public int StoreId { get; set; }
         public string Code { get; set; }
-        public string DiscountType { get; set; }
+        public CouponType CouponType { get; set; }
         public DateTime PublishDate { get; set; }
         public DateTime ExpireDate { get; set; }
         public double Amount { get; set; }
@@ -52,7 +53,7 @@ namespace IPSB.ViewModels
         public string Description { get; set; }
         public int StoreId { get; set; }
         public string Code { get; set; }
-        public string DiscountType { get; set; }
+        public int CouponTypeId { get; set; }
         public DateTime? LowerPublishDate { get; set; }
         public DateTime? UpperPublishDate { get; set; }
         public DateTime? LowerExpireDate { get; set; }
@@ -78,7 +79,7 @@ namespace IPSB.ViewModels
         [Required]
         public string Code { get; set; }
         [Required]
-        public string DiscountType { get; set; }
+        public int CouponTypeId { get; set; }
         [Required]
         public DateTime? PublishDate { get; set; }
         [Required]
@@ -102,7 +103,7 @@ namespace IPSB.ViewModels
         public string Description { get; set; }
         public int StoreId { get; set; }
         public string Code { get; set; }
-        public string DiscountType { get; set; }
+        public int CouponTypeId { get; set; }
         //public DateTime ExpireDate { get; set; }
         public double Amount { get; set; }
         public double MaxDiscount { get; set; }

@@ -124,7 +124,7 @@ namespace IPSB.Controllers
                 await _service.AddAsync(item);
                 await _service.Save();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }

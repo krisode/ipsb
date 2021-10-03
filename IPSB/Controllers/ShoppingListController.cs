@@ -223,7 +223,7 @@ namespace IPSB.Controllers
                 _service.Delete(dataToDelete);
                 await _service.Save();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }

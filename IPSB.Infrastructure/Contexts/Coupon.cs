@@ -18,7 +18,6 @@ namespace IPSB.Infrastructure.Contexts
         public string Description { get; set; }
         public int StoreId { get; set; }
         public string Code { get; set; }
-        public string DiscountType { get; set; }
         public DateTime PublishDate { get; set; }
         public DateTime ExpireDate { get; set; }
         public double Amount { get; set; }
@@ -28,7 +27,9 @@ namespace IPSB.Infrastructure.Contexts
         public string ProductExclude { get; set; }
         public int? Limit { get; set; }
         public string Status { get; set; }
+        public int? CouponTypeId { get; set; }
 
+        public virtual CouponType CouponType { get; set; }
         public virtual Store Store { get; set; }
         public virtual ICollection<CouponInUse> CouponInUses { get; set; }
     }

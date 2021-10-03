@@ -52,12 +52,6 @@ namespace IPSB.Utils
             CreateMap<EdgeCM, Edge>();
             #endregion
 
-            #region FavoriteStoreModel
-            CreateMap<FavoriteStore, FavoriteStoreRefModel>();
-            CreateMap<FavoriteStore, FavoriteStoreVM>();
-            CreateMap<FavoriteStoreCM, FavoriteStore>();
-            #endregion
-
             #region FloorPlanModel
             CreateMap<FloorPlan, FloorPlanRefModel>();
             CreateMap<FloorPlan, FloorPlanStoreRefModel>();
