@@ -202,6 +202,11 @@ namespace IPSB.Infrastructure.Contexts
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(30);
+
+                entity.Property(e => e.Status)
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<Edge>(entity =>

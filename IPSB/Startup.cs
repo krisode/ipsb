@@ -128,6 +128,8 @@ namespace IPSB
             services.AddTransient<IBuildingService, BuildingService>();
             // Add CouponService
             services.AddTransient<ICouponService, CouponService>();
+            // Add CouponService
+            services.AddTransient<ICouponTypeService, CouponTypeService>();
             // Add CouponInUseService
             services.AddTransient<ICouponInUseService, CouponInUseService>();
             // Add EdgeService
