@@ -148,7 +148,7 @@ namespace IPSB.Utils
 
         public static class CacheConfig
         {
-            public const string CACHE_STATUS = "Caching:CacheStatus";
+            public const string CACHE_STATUS = "CacheStatus";
         }
 
 
