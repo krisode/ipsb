@@ -30,7 +30,7 @@ namespace IPSB.Utils
             public const int MINUTE_TO_EXPIRES = 30;
             public const int DAY_TO_EXPIRES = 15;
         }
-        
+
         public static class TokenClaims
         {
             public const string ROLE = "role";
@@ -40,7 +40,7 @@ namespace IPSB.Utils
             public const string NAME = "name";
             public const string PHONE_NUMBER = "phone_number";
         }
-        
+
         public static class Config
         {
             public const string ISSUER = "jwt:Issuer";
@@ -71,7 +71,7 @@ namespace IPSB.Utils
             public const string MISSING = "Missing";
 
             public const string USED = "Used";
-            
+
             public const string NOT_USED = "NotUsed";
 
             public const string DELETED = "Deleted";
@@ -91,8 +91,10 @@ namespace IPSB.Utils
             public const string BUILDING_MANAGER_ID = "buildingManagerId";
         }
 
-        public static class JwtBearerTokenConfig {
-            public static TokenValidationParameters GetTokenValidationParameters(IConfiguration _configuration) { 
+        public static class JwtBearerTokenConfig
+        {
+            public static TokenValidationParameters GetTokenValidationParameters(IConfiguration _configuration)
+            {
                 return new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
@@ -102,9 +104,9 @@ namespace IPSB.Utils
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration[Constants.Config.KEY])),
                     ValidIssuer = _configuration[Constants.Config.ISSUER],
                     ValidAudience = _configuration[Constants.Config.AUDIENCE],
-                    
+
                 };
-            }  
+            }
         }
 
         public static class CookieConfig
@@ -120,7 +122,7 @@ namespace IPSB.Utils
                 Secure = true,
             };
         }
-        
+
         public static class DefaultValue
         {
             public const int INTEGER = default;
@@ -138,13 +140,18 @@ namespace IPSB.Utils
         {
             public const string LAST_MODIFIED = "last-modified";
         }
-        
+
         public static class ExceptionMessage
         {
             public const string NOT_MODIFIED = "Not-modified";
         }
 
+        public static class CacheConfig
+        {
+            public const string CACHE_STATUS = "Caching:CacheStatus";
+        }
 
-        
+
+
     }
 }

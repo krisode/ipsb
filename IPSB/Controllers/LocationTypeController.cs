@@ -55,7 +55,7 @@ namespace IPSB.Controllers
                 return NotFound();
             }
 
-            var rtnLocationType = _mapper.Map<LocationTypeVM>(locationType);
+            var rtnLocationType = _mapper.Map<LocationTypeRefModel>(locationType);
 
             return Ok(rtnLocationType);
         }
@@ -95,7 +95,7 @@ namespace IPSB.Controllers
 
             var pagedModel = _pagingSupport.From(list)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
-                .Paginate<LocationTypeVM>();
+                .Paginate<LocationTypeRefModel>();
 
             return Ok(pagedModel);
         }
