@@ -1,5 +1,7 @@
-﻿using IPSB.Utils;
+﻿
+using IPSB.Utils;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,15 +14,21 @@ namespace IPSB.Cache
     {
         private readonly IDistributedCache _distributedCache;
         private readonly Dictionary<string, TimeSpan> _expirationConfiguration;
+        private readonly IConfiguration _config;
 
-        public RedisCacheStore(IDistributedCache distributedCache, Dictionary<string, TimeSpan> expirationConfiguration)
+        public RedisCacheStore(IDistributedCache distributedCache, Dictionary<string, TimeSpan> expirationConfiguration, IConfiguration config)
         {
             _distributedCache = distributedCache;
             _expirationConfiguration = expirationConfiguration;
+            _config = config;
         }
 
         public async Task<TItem> GetOrSetAsync<TItem>(TItem item, CacheKey<TItem> key, Func<string, Task<TItem>> func, string ifModifiedSince)
         {
+            if (_config[Constants.CacheConfig.CACHE_STATUS].Equals("off"))
+            {
+                return await func("");
+            }
             var cachedObjectName = item.GetType().Name;
             var cachedItem = await _distributedCache.GetStringAsync(key.CacheId);
             var cachedItemTime = await _distributedCache.GetStringAsync(key.CacheIDTime);
@@ -72,6 +80,11 @@ namespace IPSB.Cache
 
         public async Task<IQueryable<TItem>> GetAllOrSetAsync<TItem>(TItem item, CacheKey<TItem> key, Func<string, Task<IQueryable<TItem>>> func, Func<string, string> setLastModified, string ifModifiedSince)
         {
+
+            if (_config[Constants.CacheConfig.CACHE_STATUS].Equals("off"))
+            {
+                return await func("");
+            }
             var cachedObjectName = item.GetType().Name;
             var cachedItem = await _distributedCache.GetStringAsync(key.CacheAll);
             var cachedItemTime = await _distributedCache.GetStringAsync(key.CacheAllTime);

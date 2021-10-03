@@ -27,8 +27,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
-using static IPSB.Utils.Constants;
 
 namespace IPSB
 {
@@ -76,7 +74,7 @@ namespace IPSB
             var children = Configuration.GetSection("Caching").GetChildren();
             Dictionary<string, TimeSpan> configuration =
             children.ToDictionary(child => child.Key, child => TimeSpan.Parse(child.Value));
-            services.AddSingleton<ICacheStore>(x => new RedisCacheStore(x.GetService<IDistributedCache>(), configuration));
+            services.AddSingleton<ICacheStore>(x => new RedisCacheStore(x.GetService<IDistributedCache>(), configuration, Configuration));
             #endregion
 
             #region Repository
