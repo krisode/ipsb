@@ -19,10 +19,11 @@ namespace IPSB.Controllers
         private readonly IMapper _mapper;
         private readonly IPagingSupport<CouponType> _pagingSupport;
 
-        public CouponTypeController(ICouponTypeService service, IMapper mapper)
+        public CouponTypeController(ICouponTypeService service, IMapper mapper, IPagingSupport<CouponType> pagingSupport)
         {
             _service = service;
             _mapper = mapper;
+            _pagingSupport = pagingSupport;
         }
 
         /// <summary>
@@ -113,7 +114,7 @@ namespace IPSB.Controllers
         /// <response code="400">Required create data is missing</response>
         /// <response code="500">Failed to save request</response>
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        // [Authorize(Roles = "Admin")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -123,6 +124,7 @@ namespace IPSB.Controllers
 
             try
             {
+                createdCouponType.Status = Constants.Status.ACTIVE;
                 await _service.AddAsync(createdCouponType);
                 await _service.Save();
             }
@@ -144,6 +146,7 @@ namespace IPSB.Controllers
         /// <response code="500">Failed to update</response>
         [HttpPut]
         [Route("{id}")]
+        // [Authorize(Roles = "Admin")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -174,6 +177,7 @@ namespace IPSB.Controllers
         /// <response code="204">Delete coupon type successfully</response>
         /// <response code="500">Failed to delete</response>
         [HttpDelete]
+        // [Authorize(Roles = "Admin")]
         [Route("{id}")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

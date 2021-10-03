@@ -11,6 +11,12 @@ namespace IPSB.Core.Services
     public class CouponTypeService : ICouponTypeService
     {
         private readonly IRepository<CouponType, int> _iRepository;
+
+        public CouponTypeService(IRepository<CouponType, int> iRepository)
+        {
+            _iRepository = iRepository;
+        }
+
         public Task<CouponType> AddAsync(CouponType entity)
         {
             return _iRepository.AddAsync(entity);
