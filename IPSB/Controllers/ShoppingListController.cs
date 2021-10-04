@@ -209,13 +209,14 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
-            var dataToDelete = await _service.GetByIdAsync(_ => _.Id == id);
+            var dataToDelete = await _service.GetByIdAsync(_ => _.Id == id, _ => _.ShoppingItems);
             if (dataToDelete == null)
             {
                 return NotFound();
             }
             try
             {
+                _shoppingItemService.DeleteRange(dataToDelete.ShoppingItems);
                 _service.Delete(dataToDelete);
                 await _service.Save();
             }

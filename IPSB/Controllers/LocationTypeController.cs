@@ -15,7 +15,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/location-types")]
     [ApiController]
-    public class LocationTypeController : AuthorizeController
+    public class LocationTypeController : Controller
     {
         private readonly ILocationTypeService _service;
         private readonly IMapper _mapper;
@@ -68,7 +68,10 @@ namespace IPSB.Controllers
         ///
         ///     GET 
         ///     {
-        ///         
+        ///         "Name": "Name of the location type",   
+        ///         "Description": "Description of location type",   
+        ///         "ImageUrl": "Image url of location type", 
+        ///         "Status": "Status of location type"   
         ///     }
         ///
         /// </remarks>
@@ -92,6 +95,10 @@ namespace IPSB.Controllers
             {
                 list = list.Where(_ => _.Description.Contains(model.Description));
             }
+            if (!string.IsNullOrEmpty(model.Status))
+            {
+                list = list.Where(_ => _.Status == model.Status);
+            }
 
             var pagedModel = _pagingSupport.From(list)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
@@ -110,6 +117,7 @@ namespace IPSB.Controllers
         ///     {
         ///         "Name": "Name of the location type",   
         ///         "Description": "Description of location type",   
+        ///         "ImageUrl": "Image url of location type", 
         ///     }
         ///
         /// </remarks>
@@ -135,6 +143,7 @@ namespace IPSB.Controllers
 
             try
             {
+                crtLocationType.Status = Constants.Status.ACTIVE;
                 await _service.AddAsync(crtLocationType);
                 await _service.Save();
             }
@@ -165,10 +174,7 @@ namespace IPSB.Controllers
         public async Task<ActionResult> PutLocationType(int id, [FromBody] LocationTypeUM model)
         {
             LocationType updLocationType = await _service.GetByIdAsync(_ => _.Id == id);
-            if (updLocationType == null || id != model.Id)
-            {
-                return BadRequest();
-            }
+
 
             if (updLocationType.Name.ToUpper() == model.Name.ToUpper())
             {
@@ -177,32 +183,49 @@ namespace IPSB.Controllers
 
             try
             {
-                updLocationType.Id = model.Id;
                 updLocationType.Name = model.Name;
                 updLocationType.Description = model.Description;
+                updLocationType.ImageUrl = model.ImageUrl;
                 _service.Update(updLocationType);
                 await _service.Save();
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                return BadRequest(e);
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
             return NoContent();
         }
 
-        // DELETE api/<ProductCategoryController>/5
-        // Change Status to Inactive
-        // Future PLan
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        /// <summary>
+        /// Delete location type with specified id
+        /// </summary>
+        /// <param name="id">Location type's id</param>
+        /// <response code="204">Delete location type successfully</response>
+        /// <response code="500">Failed to delete</response>
+        [HttpDelete]
+        [Authorize(Roles = "Admin")]
+        [Route("{id}")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> Delete(int id)
         {
+            LocationType updLocationType = await _service.GetByIdAsync(_ => _.Id == id);
 
+            try
+            {
+                updLocationType.Status = Constants.Status.INACTIVE;
+                _service.Update(updLocationType);
+                await _service.Save();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return NoContent();
         }
 
-        protected override bool IsAuthorize()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

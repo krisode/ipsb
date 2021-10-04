@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace IPSB.ViewModels
 {
@@ -17,24 +18,33 @@ namespace IPSB.ViewModels
         public string Name { get; set; }
         public string Description { get; set; }
         public string ImageUrl { get; set; }
+        public string Status { get; set; }
     }
 
     public class LocationTypeSM
     {
         public string Name { get; set; }
         public string Description { get; set; }
+        public string Status { get; set; }
     }
 
     public class LocationTypeCM
     {
+        [Required]
         public string Name { get; set; }
+        [Required]
         public string Description { get; set; }
+        [Required]
+        public string ImageUrl { get; set; }
     }
 
     public class LocationTypeUM
     {
-        public int Id { get; set; }
+        [Required]
         public string Name { get; set; }
+        [Required]
         public string Description { get; set; }
+        [Required]
+        public string ImageUrl { get; set; }
     }
 }

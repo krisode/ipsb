@@ -12,6 +12,7 @@ namespace IPSB.Core.Services
     public interface IShoppingItemService : IService<ShoppingItem, int>
     {
         Task AddRangeAsync(List<ShoppingItem> list);
+        void DeleteRange(ICollection<ShoppingItem> list);
     }
 
     public class ShoppingItemService : IShoppingItemService
@@ -35,6 +36,11 @@ namespace IPSB.Core.Services
         public void Delete(ShoppingItem entity)
         {
             _iRepository.Delete(entity);
+        }
+
+        public void DeleteRange(ICollection<ShoppingItem> list)
+        {
+            _iRepository.DeleteRange(list);
         }
 
         public IQueryable<ShoppingItem> GetAll(params Expression<Func<ShoppingItem, object>>[] includes)

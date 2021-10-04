@@ -197,11 +197,11 @@ namespace IPSB.Infrastructure.Contexts
 
                 entity.Property(e => e.Description)
                     .IsRequired()
-                    .HasMaxLength(100);
+                    .HasMaxLength(250);
 
                 entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasMaxLength(30);
+                    .HasMaxLength(100);
 
                 entity.Property(e => e.Status)
                     .IsRequired()
@@ -233,9 +233,13 @@ namespace IPSB.Infrastructure.Contexts
                 entity.HasIndex(e => e.LocationId, "IX_Facility")
                     .IsUnique();
 
-                entity.Property(e => e.Description).HasMaxLength(200);
+                entity.Property(e => e.Description)
+                    .IsRequired()
+                    .HasMaxLength(200);
 
-                entity.Property(e => e.Name).HasMaxLength(100);
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
 
                 entity.Property(e => e.Status)
                     .IsRequired()
@@ -308,13 +312,22 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("LocationType");
 
-                entity.Property(e => e.Description).HasMaxLength(200);
+                entity.Property(e => e.Description)
+                    .IsRequired()
+                    .HasMaxLength(200);
 
-                entity.Property(e => e.ImageUrl).IsUnicode(false);
+                entity.Property(e => e.ImageUrl)
+                    .IsRequired()
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(100);
+
+                entity.Property(e => e.Status)
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<LocatorTag>(entity =>
@@ -438,7 +451,6 @@ namespace IPSB.Infrastructure.Contexts
                 entity.HasOne(d => d.ShoppingList)
                     .WithMany(p => p.ShoppingItems)
                     .HasForeignKey(d => d.ShoppingListId)
-                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_ShoppingItem_ShoppingList");
             });
 

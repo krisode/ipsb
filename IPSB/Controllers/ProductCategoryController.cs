@@ -20,7 +20,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/product-categories")]
     [ApiController]
     [Authorize(Roles = "Admin")]
-    public class ProductCategoryController : AuthorizeController
+    public class ProductCategoryController : Controller
     {
         private readonly IProductCategoryService _service;
         private readonly IMapper _mapper;
@@ -208,9 +208,6 @@ namespace IPSB.Controllers
 
         }
 
-        protected override bool IsAuthorize()
-        {
-            throw new NotImplementedException();
-        }
+
     }
 }
