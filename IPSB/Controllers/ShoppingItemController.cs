@@ -199,6 +199,7 @@ namespace IPSB.Controllers
             try
             {
                 _service.Delete(dataToDelete);
+                await _service.Save();
             }
             catch (Exception)
             {
