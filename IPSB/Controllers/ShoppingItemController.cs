@@ -162,16 +162,9 @@ namespace IPSB.Controllers
             {
                 return NotFound();
             }
-            if (model.ProductId > 0)
-            {
-                dataToUpdate.ProductId = model.ProductId;
-            }
-            if (model.Note != null)
-            {
-                dataToUpdate.Note = model.Note;
-            }
             try
             {
+                dataToUpdate.Note = model.Note;
                 _service.Update(dataToUpdate);
                 await _service.Save();
             }

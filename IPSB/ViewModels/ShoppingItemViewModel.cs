@@ -31,7 +31,6 @@ namespace IPSB.ViewModels
     public class ShoppingItemUM
     {
         [Required]
-        public int ProductId { get; set; }
         public string Note { get; set; }
     }
 
