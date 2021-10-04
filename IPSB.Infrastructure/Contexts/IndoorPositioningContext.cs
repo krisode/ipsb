@@ -389,9 +389,15 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("ProductCategory");
 
+                entity.Property(e => e.ImageUrl).IsUnicode(false);
+
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(100);
+
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<ProductGroup>(entity =>
@@ -432,7 +438,7 @@ namespace IPSB.Infrastructure.Contexts
                 entity.HasOne(d => d.ShoppingList)
                     .WithMany(p => p.ShoppingItems)
                     .HasForeignKey(d => d.ShoppingListId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_ShoppingItem_ShoppingList");
             });
 

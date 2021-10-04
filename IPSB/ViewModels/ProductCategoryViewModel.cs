@@ -6,6 +6,8 @@ namespace IPSB.ViewModels
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string ImageUrl { get; set; }
+        public string Status { get; set; }
         public ICollection<ProductRefModel> Products { get; set; }
     }
     public class ProductCategorySM
@@ -17,6 +19,8 @@ namespace IPSB.ViewModels
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string ImageUrl { get; set; }
+        public string Status { get; set; }
     }
 
     public class ProductCategoryCM

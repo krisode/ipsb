@@ -219,7 +219,6 @@ namespace IPSB.Controllers
             }
             try
             {
-                dataToDelete.Status = Constants.Status.INACTIVE;
                 _service.Delete(dataToDelete);
                 await _service.Save();
             }
