@@ -51,12 +51,12 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id}")]
-        public ActionResult<ProductCategoryVM> GetProductCategoryById(int id)
+        public ActionResult<ProductCategoryRefModel> GetProductCategoryById(int id)
         {
             //IQueryable<ProductCategory> proList = _service.GetAll(_ => _.Products);
             //var proCate = proList.FirstOrDefault(_ => _.Id == id);
 
-            var proCate = _service.GetByIdAsync(_ => _.Id == id, _ => _.Products).Result;
+            var proCate = _service.GetByIdAsync(_ => _.Id == id).Result;
 
             if (proCate == null)
             {
@@ -69,7 +69,7 @@ namespace IPSB.Controllers
                 return Forbid($"Not authorized to access product category with id: {id}");
             }*/
 
-            var rtnProCate = _mapper.Map<ProductCategoryVM>(proCate);
+            var rtnProCate = _mapper.Map<ProductCategoryRefModel>(proCate);
 
             return Ok(rtnProCate);
         }
@@ -93,9 +93,9 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<ProductCategoryVM>> GetAllProductCategories([FromQuery] ProductCategorySM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
+        public ActionResult<IEnumerable<ProductCategoryRefModel>> GetAllProductCategories([FromQuery] ProductCategorySM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<ProductCategory> serviceTypeList = _service.GetAll(_ => _.Products);
+            var serviceTypeList = _service.GetAll();
 
             if (!string.IsNullOrEmpty(model.Name))
             {
@@ -104,7 +104,7 @@ namespace IPSB.Controllers
 
             var pagedModel = _pagingSupport.From(serviceTypeList)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
-                .Paginate<ProductCategoryVM>();
+                .Paginate<ProductCategoryRefModel>();
 
             return Ok(pagedModel);
         }
