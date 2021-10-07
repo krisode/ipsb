@@ -151,7 +151,15 @@ namespace IPSB.Utils
             public const string CACHE_STATUS = "CacheStatus";
         }
 
+        public static class SendEmail
+        {
+            public const string API_KEY = "d93711a8a4fdcf1f2b24f2df0520bfe2-443ec20e-f4f921fc";
 
+            public const string DOMAIN = "sandbox063d4a6203534601a25434de0bce380b.mailgun.org";
+
+            public const string FROM = "IPSB Team <noreply@notifications.getipsb.com";
+
+        }
 
     }
 }

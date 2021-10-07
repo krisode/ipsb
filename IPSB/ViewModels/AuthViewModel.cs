@@ -41,5 +41,17 @@ namespace IPSB.ViewModels
         public string Password { get; set; }
 
     }
+
+    public class AuthWebForgotPassword
+    {
+        public string Email { get; set; }
+
+    }
+
+    public class AuthResponseForgotPassword
+    {
+        public string Url { get; set; }
+        public string BackupUrl { get; set; }
+    }
     
 }
