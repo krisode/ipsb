@@ -6,6 +6,10 @@ using IPSB.Utils;
 using IPSB.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using RestSharp;
+using RestSharp.Authenticators;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -246,6 +250,12 @@ namespace IPSB.Controllers
             {
                 return BadRequest();
             }
+
+            if (updAccount.Status.Equals(Status.INACTIVE))
+            {
+                return Unauthorized();
+            }
+
             try
             {
                 updAccount.Id = authAccount.AccountId;
@@ -260,6 +270,108 @@ namespace IPSB.Controllers
                 return BadRequest(e);
             }
             return NoContent();
+        }
+
+        /// <summary>
+        /// Authorize token sent from request
+        /// </summary>
+        /// <remarks>
+        /// Sample Request:
+        /// 
+        ///     POST {
+        ///         "token": "abc"
+        ///     }
+        /// </remarks>
+        /// <returns>Return status whether token is valid</returns>
+        /// <response code="200">Valid token</response>
+        /// <response code="401">Invalid token</response>
+        /// <response code="403">Invalid token</response>
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [HttpPost("authorize-token")]
+        public async Task<ActionResult> AuthorizeToken(string token)
+        {
+            int accountId;
+            try
+            {
+                accountId = _jwtTokenProvider.GetIdFromToken(token);
+            }
+            catch (Exception)
+            {
+                return Unauthorized();
+            }
+
+            Account updAccount = await _accountService.GetByIdAsync(_ => _.Id == accountId);
+            if (updAccount.Status.Equals(Status.INACTIVE))
+            {
+                return Unauthorized();
+            }
+
+            if (updAccount == null)
+            {
+                return BadRequest();
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Send an forgot password to an email
+        /// </summary>
+        /// <remarks>
+        /// Sample Request:
+        /// 
+        ///     POST {
+        ///         "Email": "exampleemail@email.com"
+        ///     }
+        /// </remarks>
+        /// <returns>Response after executing request</returns>
+        /// <response code="200">Send email successfully</response>
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpPost("forgot-password")]
+        public async Task<ActionResult> ForgotPassword(AuthWebForgotPassword authAccount)
+        {
+            var account = _accountService.CheckEmail(authAccount.Email);
+
+            if (account == null)
+            {
+                return NotFound();
+            }
+
+
+            var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(account);
+
+            string accessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
+
+
+            RestClient client = new RestClient();
+            client.BaseUrl = new Uri("https://api.mailgun.net/v3");
+            client.Authenticator =
+                new HttpBasicAuthenticator("api",
+                    "d93711a8a4fdcf1f2b24f2df0520bfe2-443ec20e-f4f921fc");
+            RestRequest request = new RestRequest();
+            request.AddParameter("domain", "sandbox063d4a6203534601a25434de0bce380b.mailgun.org", ParameterType.UrlSegment);
+            request.Resource = "{domain}/messages";
+            request.AddParameter("from", "IPSB Team <trantrinhdanghuy1406@gmail.com>");
+            request.AddParameter("to", authAccount.Email);
+            AuthResponseForgotPassword auth = new();
+            auth.Url = "http://localhost:3000/change-password?token=" + accessToken;
+
+
+            /*string str = "{ 'context_name': { 'lower_bound': 'value', 'pper_bound': 'value', 'values': [ 'value1', 'valueN' ] } }";*/
+            /*string str = "{ 'url': 'http://localhost:3000/change-password'}";*/
+            /*JObject json = JObject.Parse(str);*/
+            string json = JsonConvert.SerializeObject(auth);
+
+            request.AddParameter("h:X-Mailgun-Variables", json);
+            request.AddParameter("template", "forgot_password_template");
+            request.AddParameter("subject", "Reset your IPSB account password");
+            request.Method = Method.POST;
+
+
+            return Ok(client.Execute(request).StatusCode);
         }
     }
 
