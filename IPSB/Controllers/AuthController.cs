@@ -313,7 +313,7 @@ namespace IPSB.Controllers
                 return BadRequest();
             }
 
-            return Ok();
+            return Ok(updAccount);
         }
 
         /// <summary>
