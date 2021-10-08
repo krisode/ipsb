@@ -289,7 +289,7 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [HttpPost("authorize-token")]
+        [HttpGet("authorize-token")]
         public async Task<ActionResult> AuthorizeToken(string token)
         {
             int accountId;
@@ -340,11 +340,9 @@ namespace IPSB.Controllers
                 return NotFound();
             }
 
-
             var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(account);
 
             string accessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
-
 
             RestClient client = new RestClient();
             client.BaseUrl = new Uri("https://api.mailgun.net/v3");
@@ -357,19 +355,18 @@ namespace IPSB.Controllers
             request.AddParameter("from", "IPSB Team <trantrinhdanghuy1406@gmail.com>");
             request.AddParameter("to", authAccount.Email);
             AuthResponseForgotPassword auth = new();
-            auth.Url = "http://localhost:3000/change-password?token=" + accessToken;
-
-
+            auth.Url = "http://localhost:3000/change-password/" + accessToken;
+            #region other accept string to parse as JSON
             /*string str = "{ 'context_name': { 'lower_bound': 'value', 'pper_bound': 'value', 'values': [ 'value1', 'valueN' ] } }";*/
             /*string str = "{ 'url': 'http://localhost:3000/change-password'}";*/
             /*JObject json = JObject.Parse(str);*/
-            string json = JsonConvert.SerializeObject(auth);
+            #endregion
 
+            string json = JsonConvert.SerializeObject(auth);
             request.AddParameter("h:X-Mailgun-Variables", json);
             request.AddParameter("template", "forgot_password_template");
             request.AddParameter("subject", "Reset your IPSB account password");
             request.Method = Method.POST;
-
 
             return Ok(client.Execute(request).StatusCode);
         }
