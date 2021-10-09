@@ -368,6 +368,8 @@ namespace IPSB.Controllers
             request.AddParameter("subject", "Reset your IPSB account password");
             request.Method = Method.POST;
 
+            client.Execute(request);
+
             return Ok(accessToken);
         }
     }
