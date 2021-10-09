@@ -348,7 +348,7 @@ namespace IPSB.Controllers
             client.BaseUrl = new Uri("https://api.mailgun.net/v3");
             client.Authenticator =
                 new HttpBasicAuthenticator("api",
-                    "d93711a8a4fdcf1f2b24f2df0520bfe2-443ec20e-f4f921fc");
+                    "key-c8f20ea48751d2eaa564f4ee68e22914");
             RestRequest request = new RestRequest();
             request.AddParameter("domain", "sandbox063d4a6203534601a25434de0bce380b.mailgun.org", ParameterType.UrlSegment);
             request.Resource = "{domain}/messages";
