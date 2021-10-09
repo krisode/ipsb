@@ -17,7 +17,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/coupon-in-uses")]
     [ApiController]
-    [Authorize(Roles = "Building Manager, Visitor, Store Owner")]
+    // [Authorize(Roles = "Building Manager, Visitor, Store Owner")]
     public class CouponInUseController : AuthorizeController
     {
         private readonly ICouponInUseService _service;
