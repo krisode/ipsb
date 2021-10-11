@@ -51,18 +51,9 @@ namespace IPSB.ViewModels
     }
     public class CouponInUseUM
     {
-        [Required]
-        public int Id { get; set; }
-        [Required]
-        public int CouponId { get; set; }
-        [Required]
-        public int VisitorId { get; set; }
-        //public DateTime? RedeemDate { get; set; }
-        [Required]
         public DateTime? ApplyDate { get; set; }
-        [Required]
-        public string Status { get; set; }
         public string FeedbackContent { get; set; }
+        public string FeedbackReply { get; set; }
         public IFormFile ImageUrl { get; set; }
         public DateTime? FeedbackDate { get; set; }
         public double? RateScore { get; set; }
