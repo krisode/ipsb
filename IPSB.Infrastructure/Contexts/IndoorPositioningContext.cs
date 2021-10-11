@@ -173,6 +173,8 @@ namespace IPSB.Infrastructure.Contexts
                     .HasMaxLength(250)
                     .IsUnicode(false);
 
+                entity.Property(e => e.FeedbackReply).HasMaxLength(400);
+
                 entity.Property(e => e.RedeemDate).HasColumnType("datetime");
 
                 entity.Property(e => e.Status)
@@ -183,11 +185,13 @@ namespace IPSB.Infrastructure.Contexts
                 entity.HasOne(d => d.Coupon)
                     .WithMany(p => p.CouponInUses)
                     .HasForeignKey(d => d.CouponId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_CouponInUse_Coupon");
 
                 entity.HasOne(d => d.Visitor)
                     .WithMany(p => p.CouponInUses)
                     .HasForeignKey(d => d.VisitorId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_CouponInUse_Account");
             });
 

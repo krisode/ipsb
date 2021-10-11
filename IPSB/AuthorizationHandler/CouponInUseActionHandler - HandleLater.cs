@@ -10,20 +10,23 @@ namespace IPSB.AuthorizationHandler
     {
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, CouponInUseActionRequirement requirement, CouponInUse resource)
         {
-            if (context.User.IsInRole(Constants.Role.VISITOR)) {
-                if (requirement.CouponInUseUM.Status != resource.Status 
-                    || requirement.CouponInUseUM.FeedbackContent != resource.FeedbackContent 
+            if (context.User.IsInRole(Constants.Role.VISITOR))
+            {
+                if (
+                    // requirement.CouponInUseUM.Status != resource.Status
+                    // || 
+                    requirement.CouponInUseUM.FeedbackContent != resource.FeedbackContent
                     || requirement.CouponInUseUM.FeedbackDate != resource.FeedbackDate
                     || requirement.CouponInUseUM.RateScore != resource.RateScore
-                    && requirement.CouponInUseUM.ApplyDate.Equals(resource.ApplyDate)
-                    && requirement.CouponInUseUM.CouponId.Equals(resource.CouponId)
-                    && requirement.CouponInUseUM.VisitorId.Equals(resource.VisitorId)
+                    // && requirement.CouponInUseUM.ApplyDate == resource.ApplyDate
+                    // && requirement.CouponInUseUM.VisitorId.Equals(resource.VisitorId)
                     /*&& requirement.CouponInUseUM.ImageUrl.Equals(resource.)*/
                     )
                 {
                     context.Succeed(requirement);
                     return Task.CompletedTask;
-                } else
+                }
+                else
                 {
                     context.Fail();
                     return Task.CompletedTask;

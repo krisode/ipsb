@@ -18,7 +18,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/coupon-in-uses")]
     [ApiController]
     // [Authorize(Roles = "Building Manager, Visitor, Store Owner")]
-    public class CouponInUseController : AuthorizeController
+    public class CouponInUseController : Controller
     {
         private readonly ICouponInUseService _service;
         private readonly IMapper _mapper;
@@ -241,60 +241,50 @@ namespace IPSB.Controllers
 
             CouponInUse updCouponInUse = await _service.GetByIdAsync(_ => _.Id == id);
 
-            if (updCouponInUse == null || id != model.Id)
-            {
-                return BadRequest();
-            }
 
+            // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updCouponInUse, Operations.Update);
+            // if (!authorizedResult.Succeeded)
+            // {
+            //     return new ObjectResult($"Not authorize to update coupon in use with id: {id}") { StatusCode = 403 };
+            // }
 
-            if (!string.IsNullOrEmpty(model.Status))
+            try
             {
-                if (model.Status != Constants.Status.USED && model.Status != Constants.Status.NOT_USED && model.Status != Constants.Status.DELETED)
+                bool needUpdate = false;
+                if (updCouponInUse.ApplyDate == null)
                 {
-                    return BadRequest();
+                    updCouponInUse.ApplyDate = model.ApplyDate;
+                    updCouponInUse.Status = Constants.Status.USED;
+                    needUpdate = true;
                 }
-            }
-
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updCouponInUse, Operations.Update);
-            if (!authorizedResult.Succeeded)
-            {
-                return new ObjectResult($"Not authorize to update coupon in use with id: {id}") { StatusCode = 403 };
-            }
-
-            if (updCouponInUse.CouponId == model.CouponId && updCouponInUse.VisitorId == updCouponInUse.VisitorId)
-            {
-                try
+                else if (updCouponInUse.RateScore == null && model.RateScore != null)
                 {
-                    updCouponInUse.Id = model.Id;
-                    updCouponInUse.CouponId = model.CouponId;
-                    updCouponInUse.VisitorId = model.VisitorId;
-                    updCouponInUse.ApplyDate = model.ApplyDate.Value;
-                    updCouponInUse.Status = model.Status;
-                    if (model.RateScore != null)
+                    if (model.ImageUrl != null)
                     {
-                        updCouponInUse.FeedbackDate = DateTime.Now;
-                        if (model.ImageUrl != null)
-                        {
-                            string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "coupon-in-use", "feedback-image");
-                            updCouponInUse.FeedbackImage = imageURL;
-                        }
-                        updCouponInUse.FeedbackContent = model.FeedbackContent;
-                        updCouponInUse.RateScore = model.RateScore;
+                        string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "coupon-in-use", "feedback-image");
+                        updCouponInUse.FeedbackImage = imageURL;
                     }
-
+                    updCouponInUse.FeedbackContent = model.FeedbackContent;
+                    updCouponInUse.RateScore = model.RateScore;
+                    updCouponInUse.FeedbackDate = DateTime.Now;
+                    needUpdate = true;
+                }
+                else if (updCouponInUse.FeedbackReply == null && model.FeedbackReply != null)
+                {
+                    updCouponInUse.FeedbackReply = model.FeedbackReply;
+                    needUpdate = true;
+                }
+                if (needUpdate)
+                {
                     _service.Update(updCouponInUse);
                     await _service.Save();
                 }
-                catch (Exception)
-                {
-                    return StatusCode(StatusCodes.Status500InternalServerError);
-                }
             }
-            else
+            catch (Exception)
             {
-                return BadRequest();
-
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
+
             return NoContent();
         }
 
@@ -345,9 +335,5 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        protected override bool IsAuthorize()
-        {
-            throw new NotImplementedException();
-        }
     }
 }
