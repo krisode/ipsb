@@ -75,6 +75,29 @@ namespace IPSB.Controllers
             return Ok(rtnAccount);
         }
 
+        /// <summary>
+        /// Log user out, remove the refresh token cookie
+        /// </summary>
+        /// <remarks>
+        /// Sample Request:
+        /// 
+        ///     GET {
+        ///        
+        ///     }
+        /// </remarks>
+        /// <returns>Remove the refresh token</returns>
+        /// <response code="204">Successfully log user out, removed the refresh token cookie</response>
+        /// <response code="500">Internal server errors</response>
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("logout")]
+        public ActionResult<AccountVM> Logout()
+        {
+            Response.Cookies.Delete(CookieConfig.REFRESH_TOKEN);
+            return NoContent();
+        }
+
 
         /// <summary>
         /// Check valid of user login via firebase
