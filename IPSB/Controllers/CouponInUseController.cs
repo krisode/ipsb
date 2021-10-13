@@ -25,14 +25,17 @@ namespace IPSB.Controllers
         private readonly IPagingSupport<CouponInUse> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly IPushNotificationService _pushNotificationService;
 
-        public CouponInUseController(ICouponInUseService service, IMapper mapper, IPagingSupport<CouponInUse> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService)
+        public CouponInUseController(ICouponInUseService service, IMapper mapper, IPagingSupport<CouponInUse> pagingSupport, 
+            IUploadFileService uploadFileService, IAuthorizationService authorizationService, IPushNotificationService pushNotificationService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
             _authorizationService = authorizationService;
+            _pushNotificationService = pushNotificationService;
         }
 
         /// <summary>
@@ -239,7 +242,7 @@ namespace IPSB.Controllers
         public async Task<ActionResult> PutCouponInUse(int id, [FromForm] CouponInUseUM model)
         {
 
-            CouponInUse updCouponInUse = await _service.GetByIdAsync(_ => _.Id == id);
+            CouponInUse updCouponInUse = await _service.GetByIdAsync(_ => _.Id == id, _ => _.Coupon);
 
 
             // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updCouponInUse, Operations.Update);
@@ -277,7 +280,32 @@ namespace IPSB.Controllers
                 if (needUpdate)
                 {
                     _service.Update(updCouponInUse);
-                    await _service.Save();
+                    if (await _service.Save() > 0)
+                    {
+                        if (!string.IsNullOrEmpty(updCouponInUse.FeedbackContent))
+                        {
+                            var data = new Dictionary<String, String>();
+                            data.Add("notiType", "feedback_changed");
+                            _ = _pushNotificationService.SendMessage(
+                                "Feedback on coupon",
+                                "Coupon " + updCouponInUse.Coupon.Name + " has just received feedback from customer",
+                                "store_id_" + updCouponInUse.Coupon.StoreId,
+                                data
+                                );
+                        }
+                        else if (updCouponInUse.Status.Equals(Constants.Status.USED))
+                        {
+                            var data = new Dictionary<String, String>();
+                            data.Add("notiType", "coupon_in_use_changed");
+                            data.Add("couponInUseStatus", updCouponInUse.Status);
+                            _ = _pushNotificationService.SendMessage(
+                                "Apply discount code successfully",
+                                "You have successfully applied the discount code " + updCouponInUse.Coupon.Name,
+                                "coupon_in_use_id_" + updCouponInUse.Id,
+                                data
+                                );
+                        }
+                    }
                 }
             }
             catch (Exception)
