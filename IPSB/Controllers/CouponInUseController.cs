@@ -299,8 +299,8 @@ namespace IPSB.Controllers
                             data.Add("notiType", "coupon_in_use_changed");
                             data.Add("couponInUseStatus", updCouponInUse.Status);
                             _ = _pushNotificationService.SendMessage(
-                                "Apply discount code successfully",
-                                "You have successfully applied the discount code " + updCouponInUse.Coupon.Name,
+                                "Apply coupon successfully",
+                                "You have successfully applied the coupon " + updCouponInUse.Coupon.Name,
                                 "coupon_in_use_id_" + updCouponInUse.Id,
                                 data
                                 );
