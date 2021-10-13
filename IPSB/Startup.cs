@@ -89,6 +89,10 @@ namespace IPSB
             });
             #endregion
 
+            #region Firebase Push Notification
+            services.AddSingleton<IPushNotificationService, PushNotificationService>();
+            #endregion
+
             #region Utilities
             services.AddAutoMapper(typeof(Startup));
             services.AddScoped(typeof(IPagingSupport<>), typeof(PagingSupport<>));
