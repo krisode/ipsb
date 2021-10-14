@@ -52,27 +52,48 @@ namespace IPSB.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<AccountVM>> CheckLogin(AuthWebLogin authAccount)
         {
-            var account = _accountService.CheckLogin(authAccount.Email, authAccount.Password);
+            var account = _accountService.CheckLogin(authAccount.Email, authAccount.Password, _ => _.Store);
 
             if (account == null)
             {
                 return Unauthorized();
             }
-            var rtnAccount = _mapper.Map<AuthLoginSuccess>(account);
 
-            // Claims for generating JWT
-            var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(account);
+            if (account.Role.Equals(Role.STORE_OWNER))
+            {
+                var rtnAccount = _mapper.Map<AuthPartnerLoginSuccess>(account);
+                // Claims for generating JWT
+                var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(account);
 
-            string accessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
+                string accessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
 
-            string refreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
+                string refreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
 
-            rtnAccount.AccessToken = accessToken;
-            rtnAccount.RefreshToken = refreshToken;
+                rtnAccount.AccessToken = accessToken;
+                rtnAccount.RefreshToken = refreshToken;
 
-            Response.Cookies.Append(CookieConfig.REFRESH_TOKEN, rtnAccount.RefreshToken, CookieConfig.AUTH_COOKIE_OPTIONS);
+                Response.Cookies.Append(CookieConfig.REFRESH_TOKEN, rtnAccount.RefreshToken, CookieConfig.AUTH_COOKIE_OPTIONS);
 
-            return Ok(rtnAccount);
+                return Ok(rtnAccount);
+            }
+            else
+            {
+                var rtnAccount = _mapper.Map<AuthLoginSuccess>(account);
+                // Claims for generating JWT
+                var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(account);
+
+                string accessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
+
+                string refreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
+
+                rtnAccount.AccessToken = accessToken;
+                rtnAccount.RefreshToken = refreshToken;
+
+                Response.Cookies.Append(CookieConfig.REFRESH_TOKEN, rtnAccount.RefreshToken, CookieConfig.AUTH_COOKIE_OPTIONS);
+
+                return Ok(rtnAccount);
+            }
+
         }
 
         /// <summary>

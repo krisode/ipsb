@@ -11,7 +11,7 @@ namespace IPSB.Core.Services
 {
     public interface IAccountService : IService<Account, int>
     {
-        Account CheckLogin(string email, string password);
+        Account CheckLogin(string email, string password, params Expression<Func<Account, object>>[] includes);
 
         Account CheckEmail(string email);
 
@@ -31,9 +31,9 @@ namespace IPSB.Core.Services
             return await _iRepository.AddAsync(entity);
         }
 
-        public Account CheckLogin(string email, string password)
+        public Account CheckLogin(string email, string password, params Expression<Func<Account, object>>[] includes)
         {
-            return _iRepository.GetAllWhere(_ => _.Email.Equals(email), _ => _.Password.Equals(password)).FirstOrDefault();
+            return _iRepository.GetAllTwoConditionInclude(_ => _.Email.Equals(email), _ => _.Password.Equals(password), includes).FirstOrDefault();
         }
 
         public Account CheckEmail(string email)

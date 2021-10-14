@@ -18,6 +18,7 @@ namespace IPSB.Utils
             //#endregion
             #region AuthModel
             CreateMap<Account, AuthLoginSuccess>();
+            CreateMap<Account, AuthPartnerLoginSuccess>();
             #endregion
 
             #region AccountModel
