@@ -31,7 +31,7 @@ namespace IPSB.AuthorizationHandler
             int buildingManagerId = int.Parse(context.User.Identity.Name);
             bool needAuthorized = isDeleteOperation && isUpdateOperation;
 
-            if (needAuthorized && !resource.Stores.All(_ => _.Building.ManagerId == buildingManagerId))
+            if (needAuthorized && resource.Store.Building.ManagerId != buildingManagerId)
             {
                 context.Fail();
                 return Task.CompletedTask;

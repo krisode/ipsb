@@ -56,7 +56,7 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<AccountVM>> GetAccountById(int id)
         {
-            var account = await _service.GetByIdAsync(_ => _.Id == id);
+            var account = await _service.GetByIdAsync(_ => _.Id == id, _ => _.Store);
 
             if (account == null)
             {
@@ -96,7 +96,7 @@ namespace IPSB.Controllers
         //[Authorize(Policy = Policies.QUERY_ACCOUNT)]
         public ActionResult<IEnumerable<AccountVM>> GetAllAccounts([FromQuery] AccountSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<Account> list = _service.GetAll();
+            IQueryable<Account> list = _service.GetAll(_ => _.Store);
 
 
             if (!string.IsNullOrEmpty(model.Role))
