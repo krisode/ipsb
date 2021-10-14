@@ -27,6 +27,22 @@ namespace IPSB.Infrastructure.Repositories
             }
             return queryList;
         }
+        public IQueryable<T> GetAllTwoConditionInclude(Expression<Func<T, bool>> firstCondition, Expression<Func<T, bool>> secondCondition, params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> queryList = _dbContext.Set<T>().AsNoTracking();
+            queryList = queryList.Where(firstCondition);
+            queryList = queryList.Where(secondCondition);
+
+            if (includes.Length > 0)
+            {
+                foreach (var expression in includes)
+                {
+                    queryList = queryList.Include(expression);
+                }
+            }
+            
+            return queryList;
+        }
 
         public IQueryable<T> GetAllWhere(params Expression<Func<T, bool>>[] includes)
         {
