@@ -14,10 +14,13 @@ namespace IPSB.ViewModels
         public string Email { get; set; }
         public string Status { get; set; }
 
+        public StoreRefModel Store { get; set; }
+
+
         public ICollection<BuildingRefModel> BuildingAdmins { get; set; }
         public ICollection<BuildingRefModel> BuildingManagers { get; set; }
         public ICollection<CouponInUseRefModel> CouponInUses { get; set; }
-        public ICollection<StoreRefModel> Stores { get; set; }
+        
         public ICollection<VisitRouteRefModel> VisitRoutes { get; set; }
     }
     public class AccountRefModel

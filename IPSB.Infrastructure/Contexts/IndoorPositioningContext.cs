@@ -82,6 +82,9 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("Building");
 
+                entity.HasIndex(e => e.ManagerId, "UQ__Building__3BA2AAE0CB321A0A")
+                    .IsUnique();
+
                 entity.Property(e => e.Address)
                     .IsRequired()
                     .HasMaxLength(400);
@@ -106,8 +109,8 @@ namespace IPSB.Infrastructure.Contexts
                     .HasConstraintName("FK_Building_Account");
 
                 entity.HasOne(d => d.Manager)
-                    .WithMany(p => p.BuildingManagers)
-                    .HasForeignKey(d => d.ManagerId)
+                    .WithOne(p => p.BuildingManager)
+                    .HasForeignKey<Building>(d => d.ManagerId)
                     .HasConstraintName("FK_Building_Account1");
             });
 
@@ -490,6 +493,9 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("Store");
 
+                entity.HasIndex(e => e.AccountId, "UQ__Store__349DA5A7971A9D32")
+                    .IsUnique();
+
                 entity.Property(e => e.Description).IsRequired();
 
                 entity.Property(e => e.ImageUrl)
@@ -515,8 +521,8 @@ namespace IPSB.Infrastructure.Contexts
                     .IsUnicode(false);
 
                 entity.HasOne(d => d.Account)
-                    .WithMany(p => p.Stores)
-                    .HasForeignKey(d => d.AccountId)
+                    .WithOne(p => p.Store)
+                    .HasForeignKey<Store>(d => d.AccountId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Store_Account");
 

@@ -10,10 +10,8 @@ namespace IPSB.Infrastructure.Contexts
         public Account()
         {
             BuildingAdmins = new HashSet<Building>();
-            BuildingManagers = new HashSet<Building>();
             CouponInUses = new HashSet<CouponInUse>();
             ShoppingLists = new HashSet<ShoppingList>();
-            Stores = new HashSet<Store>();
             VisitRoutes = new HashSet<VisitRoute>();
         }
 
@@ -26,11 +24,11 @@ namespace IPSB.Infrastructure.Contexts
         public string Password { get; set; }
         public string Status { get; set; }
 
+        public virtual Building BuildingManager { get; set; }
+        public virtual Store Store { get; set; }
         public virtual ICollection<Building> BuildingAdmins { get; set; }
-        public virtual ICollection<Building> BuildingManagers { get; set; }
         public virtual ICollection<CouponInUse> CouponInUses { get; set; }
         public virtual ICollection<ShoppingList> ShoppingLists { get; set; }
-        public virtual ICollection<Store> Stores { get; set; }
         public virtual ICollection<VisitRoute> VisitRoutes { get; set; }
     }
 }
