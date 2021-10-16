@@ -91,6 +91,7 @@ namespace IPSB.Controllers
         /// <response code="404">No product categories found</response>
         [HttpGet]
         [Produces("application/json")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<ProductCategoryRefModel>> GetAllProductCategories([FromQuery] ProductCategorySM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
