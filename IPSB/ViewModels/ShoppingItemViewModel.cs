@@ -11,6 +11,7 @@ namespace IPSB.ViewModels
         public int Id { get; set; }
         public int ShoppingListId { get; set; }
         public int ProductId { get; set; }
+        public ShoppingListRefModel ShoppingList { get; set; }
         public ProductRefModelForShoppingItem Product { get; set; }
         public string Note { get; set; }
     }
