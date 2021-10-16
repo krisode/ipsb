@@ -23,7 +23,8 @@ namespace IPSB.ViewModels
 
     }
 
-    public class AuthPartnerLoginSuccess{
+    public class AuthPartnerLoginSuccess
+    {
         public int Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
@@ -33,11 +34,11 @@ namespace IPSB.ViewModels
         public string Status { get; set; }
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }
-
-        public StoreRefModel Store { get; set; }
+        public StoreLoginModel Store { get; set; }
     }
 
-    public class AuthLoginSuccess{
+    public class AuthLoginSuccess
+    {
         public int Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
@@ -68,5 +69,5 @@ namespace IPSB.ViewModels
         public string Url { get; set; }
         public string BackupUrl { get; set; }
     }
-    
+
 }

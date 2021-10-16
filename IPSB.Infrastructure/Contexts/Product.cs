@@ -9,6 +9,7 @@ namespace IPSB.Infrastructure.Contexts
     {
         public Product()
         {
+            InverseProductGroup = new HashSet<Product>();
             ShoppingItems = new HashSet<ShoppingItem>();
         }
 
@@ -23,8 +24,9 @@ namespace IPSB.Infrastructure.Contexts
         public string Status { get; set; }
 
         public virtual ProductCategory ProductCategory { get; set; }
-        public virtual ProductGroup ProductGroup { get; set; }
         public virtual Store Store { get; set; }
+        public virtual Product ProductGroup { get; set; }
+        public virtual ICollection<Product> InverseProductGroup { get; set; }
         public virtual ICollection<ShoppingItem> ShoppingItems { get; set; }
     }
 }

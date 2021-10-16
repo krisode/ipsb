@@ -19,7 +19,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/products")]
     [ApiController]
     [Authorize(Roles = "Visitor, Store Owner")]
-    public class ProductController : AuthorizeController
+    public class ProductController : Controller
     {
         private readonly IProductService _service;
         private readonly IMapper _mapper;
@@ -58,7 +58,7 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<ProductVM> GetProductById(int id)
         {
-            var product = _service.GetByIdAsync(_ => _.Id == id, _ => _.ProductCategory, _ => _.ProductGroup, _ => _.Store).Result;
+            var product = _service.GetByIdAsync(_ => _.Id == id, _ => _.ProductCategory, _ => _.InverseProductGroup, _ => _.Store).Result;
 
             if (product == null)
             {
@@ -247,6 +247,7 @@ namespace IPSB.Controllers
 
             Product updProduct = await _service.GetByIdAsync(_ => _.Id == id);
 
+
             if (!updProduct.Name.ToUpper().Equals(model.Name.ToUpper()))
             {
                 Product product = _service.GetByIdAsync(_ => _.Name.ToUpper() == model.Name.ToUpper()).Result;
@@ -256,24 +257,11 @@ namespace IPSB.Controllers
                 }
             }
 
-            if (updProduct == null || id != model.Id)
-            {
-                return BadRequest();
-            }
-
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Constants.Status.NEW && model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-                {
-                    return BadRequest();
-                }
-            }
-
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updProduct, Operations.Update);
-            if (!authorizedResult.Succeeded)
-            {
-                return new ObjectResult($"Not authorize to update product with id: {id}") { StatusCode = 403 };
-            }
+            // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updProduct, Operations.Update);
+            // if (!authorizedResult.Succeeded)
+            // {
+            //     return new ObjectResult($"Not authorize to update product with id: {id}") { StatusCode = 403 };
+            // }
 
             string imageURL = updProduct.ImageUrl;
 
@@ -285,14 +273,13 @@ namespace IPSB.Controllers
             try
             {
                 updProduct.Id = model.Id;
-                updProduct.StoreId = model.StoreId;
                 updProduct.ProductGroupId = model.ProductGroupId;
                 updProduct.Name = model.Name;
                 updProduct.ImageUrl = imageURL;
                 updProduct.Description = model.Description;
                 updProduct.ProductCategoryId = model.ProductCategoryId;
                 updProduct.Price = model.Price;
-                updProduct.Status = model.Status;
+                updProduct.Status = Constants.Status.ACTIVE;
 
                 _service.Update(updProduct);
                 await _service.Save();
@@ -305,8 +292,14 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        // DELETE api/<ProductCategoryController>/5
-        // Change Status to Inactive
+        /// <summary>
+        /// Delete product with specified id
+        /// </summary>
+        /// <param name="id">Product's id</param>
+        /// <response code="204">Delete product successfully</response>
+        /// <response code="400">Product delete bad request</response>
+        /// <response code="404">Product not found</response>
+        /// <response code="500">Failed to delete</response>
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
@@ -321,7 +314,7 @@ namespace IPSB.Controllers
 
             if (product is null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
             if (product.Status.Equals(Constants.Status.INACTIVE))
@@ -329,10 +322,9 @@ namespace IPSB.Controllers
                 return BadRequest();
             }
 
-            product.Status = Constants.Status.INACTIVE;
-
             try
             {
+                product.Status = Constants.Status.INACTIVE;
                 _service.Update(product);
                 if (_service.Save().Result > 0)
                 {
@@ -362,9 +354,6 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        protected override bool IsAuthorize()
-        {
-            throw new NotImplementedException();
-        }
+        
     }
 }

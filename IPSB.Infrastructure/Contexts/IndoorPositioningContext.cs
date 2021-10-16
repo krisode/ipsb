@@ -394,9 +394,9 @@ namespace IPSB.Infrastructure.Contexts
                     .HasConstraintName("FK_Product_ProductCategory");
 
                 entity.HasOne(d => d.ProductGroup)
-                    .WithMany(p => p.Products)
+                    .WithMany(p => p.InverseProductGroup)
                     .HasForeignKey(d => d.ProductGroupId)
-                    .HasConstraintName("FK_Product_ProductGroup");
+                    .HasConstraintName("FK_Product_Product1");
 
                 entity.HasOne(d => d.Store)
                     .WithMany(p => p.Products)

@@ -66,12 +66,7 @@ namespace IPSB.Controllers
             {
                 var building = await _cacheStore.GetOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
-                    var building = _service.GetByIdAsync(_ => _.Id == id,
-                        _ => _.Admin,
-                        _ => _.Manager,
-                        _ => _.FloorPlans,
-                        _ => _.Stores,
-                        _ => _.VisitRoutes).Result;
+                    var building = _service.GetByIdAsync(_ => _.Id == id, _ => _.Manager).Result;
 
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
 
@@ -135,7 +130,7 @@ namespace IPSB.Controllers
             {
                 var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
-                    var list = _service.GetAll(_ => _.Admin, _ => _.Manager, _ => _.FloorPlans, _ => _.Stores, _ => _.VisitRoutes);
+                    var list = _service.GetAll(_ => _.Manager);
 
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
 
