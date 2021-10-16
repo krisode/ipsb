@@ -2,8 +2,13 @@
 
 namespace IPSB.ViewModels
 {
-    public class TestModel
+    public class UploadFileCM
     {
         public IFormFile File { get; set; }
+    }
+
+    public class UploadFileDM
+    {
+        public string ImageUrl { get; set; }
     }
 }
