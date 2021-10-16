@@ -94,6 +94,7 @@ namespace IPSB.Utils
             CreateMap<Product, ProductRefModel>();
             CreateMap<Product, ProductVM>();
             CreateMap<Product, ProductRefModelForShoppingItem>();
+            CreateMap<Product, ProductGroupModel>();
             CreateMap<ProductCM, Product>();
             #endregion
 
@@ -114,6 +115,7 @@ namespace IPSB.Utils
             CreateMap<Store, StoreRefModelForEdge>();
             CreateMap<Store, StoreRefModelForProduct>();
             CreateMap<Store, StoreVM>();
+            CreateMap<Store, StoreLoginModel>();
             CreateMap<StoreCM, Store>();
             #endregion
 

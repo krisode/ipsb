@@ -18,7 +18,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/products")]
     [ApiController]
     [Authorize(Roles = "Visitor, Store Owner")]
-    public class ProductController : AuthorizeController
+    public class ProductController : Controller
     {
         private readonly IProductService _service;
         private readonly IMapper _mapper;
@@ -54,7 +54,7 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<ProductVM> GetProductById(int id)
         {
-            var product = _service.GetByIdAsync(_ => _.Id == id, _ => _.ProductCategory, _ => _.ProductGroup, _ => _.Store).Result;
+            var product = _service.GetByIdAsync(_ => _.Id == id, _ => _.ProductCategory, _ => _.InverseProductGroup, _ => _.Store).Result;
 
             if (product == null)
             {
@@ -243,6 +243,7 @@ namespace IPSB.Controllers
 
             Product updProduct = await _service.GetByIdAsync(_ => _.Id == id);
 
+
             if (!updProduct.Name.ToUpper().Equals(model.Name.ToUpper()))
             {
                 Product product = _service.GetByIdAsync(_ => _.Name.ToUpper() == model.Name.ToUpper()).Result;
@@ -252,24 +253,11 @@ namespace IPSB.Controllers
                 }
             }
 
-            if (updProduct == null || id != model.Id)
-            {
-                return BadRequest();
-            }
-
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Constants.Status.NEW && model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-                {
-                    return BadRequest();
-                }
-            }
-
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updProduct, Operations.Update);
-            if (!authorizedResult.Succeeded)
-            {
-                return new ObjectResult($"Not authorize to update product with id: {id}") { StatusCode = 403 };
-            }
+            // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updProduct, Operations.Update);
+            // if (!authorizedResult.Succeeded)
+            // {
+            //     return new ObjectResult($"Not authorize to update product with id: {id}") { StatusCode = 403 };
+            // }
 
             string imageURL = updProduct.ImageUrl;
 
@@ -281,14 +269,13 @@ namespace IPSB.Controllers
             try
             {
                 updProduct.Id = model.Id;
-                updProduct.StoreId = model.StoreId;
                 updProduct.ProductGroupId = model.ProductGroupId;
                 updProduct.Name = model.Name;
                 updProduct.ImageUrl = imageURL;
                 updProduct.Description = model.Description;
                 updProduct.ProductCategoryId = model.ProductCategoryId;
                 updProduct.Price = model.Price;
-                updProduct.Status = model.Status;
+                updProduct.Status = Constants.Status.ACTIVE;
 
                 _service.Update(updProduct);
                 await _service.Save();
@@ -301,17 +288,37 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        // DELETE api/<ProductCategoryController>/5
-        // Change Status to Inactive
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        /// <summary>
+        /// Delete product with specified id
+        /// </summary>
+        /// <param name="id">Product's id</param>
+        /// <response code="204">Delete product successfully</response>
+        /// <response code="404">Product not found</response>
+        /// <response code="500">Failed to delete</response>
+        [HttpDelete]
+        [Route("{id}")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> Delete(int id)
         {
+            Product deleteProduct = await _service.GetByIdAsync(_ => _.Id == id);
+            if (deleteProduct == null)
+            {
+                return NotFound();
+            }
 
-        }
-
-        protected override bool IsAuthorize()
-        {
-            throw new NotImplementedException();
+            try
+            {
+                deleteProduct.Status = Constants.Status.INACTIVE;
+                _service.Update(deleteProduct);
+                await _service.Save();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            return NoContent();
         }
     }
 }

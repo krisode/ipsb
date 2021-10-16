@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace IPSB.ViewModels
@@ -14,10 +15,15 @@ namespace IPSB.ViewModels
         public double Price { get; set; }
         public int ProductGroupId { get; set; }
         public string Status { get; set; }
-
         public ProductCategoryRefModel ProductCategory { get; set; }
-        public ProductGroupRefModel ProductGroup { get; set; }
+        public ProductGroupModel ProductGroup { get; set; }
         public StoreRefModel Store { get; set; }
+        public ICollection<ProductRefModel> InverseProductGroup { get; set; }
+    }
+    public class ProductGroupModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
     public class ProductRefModel
     {
@@ -70,13 +76,10 @@ namespace IPSB.ViewModels
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public int StoreId { get; set; }
         public int ProductGroupId { get; set; }
         public IFormFile ImageUrl { get; set; }
         public string Description { get; set; }
         public float Price { get; set; }
         public int ProductCategoryId { get; set; }
-        [Required]
-        public string Status { get; set; }
     }
 }

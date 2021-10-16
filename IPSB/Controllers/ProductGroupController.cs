@@ -50,7 +50,7 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<ProductGroupVM> GetProductGroupById(int id)
         {
-            var productGroup = _service.GetByIdAsync(_ => _.Id == id, _ => _.Store, _ => _.Products).Result;
+            var productGroup = _service.GetByIdAsync(_ => _.Id == id, _ => _.Store).Result;
 
             if (productGroup == null)
             {
@@ -83,7 +83,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<ProductGroupVM>> GetAllProductGroups([FromQuery] ProductGroupSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<ProductGroup> list = _service.GetAll(_ => _.Store, _ => _.Products);
+            IQueryable<ProductGroup> list = _service.GetAll(_ => _.Store);
 
             if (model.StoreId != 0)
             {

@@ -251,13 +251,13 @@ namespace IPSB.Controllers
                 return Unauthorized();
             }
 
-            Account accountFound = await _accountService.GetByIdAsync(_ => _.Id == accountId);
+            Account accountFound = await _accountService.GetByIdAsync(_ => _.Id == accountId, _ => _.Store);
             if (accountFound.Status.Equals(Status.INACTIVE))
             {
                 return Unauthorized();
             }
 
-            var rtnAccount = _mapper.Map<AuthLoginSuccess>(accountFound);
+            var rtnAccount = _mapper.Map<AuthPartnerLoginSuccess>(accountFound);
 
             var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(accountFound);
 
@@ -417,5 +417,7 @@ namespace IPSB.Controllers
             return Ok(accessToken);
         }
     }
+
+
 
 }
