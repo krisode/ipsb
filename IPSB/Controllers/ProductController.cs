@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace IPSB.Controllers
 {
@@ -25,13 +26,16 @@ namespace IPSB.Controllers
         private readonly IPagingSupport<Product> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
         private readonly IAuthorizationService _authorizationService;
-        public ProductController(IProductService service, IMapper mapper, IPagingSupport<Product> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService)
+        private readonly IPushNotificationService _pushNotificationService;
+        public ProductController(IProductService service, IMapper mapper, IPagingSupport<Product> pagingSupport, 
+            IUploadFileService uploadFileService, IAuthorizationService authorizationService, IPushNotificationService pushNotificationService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
             _authorizationService = authorizationService;
+            _pushNotificationService = pushNotificationService;
         }
 
         /// <summary>
@@ -304,9 +308,58 @@ namespace IPSB.Controllers
         // DELETE api/<ProductCategoryController>/5
         // Change Status to Inactive
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public ActionResult Delete(int id)
         {
+            Product product = _service.GetAll().Include(_ => _.ShoppingItems).ThenInclude(_ => _.ShoppingList).FirstOrDefault(_ => _.Id == id);
 
+
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, product, Operations.Delete);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to delete product with id: {id}") { StatusCode = 403 };
+            }*/
+
+            if (product is null)
+            {
+                return BadRequest();
+            }
+
+            if (product.Status.Equals(Constants.Status.INACTIVE))
+            {
+                return BadRequest();
+            }
+
+            product.Status = Constants.Status.INACTIVE;
+
+            try
+            {
+                _service.Update(product);
+                if (_service.Save().Result > 0)
+                {
+                    if (product.ShoppingItems.Count > 0)
+                    {
+                        foreach (var item in product.ShoppingItems)
+                        {
+                            var data = new Dictionary<String, String>();
+                            data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
+                            data.Add("notificationType", "shopping_list_changed");
+                            data.Add("shoppingListId", item.ShoppingListId.ToString());
+                            _ = _pushNotificationService.SendMessage(
+                                "Product is no longer available",
+                                "Product " + product.Name + " in your shopping list " + item.ShoppingList.Name + " is no longer available",
+                                "shopping_list_id_" + item.ShoppingListId,
+                                data
+                                );
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return NoContent();
         }
 
         protected override bool IsAuthorize()

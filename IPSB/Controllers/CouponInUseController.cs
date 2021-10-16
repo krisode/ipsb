@@ -282,10 +282,12 @@ namespace IPSB.Controllers
                     _service.Update(updCouponInUse);
                     if (await _service.Save() > 0)
                     {
-                        if (!string.IsNullOrEmpty(updCouponInUse.FeedbackContent))
+                        if (!string.IsNullOrEmpty(updCouponInUse.FeedbackContent) && string.IsNullOrEmpty(updCouponInUse.FeedbackReply))
                         {
                             var data = new Dictionary<String, String>();
-                            data.Add("notiType", "feedback_changed");
+                            data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
+                            data.Add("notificationType", "feedback_changed");
+                            data.Add("couponId", updCouponInUse.Coupon.Id.ToString());
                             _ = _pushNotificationService.SendMessage(
                                 "Feedback on coupon",
                                 "Coupon " + updCouponInUse.Coupon.Name + " has just received feedback from customer",
@@ -296,8 +298,8 @@ namespace IPSB.Controllers
                         else if (updCouponInUse.Status.Equals(Constants.Status.USED))
                         {
                             var data = new Dictionary<String, String>();
-                            data.Add("notiType", "coupon_in_use_changed");
-                            data.Add("couponInUseStatus", updCouponInUse.Status);
+                            data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
+                            data.Add("notificationType", "coupon_in_use_changed");
                             _ = _pushNotificationService.SendMessage(
                                 "Apply coupon successfully",
                                 "You have successfully applied the coupon " + updCouponInUse.Coupon.Name,
