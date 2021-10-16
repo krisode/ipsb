@@ -1,6 +1,8 @@
 ﻿using IPSB.ExternalServices;
 using IPSB.ViewModels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -8,12 +10,12 @@ using System.Threading.Tasks;
 
 namespace IPSB.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1.0/upload-files")]
     [ApiController]
-    public class TestUploadFileController : ControllerBase
+    public class UploadFileController : ControllerBase
     {
         private readonly IUploadFileService _uploadFileService;
-        public TestUploadFileController(IUploadFileService uploadFileService)
+        public UploadFileController(IUploadFileService uploadFileService)
         {
             _uploadFileService = uploadFileService;
         }
@@ -34,9 +36,23 @@ namespace IPSB.Controllers
 
         // POST api/<TestUploadFileController>
         [HttpPost]
-        public async Task<ActionResult> TestPost([FromForm] TestModel test)
+        public async Task<ActionResult> PostFile([FromForm] UploadFileCM model)
         {
-            string imageUrl = await _uploadFileService.UploadFile("123456798", test.File, "test", "test-detail");
+            if (model.File == null)
+            {
+                return BadRequest();
+            }
+            string imageUrl = null;
+
+            try
+            {
+                imageUrl = await _uploadFileService.UploadFile("123456798", model.File, "temp", "temp-files");
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
             if (imageUrl != null)
             {
                 return Ok(imageUrl);
@@ -51,9 +67,10 @@ namespace IPSB.Controllers
         }
 
         // DELETE api/<TestUploadFileController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpDelete]
+        public void Delete([FromBody] UploadFileDM model)
         {
+
         }
     }
 }
