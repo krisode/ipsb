@@ -295,7 +295,7 @@ namespace IPSB.Controllers
                                 data
                                 );
                         }
-                        else if (updCouponInUse.Status.Equals(Constants.Status.USED))
+                        else if (updCouponInUse.Status.Equals(Constants.Status.USED) && string.IsNullOrEmpty(updCouponInUse.FeedbackContent) && string.IsNullOrEmpty(updCouponInUse.FeedbackReply))
                         {
                             var data = new Dictionary<String, String>();
                             data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
