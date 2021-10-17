@@ -133,6 +133,7 @@ namespace IPSB.Utils
 
             #region ShoppingList
             CreateMap<ShoppingList, ShoppingListVM>();
+            CreateMap<ShoppingList, ShoppingListRefModel>();
             CreateMap<ShoppingListCM, ShoppingList>();
             #endregion
 
