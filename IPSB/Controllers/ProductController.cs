@@ -27,7 +27,7 @@ namespace IPSB.Controllers
         private readonly IUploadFileService _uploadFileService;
         private readonly IAuthorizationService _authorizationService;
         private readonly IPushNotificationService _pushNotificationService;
-        public ProductController(IProductService service, IMapper mapper, IPagingSupport<Product> pagingSupport, 
+        public ProductController(IProductService service, IMapper mapper, IPagingSupport<Product> pagingSupport,
             IUploadFileService uploadFileService, IAuthorizationService authorizationService, IPushNotificationService pushNotificationService)
         {
             _service = service;
@@ -247,40 +247,37 @@ namespace IPSB.Controllers
 
             Product updProduct = await _service.GetByIdAsync(_ => _.Id == id);
 
-
-            if (!updProduct.Name.ToUpper().Equals(model.Name.ToUpper()))
-            {
-                Product product = _service.GetByIdAsync(_ => _.Name.ToUpper() == model.Name.ToUpper()).Result;
-                if (product is not null)
-                {
-                    return Conflict();
-                }
-            }
-
             // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updProduct, Operations.Update);
             // if (!authorizedResult.Succeeded)
             // {
             //     return new ObjectResult($"Not authorize to update product with id: {id}") { StatusCode = 403 };
             // }
 
-            string imageURL = updProduct.ImageUrl;
 
-            if (model.ImageUrl is not null && model.ImageUrl.Length > 0)
+            string imageUrl = updProduct.ImageUrl;
+
+            if (model.ImageUrl != null)
             {
-                imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "product", "product-detail");
+                imageUrl = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "product", "product-detail");
             }
 
             try
             {
-                updProduct.Id = model.Id;
-                updProduct.ProductGroupId = model.ProductGroupId;
+                if (model.ProductGroupId > 0)
+                {
+                    updProduct.ProductGroupId = model.ProductGroupId;
+                }
                 updProduct.Name = model.Name;
-                updProduct.ImageUrl = imageURL;
+                updProduct.ImageUrl = imageUrl;
                 updProduct.Description = model.Description;
-                updProduct.ProductCategoryId = model.ProductCategoryId;
-                updProduct.Price = model.Price;
-                updProduct.Status = Constants.Status.ACTIVE;
-
+                if (model.ProductCategoryId > 0)
+                {
+                    updProduct.ProductCategoryId = model.ProductCategoryId;
+                }
+                if (model.Price > 0)
+                {
+                    updProduct.Price = model.Price;
+                }
                 _service.Update(updProduct);
                 await _service.Save();
             }
@@ -354,6 +351,6 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        
+
     }
 }
