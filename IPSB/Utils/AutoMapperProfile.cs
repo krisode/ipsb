@@ -84,6 +84,12 @@ namespace IPSB.Utils
             CreateMap<LocatorTagCM, LocatorTag>();
             #endregion
 
+            #region NotificationModel
+            CreateMap<Notification, NotificationRefModel>();
+            CreateMap<Notification, NotificationVM>();
+            CreateMap<NotificationCM, Notification>();
+            #endregion
+
             #region ProductModel
             CreateMap<Product, ProductRefModel>();
             CreateMap<Product, ProductVM>();

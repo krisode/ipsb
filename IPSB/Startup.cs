@@ -124,7 +124,9 @@ namespace IPSB
             // Add LocationTypeService
             services.AddTransient<ILocationTypeService, LocationTypeService>();
             // Add LocatorTagService
-            services.AddTransient<ILocatorTagService, LocatorTagService>();
+            services.AddTransient<ILocatorTagService, LocatorTagService>();  
+            // Add NotificationService
+            services.AddTransient<INotificationService, NotificationService>();
             // Add ProductService
             services.AddTransient<IProductService, ProductService>();
             // Add ProductCategoryService
@@ -141,7 +143,7 @@ namespace IPSB
             services.AddTransient<IShoppingItemService, ShoppingItemService>();
             #endregion
 
-             #region Authorization Handler
+            #region Authorization Handler
             services.AddSingleton<IAuthorizationHandler, AccountHandler>();
             services.AddSingleton<IAuthorizationHandler, QueryAccountHandler>();
             services.AddSingleton<IAuthorizationHandler, BuildingHandler>();
