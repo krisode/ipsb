@@ -58,7 +58,7 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<ProductVM> GetProductById(int id)
         {
-            var product = _service.GetByIdAsync(_ => _.Id == id, _ => _.ProductCategory, _ => _.InverseProductGroup, _ => _.Store).Result;
+            var product = _service.GetByIdAsync(_ => _.Id == id, _ => _.ProductCategory, _ => _.Store).Result;
 
             if (product == null)
             {
@@ -98,7 +98,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<ProductVM>> GetAllProducts([FromQuery] ProductSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<Product> list = _service.GetAll(_ => _.ProductCategory, _ => _.ProductGroup, _ => _.Store);
+            IQueryable<Product> list = _service.GetAll(_ => _.ProductCategory, _ => _.Store);
 
             if (model.StoreId > 0)
             {
@@ -111,11 +111,6 @@ namespace IPSB.Controllers
             if (model.ProductCategoryId > 0)
             {
                 list = list.Where(_ => _.ProductCategoryId == model.ProductCategoryId);
-            }
-
-            if (model.ProductGroupId > 0)
-            {
-                list = list.Where(_ => _.ProductGroupId == model.ProductGroupId);
             }
 
             if (!string.IsNullOrEmpty(model.Name))
@@ -275,10 +270,6 @@ namespace IPSB.Controllers
 
             try
             {
-                if (model.ProductGroupId > 0)
-                {
-                    updProduct.ProductGroupId = model.ProductGroupId;
-                }
                 updProduct.Name = model.Name;
                 updProduct.ImageUrl = imageUrl;
                 updProduct.Description = model.Description;

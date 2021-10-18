@@ -8,14 +8,7 @@ namespace IPSB.Utils
     {
         public AutoMapperProfile()
         {
-            //#region AutoMapper ServiceViewModel
-            //CreateMap<ServiceCM, Service>();
-            //CreateMap<Service, ServiceVM>();
-            //CreateMap<Service, ServicePagingSM>();
-            //CreateMap<ServicePagingSM, Service>();
-            //CreateMap<ServiceVM, Service>();
-            //CreateMap<ServiceCM, Service>();
-            //#endregion
+            
             #region AuthModel
             CreateMap<Account, AuthLoginSuccess>();
             CreateMap<Account, AuthPartnerLoginSuccess>();
@@ -95,7 +88,6 @@ namespace IPSB.Utils
             CreateMap<Product, ProductRefModel>();
             CreateMap<Product, ProductVM>();
             CreateMap<Product, ProductRefModelForShoppingItem>();
-            CreateMap<Product, ProductGroupModel>();
             CreateMap<ProductCM, Product>();
             #endregion
 
@@ -103,12 +95,6 @@ namespace IPSB.Utils
             CreateMap<ProductCategory, ProductCategoryRefModel>();
             CreateMap<ProductCategory, ProductCategoryVM>();
             CreateMap<ProductCategoryCM, ProductCategory>();
-            #endregion
-
-            #region ProductGroupModel
-            CreateMap<ProductGroup, ProductGroupRefModel>();
-            CreateMap<ProductGroup, ProductGroupVM>();
-            CreateMap<ProductGroupCM, ProductGroup>();
             #endregion
 
             #region StoreModel
