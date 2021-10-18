@@ -75,6 +75,10 @@ namespace IPSB.Utils
             public const string NOT_USED = "NotUsed";
 
             public const string DELETED = "Deleted";
+
+            public const string READ = "Read";
+
+            public const string UNREAD = "Unread";
         }
 
         public static class AppSetting
