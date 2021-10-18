@@ -30,7 +30,6 @@ namespace IPSB.Infrastructure.Contexts
         public virtual DbSet<LocatorTag> LocatorTags { get; set; }
         public virtual DbSet<Product> Products { get; set; }
         public virtual DbSet<ProductCategory> ProductCategories { get; set; }
-        public virtual DbSet<ProductGroup> ProductGroups { get; set; }
         public virtual DbSet<ShoppingItem> ShoppingItems { get; set; }
         public virtual DbSet<ShoppingList> ShoppingLists { get; set; }
         public virtual DbSet<Store> Stores { get; set; }
@@ -393,11 +392,6 @@ namespace IPSB.Infrastructure.Contexts
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Product_ProductCategory");
 
-                entity.HasOne(d => d.ProductGroup)
-                    .WithMany(p => p.InverseProductGroup)
-                    .HasForeignKey(d => d.ProductGroupId)
-                    .HasConstraintName("FK_Product_Product1");
-
                 entity.HasOne(d => d.Store)
                     .WithMany(p => p.Products)
                     .HasForeignKey(d => d.StoreId)
@@ -418,29 +412,6 @@ namespace IPSB.Infrastructure.Contexts
                 entity.Property(e => e.Status)
                     .HasMaxLength(20)
                     .IsUnicode(false);
-            });
-
-            modelBuilder.Entity<ProductGroup>(entity =>
-            {
-                entity.ToTable("ProductGroup");
-
-                entity.Property(e => e.Description).IsRequired();
-
-                entity.Property(e => e.Image).IsUnicode(false);
-
-                entity.Property(e => e.Name)
-                    .IsRequired()
-                    .HasMaxLength(200);
-
-                entity.Property(e => e.Status)
-                    .HasMaxLength(20)
-                    .IsUnicode(false);
-
-                entity.HasOne(d => d.Store)
-                    .WithMany(p => p.ProductGroups)
-                    .HasForeignKey(d => d.StoreId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_ProductGroup_Store");
             });
 
             modelBuilder.Entity<ShoppingItem>(entity =>

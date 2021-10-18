@@ -13,18 +13,11 @@ namespace IPSB.ViewModels
         public string ImageUrl { get; set; }
         public string Description { get; set; }
         public double Price { get; set; }
-        public int ProductGroupId { get; set; }
         public string Status { get; set; }
         public ProductCategoryRefModel ProductCategory { get; set; }
-        public ProductGroupModel ProductGroup { get; set; }
         public StoreRefModel Store { get; set; }
-        public ICollection<ProductRefModel> InverseProductGroup { get; set; }
     }
-    public class ProductGroupModel
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-    }
+   
     public class ProductRefModel
     {
         public int Id { get; set; }
@@ -34,7 +27,6 @@ namespace IPSB.ViewModels
         public string ImageUrl { get; set; }
         public string Description { get; set; }
         public double Price { get; set; }
-        public int ProductGroupId { get; set; }
         public string Status { get; set; }
 
     }
@@ -55,7 +47,6 @@ namespace IPSB.ViewModels
         public string Name { get; set; }
         public int StoreId { get; set; }
         public int BuildingId { get; set; }
-        public int ProductGroupId { get; set; }
         public string Description { get; set; }
         public float LowerPrice { get; set; }
         public float UpperPrice { get; set; }
@@ -66,7 +57,6 @@ namespace IPSB.ViewModels
     {
         public string Name { get; set; }
         public int StoreId { get; set; }
-        public int ProductGroupId { get; set; }
         public IFormFile ImageUrl { get; set; }
         public string Description { get; set; }
         public float Price { get; set; }
@@ -76,7 +66,6 @@ namespace IPSB.ViewModels
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public int ProductGroupId { get; set; }
         public IFormFile ImageUrl { get; set; }
         public string Description { get; set; }
         public float Price { get; set; }
