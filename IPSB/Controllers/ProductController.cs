@@ -189,7 +189,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ProductCM>> CreateProduct([FromForm] ProductCM model)
         {
-            bool isExisted = _service.GetAll(_ => string.Compare(_.Name, model.Name, true) == 0).Count() == 1;
+            bool isExisted = _service.GetAll().Where(_ => string.Compare(_.Name, model.Name, true) == 0).Count() == 1;
             if (isExisted)
             {
                 return Conflict();
@@ -242,6 +242,13 @@ namespace IPSB.Controllers
         public async Task<ActionResult> PutProduct(int id, [FromForm] ProductUM model)
         {
 
+
+            bool isExisted = _service.GetAll().Where(_ => string.Compare(_.Name, model.Name, true) == 0).Count() == 1;
+            if (isExisted)
+            {
+                return Conflict();
+            }
+
             Product updProduct = await _service.GetByIdAsync(_ => _.Id == id);
 
             // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updProduct, Operations.Update);
@@ -255,11 +262,11 @@ namespace IPSB.Controllers
                 return NotFound();
             }
 
-            bool isExisted = _service.GetAll(_ => string.Compare(_.Name, model.Name, true) == 0).Count() == 1;
-            if (isExisted)
+            if (updProduct.Status.Equals(Constants.Status.INACTIVE))
             {
-                return Conflict();
+                return BadRequest();
             }
+
 
             string imageUrl = updProduct.ImageUrl;
 
