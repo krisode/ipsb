@@ -194,8 +194,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ProductCM>> CreateProduct([FromForm] ProductCM model)
         {
-            Product product = _service.GetByIdAsync(_ => _.Name.ToUpper() == model.Name.ToUpper()).Result;
-            if (product is not null)
+            bool isExisted = _service.GetAll(_ => string.Compare(_.Name, model.Name, true) == 0).Count() == 1;
+            if (isExisted)
             {
                 return Conflict();
             }
@@ -233,12 +233,14 @@ namespace IPSB.Controllers
         /// <param name="model">Information applied to updated product</param>
         /// <response code="204">Update product successfully</response>
         /// <response code="400">Product's id does not exist or does not match with the id in parameter</response>
+        /// <response code="404">Product not found</response>
         /// <response code="409">Product already exists</response>
         /// <response code="500">Failed to update</response>
         [HttpPut]
         [Route("{id}")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -253,6 +255,16 @@ namespace IPSB.Controllers
             //     return new ObjectResult($"Not authorize to update product with id: {id}") { StatusCode = 403 };
             // }
 
+            if (updProduct == null)
+            {
+                return NotFound();
+            }
+
+            bool isExisted = _service.GetAll(_ => string.Compare(_.Name, model.Name, true) == 0).Count() == 1;
+            if (isExisted)
+            {
+                return Conflict();
+            }
 
             string imageUrl = updProduct.ImageUrl;
 

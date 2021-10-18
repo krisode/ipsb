@@ -19,7 +19,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/accounts")]
     [ApiController]
     [Authorize]
-    public class AccountController : AuthorizeController
+    public class AccountController : Controller
     {
         private readonly IAccountService _service;
         private readonly IMapper _mapper;
@@ -299,9 +299,5 @@ namespace IPSB.Controllers
 
         }
 
-        protected override bool IsAuthorize()
-        {
-            throw new NotImplementedException();
-        }
     }
 }
