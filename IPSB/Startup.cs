@@ -100,28 +100,7 @@ namespace IPSB
             services.AddSingleton<IJwtTokenProvider, JwtTokenProvider>();
             #endregion
 
-            #region Authorization Handler
-            services.AddSingleton<IAuthorizationHandler, AccountHandler>();
-            services.AddSingleton<IAuthorizationHandler, QueryAccountHandler>();
-            services.AddSingleton<IAuthorizationHandler, BuildingHandler>();
-            services.AddSingleton<IAuthorizationHandler, CouponHandler>();
-            services.AddSingleton<IAuthorizationHandler, CouponInUseHandler>();
-            /*services.AddSingleton<IAuthorizationHandler, CouponInUseActionHandler>();*/
-            services.AddSingleton<IAuthorizationHandler, EdgeHandler>();
-            /*services.AddSingleton<IAuthorizationHandler, FavoriteStoreHandler>();*/
-            services.AddSingleton<IAuthorizationHandler, FloorPlanHandler>();
-            /*services.AddSingleton<IAuthorizationHandler, LocationHandler>();
-            services.AddSingleton<IAuthorizationHandler, LocationTypeHandler>();*/
-            services.AddSingleton<IAuthorizationHandler, LocatorTagHandler>();
-            services.AddSingleton<IAuthorizationHandler, ProductCategoryHandler>();
-            /*services.AddSingleton<IAuthorizationHandler, ProductGroupHandler>();*/
-            services.AddSingleton<IAuthorizationHandler, ProductHandler>();
-
-            services.AddSingleton<IAuthorizationHandler, StoreHandler>();
-            /*services.AddSingleton<IAuthorizationHandler, VisitPointHandler>();
-            services.AddSingleton<IAuthorizationHandler, VisitRouteHandler>();*/
-
-            #endregion
+           
 
             #region DB Services
             // Add AccountService
@@ -162,6 +141,29 @@ namespace IPSB
             services.AddTransient<IShoppingListService, ShoppingListService>();
             // Add ShoppingItemService
             services.AddTransient<IShoppingItemService, ShoppingItemService>();
+            #endregion
+
+             #region Authorization Handler
+            services.AddSingleton<IAuthorizationHandler, AccountHandler>();
+            services.AddSingleton<IAuthorizationHandler, QueryAccountHandler>();
+            services.AddSingleton<IAuthorizationHandler, BuildingHandler>();
+            services.AddSingleton<IAuthorizationHandler, CouponHandler>();
+            services.AddSingleton<IAuthorizationHandler, CouponInUseHandler>();
+            /*services.AddSingleton<IAuthorizationHandler, CouponInUseActionHandler>();*/
+            services.AddSingleton<IAuthorizationHandler, EdgeHandler>();
+            /*services.AddSingleton<IAuthorizationHandler, FavoriteStoreHandler>();*/
+            services.AddSingleton<IAuthorizationHandler, FloorPlanHandler>();
+            /*services.AddSingleton<IAuthorizationHandler, LocationHandler>();
+            services.AddSingleton<IAuthorizationHandler, LocationTypeHandler>();*/
+            services.AddSingleton<IAuthorizationHandler, LocatorTagHandler>();
+            services.AddSingleton<IAuthorizationHandler, ProductCategoryHandler>();
+            /*services.AddSingleton<IAuthorizationHandler, ProductGroupHandler>();*/
+            services.AddSingleton<IAuthorizationHandler, ProductHandler>();
+
+            services.AddSingleton<IAuthorizationHandler, StoreHandler>();
+            /*services.AddSingleton<IAuthorizationHandler, VisitPointHandler>();
+            services.AddSingleton<IAuthorizationHandler, VisitRouteHandler>();*/
+
             #endregion
 
             #region Authentication JWT Bearer
