@@ -167,9 +167,19 @@ namespace IPSB.Controllers
                     list = list.Where(_ => _.AccountId == model.AccountId);
                 }
 
-                if (!string.IsNullOrEmpty(model.Content))
+                if (!string.IsNullOrEmpty(model.Title))
                 {
-                    list = list.Where(_ => _.Content.Contains(model.Content));
+                    list = list.Where(_ => _.Title.Contains(model.Title));
+                }
+
+                if (!string.IsNullOrEmpty(model.Body))
+                {
+                    list = list.Where(_ => _.Body.Contains(model.Body));
+                }
+
+                if (!string.IsNullOrEmpty(model.ImageUrl))
+                {
+                    list = list.Where(_ => _.ImageUrl.Contains(model.ImageUrl));
                 }
 
                 if (!string.IsNullOrEmpty(model.Screen))
@@ -307,7 +317,9 @@ namespace IPSB.Controllers
             try
             {
                 updNotification.Id = model.Id;
-                updNotification.Content = model.Content;
+                updNotification.Title = model.Title;
+                updNotification.Body = model.Body;
+                updNotification.ImageUrl = model.ImageUrl;
                 updNotification.Screen = model.Screen;
                 updNotification.Parameter = model.Parameter;
                 updNotification.AccountId = model.AccountId;
