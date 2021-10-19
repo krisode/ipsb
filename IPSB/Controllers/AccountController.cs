@@ -96,8 +96,12 @@ namespace IPSB.Controllers
         //[Authorize(Policy = Policies.QUERY_ACCOUNT)]
         public ActionResult<IEnumerable<AccountVM>> GetAllAccounts([FromQuery] AccountSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<Account> list = _service.GetAll(_ => _.Store);
+            var list = _service.GetAll(_ => _.Store);
 
+            if (model.NotBuildingManager)
+            {
+                list = list.Where(_ => _.BuildingManager == null);
+            }
 
             if (!string.IsNullOrEmpty(model.Role))
             {
@@ -108,12 +112,12 @@ namespace IPSB.Controllers
             {
                 list = list.Where(_ => _.Name.Contains(model.Name));
             }
-            
+
             if (!string.IsNullOrEmpty(model.Phone))
             {
                 list = list.Where(_ => _.Phone.Contains(model.Phone));
             }
-            
+
             if (!string.IsNullOrEmpty(model.Email))
             {
                 list = list.Where(_ => _.Email.Contains(model.Email));
@@ -139,6 +143,7 @@ namespace IPSB.Controllers
                     }
                 }
             }
+
 
             var pagedModel = _pagingSupport.From(list)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
@@ -234,7 +239,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutAccount(int id, [FromForm] AccountUM model)
         {
-            
+
 
             Account updAccount = await _service.GetByIdAsync(_ => _.Id == id);
             var authorizedResult = await _authorizationService.AuthorizeAsync(User, updAccount, Operations.Update);
@@ -255,7 +260,7 @@ namespace IPSB.Controllers
                     return BadRequest();
                 }
             }
-            
+
             if (!string.IsNullOrEmpty(model.Status))
             {
                 if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)

@@ -169,19 +169,10 @@ namespace IPSB.Controllers
                     list = list.Where(_ => _.ManagerId == model.ManagerId);
                 }
 
-                if (model.AdminId != 0)
-                {
-                    list = list.Where(_ => _.AdminId == model.AdminId);
-                }
 
                 if (!string.IsNullOrEmpty(model.Name))
                 {
                     list = list.Where(_ => _.Name.Contains(model.Name));
-                }
-
-                if (model.NumberOfFloor != 0)
-                {
-                    list = list.Where(_ => _.NumberOfFloor == model.NumberOfFloor);
                 }
 
                 if (!string.IsNullOrEmpty(model.Address))
@@ -235,17 +226,20 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<BuildingCM>> CreateBuilding([FromForm] BuildingCM model)
         {
-            Building building = _service.GetByIdAsync(_ => _.Name.ToUpper() == model.Name.ToUpper()).Result;
-            if (building is not null)
+            bool isDuplicate = _service.GetAll(_ => _.Name.ToUpper() == model.Name.ToUpper() || _.ManagerId == model.ManagerId)
+                                        .Count() >= 1;
+            if (isDuplicate)
             {
                 return Conflict();
             }
+
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Create);
             if (!authorizedResult.Succeeded)
             {
                 return new ObjectResult($"Not authorize to create building") { StatusCode = 403 };
             }*/
+
 
             Building crtBuilding = _mapper.Map<Building>(model);
             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "building", "building-detail");
@@ -298,20 +292,6 @@ namespace IPSB.Controllers
             }
             #endregion
 
-            #region Checking whether request is valid
-            if (updBuilding == null || id != model.Id)
-            {
-                return BadRequest();
-            }
-
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-                {
-                    return BadRequest();
-                }
-            }
-            #endregion
 
             #region If building has image, set it as new image in case inputted image request is null
             string imageURL = updBuilding.ImageUrl;
@@ -325,22 +305,18 @@ namespace IPSB.Controllers
             #region Updating building
             try
             {
-                updBuilding.Id = model.Id;
                 updBuilding.ManagerId = model.ManagerId;
-                updBuilding.AdminId = model.AdminId;
                 updBuilding.Name = model.Name;
                 updBuilding.ImageUrl = imageURL;
-                updBuilding.NumberOfFloor = model.NumberOfFloor;
                 updBuilding.Address = model.Address;
-                updBuilding.Status = model.Status;
 
                 _service.Update(updBuilding);
                 if (await _service.Save() > 0)
                 {
-                    #region Updating cache
-                    var cacheId = new CacheKey<Building>(id);
-                    await _cacheStore.Remove(cacheId);
-                    #endregion
+                    // #region Updating cache
+                    // var cacheId = new CacheKey<Building>(id);
+                    // await _cacheStore.Remove(cacheId);
+                    // #endregion
                 }
 
             }
@@ -377,7 +353,7 @@ namespace IPSB.Controllers
                 return new ObjectResult($"Not authorize to delete building with id: {id}") { StatusCode = 403 };
             }*/
 
-            if (building is not null)
+            if (building is null)
             {
                 return BadRequest();
             }

@@ -95,7 +95,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<CouponVM>> GetAllCoupons([FromQuery] CouponSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<Coupon> list = _service.GetAll(_ => _.Store, _ => _.CouponInUses);
+            IQueryable<Coupon> list = _service.GetAll(_ => _.Store, _ => _.CouponInUses, _ => _.CouponType);
 
             if (model.BuildingId != 0)
             {
@@ -166,22 +166,6 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.MinSpend <= model.MinSpend);
             }
 
-
-            if (model.ProductInclude is not null && model.ProductInclude.Length > 0)
-            {
-                foreach (var include in model.ProductInclude)
-                {
-                    list = list.Where(_ => _.ProductInclude.Contains(include));
-                }
-            }
-
-            if (model.ProductExclude is not null && model.ProductExclude.Length > 0)
-            {
-                foreach (var exclude in model.ProductExclude)
-                {
-                    list = list.Where(_ => _.ProductExclude.Contains(exclude));
-                }
-            }
 
             if (model.LowerLimit != 0)
             {
@@ -266,7 +250,7 @@ namespace IPSB.Controllers
             }*/
 
             // Default POST Status = "New"
-            crtCoupon.Status = Constants.Status.NEW;
+            crtCoupon.Status = Constants.Status.ACTIVE;
 
             string imageUrl = "";
 
@@ -283,21 +267,21 @@ namespace IPSB.Controllers
 
             crtCoupon.ImageUrl = imageUrl;
 
-            string productInclude = "";
-            if (model.ProductInclude is not null && model.ProductInclude.Length > 0)
-            {
-                Array.Sort(model.ProductInclude);
-                productInclude = string.Join(",", model.ProductInclude);
-            }
-            crtCoupon.ProductInclude = productInclude;
+            // string productInclude = "";
+            // if (model.ProductInclude is not null && model.ProductInclude.Length > 0)
+            // {
+            //     Array.Sort(model.ProductInclude);
+            //     productInclude = string.Join(",", model.ProductInclude);
+            // }
+            // crtCoupon.ProductInclude = productInclude;
 
-            string productExclude = "";
-            if (model.ProductExclude is not null && model.ProductExclude.Length > 0)
-            {
-                Array.Sort(model.ProductExclude);
-                productExclude = string.Join(",", model.ProductExclude);
-            }
-            crtCoupon.ProductExclude = productExclude;
+            // string productExclude = "";
+            // if (model.ProductExclude is not null && model.ProductExclude.Length > 0)
+            // {
+            //     Array.Sort(model.ProductExclude);
+            //     productExclude = string.Join(",", model.ProductExclude);
+            // }
+            // crtCoupon.ProductExclude = productExclude;
 
             try
             {
@@ -330,26 +314,16 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutCoupon(int id, [FromForm] CouponUM model)
         {
+
+            
             Coupon updCoupon = await _service.GetByIdAsync(_ => _.Id == id);
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updCoupon, Operations.Update);
-            if (!authorizedResult.Succeeded)
-            {
-                return new ObjectResult($"Not authorize to update coupon with id: {id}") { StatusCode = 403 };
-            }
+            // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updCoupon, Operations.Update);
+            // if (!authorizedResult.Succeeded)
+            // {
+            //     return new ObjectResult($"Not authorize to update coupon with id: {id}") { StatusCode = 403 };
+            // }
 
-            if (updCoupon == null || id != model.Id)
-            {
-                return BadRequest();
-            }
-
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Constants.Status.NEW && model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-                {
-                    return BadRequest();
-                }
-            }
 
             string imageUrl = updCoupon.ImageUrl;
 
@@ -364,37 +338,17 @@ namespace IPSB.Controllers
                 imageUrl = string.Join(",", imageUrls);
             }
 
-            string productInclude = updCoupon.ProductInclude;
-
-            if (model.ProductInclude is not null && model.ProductInclude.Length > 0)
-            {
-                Array.Sort(model.ProductInclude);
-                productInclude = string.Join(",", model.ProductInclude);
-            }
-
-            string productExclude = updCoupon.ProductExclude;
-            if (model.ProductExclude is not null && model.ProductExclude.Length > 0)
-            {
-                Array.Sort(model.ProductExclude);
-                productExclude = string.Join(",", model.ProductExclude);
-            }
-
             try
             {
-                updCoupon.Id = model.Id;
                 updCoupon.ImageUrl = imageUrl;
                 updCoupon.Name = model.Name;
                 updCoupon.Description = model.Description;
-                updCoupon.StoreId = model.StoreId;
                 updCoupon.Code = model.Code;
                 updCoupon.CouponTypeId = model.CouponTypeId;
                 updCoupon.Amount = model.Amount;
                 updCoupon.MaxDiscount = model.MaxDiscount;
                 updCoupon.MinSpend = model.MinSpend;
-                updCoupon.ProductInclude = productInclude;
-                updCoupon.ProductExclude = productExclude;
                 updCoupon.Limit = model.Limit;
-                updCoupon.Status = model.Status;
 
                 _service.Update(updCoupon);
                 await _service.Save();
@@ -424,13 +378,13 @@ namespace IPSB.Controllers
         {
             Coupon coupon = await _service.GetByIdAsync(_ => _.Id == id);
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, coupon, Operations.Delete);
-            if (!authorizedResult.Succeeded)
-            {
-                return new ObjectResult($"Not authorize to delete coupon with id: {id}") { StatusCode = 403 };
-            }
+            // var authorizedResult = await _authorizationService.AuthorizeAsync(User, coupon, Operations.Delete);
+            // if (!authorizedResult.Succeeded)
+            // {
+            //     return new ObjectResult($"Not authorize to delete coupon with id: {id}") { StatusCode = 403 };
+            // }
 
-            if (coupon is not null)
+            if (coupon is null)
             {
                 return BadRequest();
             }
