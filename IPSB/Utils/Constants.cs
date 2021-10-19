@@ -81,6 +81,12 @@ namespace IPSB.Utils
             public const string UNREAD = "Unread";
         }
 
+        public static class Route {
+            public const string FEEDBACK = "/feedback";
+            public const string SHOPPING_LIST_DETAIL = "/shoppingListDetail";
+            public const string COUPON_DETAIL = "/couponDetail";
+        }
+
         public static class AppSetting
         {
             public const string FirebaseBucket = "Firebase:Bucket";

@@ -218,6 +218,128 @@ namespace IPSB.Controllers
             }
 
         }
+        
+        /// <summary>
+        /// Count notifications
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///         
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>All notifications</returns>
+        /// <response code="200">Returns all notifications</response>
+        /// <response code="404">No notifications found</response>
+        [HttpGet]
+        [Route("count")]
+        [AllowAnonymous]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IEnumerable<int>>> CountNotification([FromQuery] NotificationSM model)
+        {
+            var cacheId = new CacheKey<Notification>(Constants.DefaultValue.INTEGER);
+            var cacheObjectType = new Notification();
+            string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
+
+            try
+            {
+                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                {
+                    var list = _service.GetAll();
+
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                    return Task.FromResult(list);
+
+                }, setLastModified: (cachedTime) =>
+                {
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
+                    return cachedTime;
+                }, ifModifiedSince);
+
+
+                if (!string.IsNullOrEmpty(model.Status))
+                {
+                    if (model.Status != Constants.Status.READ && model.Status != Constants.Status.UNREAD)
+                    {
+                        return BadRequest();
+                    }
+
+                    else
+                    {
+                        if (model.Status == Constants.Status.READ)
+                        {
+                            list = list.Where(_ => _.Status == Constants.Status.READ);
+                        }
+
+                        if (model.Status == Constants.Status.UNREAD)
+                        {
+                            list = list.Where(_ => _.Status == Constants.Status.UNREAD);
+                        }
+                    }
+                }
+
+                if (model.AccountId != 0)
+                {
+                    list = list.Where(_ => _.AccountId == model.AccountId);
+                }
+
+                if (!string.IsNullOrEmpty(model.Title))
+                {
+                    list = list.Where(_ => _.Title.Contains(model.Title));
+                }
+
+                if (!string.IsNullOrEmpty(model.Body))
+                {
+                    list = list.Where(_ => _.Body.Contains(model.Body));
+                }
+
+                if (!string.IsNullOrEmpty(model.ImageUrl))
+                {
+                    list = list.Where(_ => _.ImageUrl.Contains(model.ImageUrl));
+                }
+
+                if (!string.IsNullOrEmpty(model.Screen))
+                {
+                    list = list.Where(_ => _.Screen.Contains(model.Screen));
+                }
+
+                if (!string.IsNullOrEmpty(model.Parameter))
+                {
+                    list = list.Where(_ => _.Parameter.Contains(model.Parameter));
+                }
+
+                if (model.LowerDate.HasValue)
+                {
+                    list = list.Where(_ => _.Date >= model.LowerDate);
+                }
+
+                if (model.UpperDate.HasValue)
+                {
+                    list = list.Where(_ => _.Date <= model.UpperDate);
+                }
+
+                /*var pagedModel = _pagingSupport.From(list)
+                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
+                    .Paginate<NotificationVM>();*/
+
+                return Ok(list.Count());
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+        }
 
         /// <summary>
         /// Create a new notification
@@ -316,15 +438,55 @@ namespace IPSB.Controllers
             #region Updating building
             try
             {
-                updNotification.Id = model.Id;
-                updNotification.Title = model.Title;
-                updNotification.Body = model.Body;
-                updNotification.ImageUrl = model.ImageUrl;
-                updNotification.Screen = model.Screen;
-                updNotification.Parameter = model.Parameter;
-                updNotification.AccountId = model.AccountId;
-                updNotification.Status = model.Status;
-                updNotification.Date = model.Date;
+                if (model.Id > 0)
+                {
+                    updNotification.Id = model.Id;
+                }
+                
+                if(!string.IsNullOrEmpty(model.Title))
+                {
+                    updNotification.Title = model.Title;
+                }
+                
+                if(!string.IsNullOrEmpty(model.Body))
+                {
+                    updNotification.Body = model.Body;
+                }
+                
+                if(!string.IsNullOrEmpty(model.ImageUrl))
+                {
+                    updNotification.ImageUrl = model.ImageUrl;
+                }
+                
+                
+                if(!string.IsNullOrEmpty(model.Screen))
+                {
+                    updNotification.Screen = model.Screen;
+                }
+                
+                
+                if(!string.IsNullOrEmpty(model.Parameter))
+                {
+                    updNotification.Parameter = model.Parameter;
+                }
+                
+                
+                if(model.AccountId > 0)
+                {
+                    updNotification.AccountId = model.AccountId;
+                }
+                
+                
+                if(!string.IsNullOrEmpty(model.Status))
+                {
+                    updNotification.Status = model.Status;
+                }
+                
+                
+                if(model.Date.HasValue)
+                {
+                    updNotification.Date = model.Date.Value;
+                }
 
                 _service.Update(updNotification);
                 if (await _service.Save() > 0)

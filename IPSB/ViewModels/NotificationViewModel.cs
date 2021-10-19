@@ -71,6 +71,6 @@ namespace IPSB.ViewModels
         public string Parameter { get; set; }
         public int AccountId { get; set; }
         public string Status { get; set; }
-        public DateTime Date { get; set; }
+        public DateTime? Date { get; set; }
     }
 }

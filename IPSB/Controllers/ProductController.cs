@@ -27,8 +27,11 @@ namespace IPSB.Controllers
         private readonly IUploadFileService _uploadFileService;
         private readonly IAuthorizationService _authorizationService;
         private readonly IPushNotificationService _pushNotificationService;
+        private readonly INotificationService _notificationService;
+
         public ProductController(IProductService service, IMapper mapper, IPagingSupport<Product> pagingSupport,
-            IUploadFileService uploadFileService, IAuthorizationService authorizationService, IPushNotificationService pushNotificationService)
+            IUploadFileService uploadFileService, IAuthorizationService authorizationService, IPushNotificationService pushNotificationService,
+            INotificationService notificationService)
         {
             _service = service;
             _mapper = mapper;
@@ -36,6 +39,7 @@ namespace IPSB.Controllers
             _uploadFileService = uploadFileService;
             _authorizationService = authorizationService;
             _pushNotificationService = pushNotificationService;
+            _notificationService = notificationService;
         }
 
         /// <summary>
@@ -301,7 +305,7 @@ namespace IPSB.Controllers
         /// <response code="404">Product not found</response>
         /// <response code="500">Failed to delete</response>
         [HttpDelete("{id}")]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
             Product product = _service.GetAll().Include(_ => _.ShoppingItems).ThenInclude(_ => _.ShoppingList).FirstOrDefault(_ => _.Id == id);
 
@@ -332,6 +336,19 @@ namespace IPSB.Controllers
                     {
                         foreach (var item in product.ShoppingItems)
                         {
+                            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                            DateTimeOffset localServerTime = DateTimeOffset.Now;
+                            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
+                            var notification = new Notification();
+                            notification.Title = "Product is no longer available";
+                            notification.Body = "Product " + product.Name + " in your shopping list " + item.ShoppingList.Name + " is no longer available";
+                            notification.ImageUrl = product.ImageUrl;
+                            notification.Screen = Constants.Route.SHOPPING_LIST_DETAIL;
+                            notification.Parameter = "shoppingListId:" + item.ShoppingListId;
+                            notification.AccountId = item.ShoppingList.AccountId;
+                            notification.Status = Constants.Status.UNREAD;
+                            notification.Date = localTime.DateTime;
+                            var crtNotification = await _notificationService.AddAsync(notification);
                             var data = new Dictionary<String, String>();
                             data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
                             data.Add("notificationType", "shopping_list_changed");

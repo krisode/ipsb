@@ -26,9 +26,11 @@ namespace IPSB.Controllers
         private readonly IUploadFileService _uploadFileService;
         private readonly IAuthorizationService _authorizationService;
         private readonly IPushNotificationService _pushNotificationService;
+        private readonly INotificationService _notificationService;
 
         public CouponInUseController(ICouponInUseService service, IMapper mapper, IPagingSupport<CouponInUse> pagingSupport, 
-            IUploadFileService uploadFileService, IAuthorizationService authorizationService, IPushNotificationService pushNotificationService)
+            IUploadFileService uploadFileService, IAuthorizationService authorizationService, IPushNotificationService pushNotificationService,
+            INotificationService notificationService)
         {
             _service = service;
             _mapper = mapper;
@@ -36,6 +38,7 @@ namespace IPSB.Controllers
             _uploadFileService = uploadFileService;
             _authorizationService = authorizationService;
             _pushNotificationService = pushNotificationService;
+            _notificationService = notificationService;
         }
 
         /// <summary>
@@ -242,7 +245,7 @@ namespace IPSB.Controllers
         public async Task<ActionResult> PutCouponInUse(int id, [FromForm] CouponInUseUM model)
         {
 
-            CouponInUse updCouponInUse = await _service.GetByIdAsync(_ => _.Id == id, _ => _.Coupon);
+            CouponInUse updCouponInUse = await _service.GetByIdAsync(_ => _.Id == id, _ => _.Coupon.Store.Account);
 
 
             // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updCouponInUse, Operations.Update);
@@ -284,9 +287,23 @@ namespace IPSB.Controllers
                     {
                         if (!string.IsNullOrEmpty(updCouponInUse.FeedbackContent) && string.IsNullOrEmpty(updCouponInUse.FeedbackReply))
                         {
+                            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                            DateTimeOffset localServerTime = DateTimeOffset.Now;
+                            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
+                            var notification = new Notification();
+                            notification.Title = "Feedback on coupon";
+                            notification.Body = "Coupon " + updCouponInUse.Coupon.Name + " has just received feedback from customer";
+                            notification.ImageUrl = updCouponInUse.Coupon.ImageUrl;
+                            notification.Screen = Constants.Route.FEEDBACK;
+                            notification.Parameter = "couponId:" + updCouponInUse.CouponId;
+                            notification.AccountId = updCouponInUse.Coupon.Store.AccountId;
+                            notification.Status = Constants.Status.UNREAD;
+                            notification.Date = localTime.DateTime;
+                            var crtNotification = await _notificationService.AddAsync(notification);
                             var data = new Dictionary<String, String>();
                             data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
                             data.Add("notificationType", "feedback_changed");
+                            data.Add("notificationId", crtNotification.Id.ToString());
                             data.Add("couponId", updCouponInUse.Coupon.Id.ToString());
                             _ = _pushNotificationService.SendMessage(
                                 "Feedback on coupon",
@@ -297,9 +314,23 @@ namespace IPSB.Controllers
                         }
                         else if (updCouponInUse.Status.Equals(Constants.Status.USED) && string.IsNullOrEmpty(updCouponInUse.FeedbackContent) && string.IsNullOrEmpty(updCouponInUse.FeedbackReply))
                         {
+                            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                            DateTimeOffset localServerTime = DateTimeOffset.Now;
+                            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
+                            var notification = new Notification();
+                            notification.Title = "Apply coupon successfully";
+                            notification.Body = "You have successfully applied the coupon " + updCouponInUse.Coupon.Name;
+                            notification.ImageUrl = updCouponInUse.Coupon.ImageUrl;
+                            notification.Screen = Constants.Route.COUPON_DETAIL;
+                            notification.Parameter = "couponId:" + updCouponInUse.CouponId;
+                            notification.AccountId = updCouponInUse.VisitorId;
+                            notification.Status = Constants.Status.UNREAD;
+                            notification.Date = localTime.DateTime;
+                            var crtNotification = await _notificationService.AddAsync(notification);
                             var data = new Dictionary<String, String>();
                             data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
                             data.Add("notificationType", "coupon_in_use_changed");
+                            data.Add("notificationId", crtNotification.Id.ToString());
                             _ = _pushNotificationService.SendMessage(
                                 "Apply coupon successfully",
                                 "You have successfully applied the coupon " + updCouponInUse.Coupon.Name,
