@@ -247,6 +247,10 @@ namespace IPSB.Controllers
 
             CouponInUse updCouponInUse = await _service.GetByIdAsync(_ => _.Id == id, _ => _.Coupon.Store.Account);
 
+            if (updCouponInUse is null)
+            {
+                return BadRequest();
+            }
 
             // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updCouponInUse, Operations.Update);
             // if (!authorizedResult.Succeeded)
@@ -299,18 +303,22 @@ namespace IPSB.Controllers
                             notification.AccountId = updCouponInUse.Coupon.Store.AccountId;
                             notification.Status = Constants.Status.UNREAD;
                             notification.Date = localTime.DateTime;
-                            var crtNotification = await _notificationService.AddAsync(notification);
-                            var data = new Dictionary<String, String>();
-                            data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
-                            data.Add("notificationType", "feedback_changed");
-                            data.Add("notificationId", crtNotification.Id.ToString());
-                            data.Add("couponId", updCouponInUse.Coupon.Id.ToString());
-                            _ = _pushNotificationService.SendMessage(
-                                "Feedback on coupon",
-                                "Coupon " + updCouponInUse.Coupon.Name + " has just received feedback from customer",
-                                "store_id_" + updCouponInUse.Coupon.StoreId,
-                                data
-                                );
+                            Notification crtNotification = await _notificationService.AddAsync(notification);
+                            if (await _notificationService.Save() > 0)
+                            {
+                                var data = new Dictionary<String, String>();
+                                data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
+                                data.Add("notificationType", "feedback_changed");
+                                data.Add("notificationId", crtNotification.Id.ToString());
+                                data.Add("couponId", updCouponInUse.Coupon.Id.ToString());
+                                _ = _pushNotificationService.SendMessage(
+                                    "Feedback on coupon",
+                                    "Coupon " + updCouponInUse.Coupon.Name + " has just received feedback from customer",
+                                    "store_id_" + updCouponInUse.Coupon.StoreId,
+                                    data
+                                    );
+                            }
+                            
                         }
                         else if (updCouponInUse.Status.Equals(Constants.Status.USED) && string.IsNullOrEmpty(updCouponInUse.FeedbackContent) && string.IsNullOrEmpty(updCouponInUse.FeedbackReply))
                         {
@@ -327,16 +335,19 @@ namespace IPSB.Controllers
                             notification.Status = Constants.Status.UNREAD;
                             notification.Date = localTime.DateTime;
                             var crtNotification = await _notificationService.AddAsync(notification);
-                            var data = new Dictionary<String, String>();
-                            data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
-                            data.Add("notificationType", "coupon_in_use_changed");
-                            data.Add("notificationId", crtNotification.Id.ToString());
-                            _ = _pushNotificationService.SendMessage(
-                                "Apply coupon successfully",
-                                "You have successfully applied the coupon " + updCouponInUse.Coupon.Name,
-                                "coupon_in_use_id_" + updCouponInUse.Id,
-                                data
-                                );
+                            if (await _notificationService.Save() > 0)
+                            {
+                                var data = new Dictionary<String, String>();
+                                data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
+                                data.Add("notificationType", "coupon_in_use_changed");
+                                data.Add("notificationId", crtNotification.Id.ToString());
+                                _ = _pushNotificationService.SendMessage(
+                                    "Apply coupon successfully",
+                                    "You have successfully applied the coupon " + updCouponInUse.Coupon.Name,
+                                    "coupon_in_use_id_" + updCouponInUse.Id,
+                                    data
+                                    );
+                            }
                         }
                     }
                 }
