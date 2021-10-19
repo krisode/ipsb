@@ -14,14 +14,13 @@ namespace IPSB.ViewModels
         public string Description { get; set; }
         public int StoreId { get; set; }
         public string Code { get; set; }
+        public int CouponTypeId { get; set; }
         public CouponType CouponType { get; set; }
         public DateTime PublishDate { get; set; }
         public DateTime ExpireDate { get; set; }
         public double Amount { get; set; }
         public double? MaxDiscount { get; set; }
         public double? MinSpend { get; set; }
-        public string ProductInclude { get; set; }
-        public string ProductExclude { get; set; }
         public int? Limit { get; set; }
         public string Status { get; set; }
 
@@ -42,8 +41,6 @@ namespace IPSB.ViewModels
         public double Amount { get; set; }
         public double MaxDiscount { get; set; }
         public double MinSpend { get; set; }
-        public string ProductInclude { get; set; }
-        public string ProductExclude { get; set; }
         public int Limit { get; set; }
         public string Status { get; set; }
     }
@@ -63,8 +60,6 @@ namespace IPSB.ViewModels
         public double MaxDiscount { get; set; }
         public double MinSpend { get; set; }
         public int BuildingId { get; set; }
-        public string[] ProductInclude { get; set; }
-        public string[] ProductExclude { get; set; }
         public int LowerLimit { get; set; }
         public int UpperLimit { get; set; }
         public string Status { get; set; }
@@ -85,19 +80,16 @@ namespace IPSB.ViewModels
         [Required]
         public DateTime? ExpireDate { get; set; }
         [Required]
+        [Range(double.MinValue, 10000)]
         public double Amount { get; set; }
+        public double? MaxDiscount { get; set; }
+        public double? MinSpend { get; set; }
         [Required]
-        public double MaxDiscount { get; set; }
-        [Required]
-        public double MinSpend { get; set; }
-        public string[] ProductInclude { get; set; }
-        public string[] ProductExclude { get; set; }
-        [Required]
+        [Range(Int32.MinValue, 5)]
         public int Limit { get; set; }
     }
     public class CouponUM
     {
-        public int Id { get; set; }
         public IFormFileCollection ImageUrl { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
@@ -108,10 +100,6 @@ namespace IPSB.ViewModels
         public double Amount { get; set; }
         public double MaxDiscount { get; set; }
         public double MinSpend { get; set; }
-        public int[] ProductInclude { get; set; }
-        public int[] ProductExclude { get; set; }
         public int Limit { get; set; }
-        [Required]
-        public string Status { get; set; }
     }
 }

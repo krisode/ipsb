@@ -189,7 +189,14 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ProductCM>> CreateProduct([FromForm] ProductCM model)
         {
-            bool isExisted = _service.GetAll().Where(_ => string.Compare(_.Name, model.Name, true) == 0).Count() == 1;
+
+            // Product existed if the name is non-duplicate within the store that this user owned
+            bool isExisted = _service.GetAll()
+                                    .Where(
+                                        _ => _.Name.ToLower().Equals(model.Name.ToLower()) 
+                                        && _.Store.AccountId == int.Parse(User.Identity.Name)
+                                    )
+                                    .Count() == 1;
             if (isExisted)
             {
                 return Conflict();
@@ -206,7 +213,7 @@ namespace IPSB.Controllers
             crtProduct.ImageUrl = imageURL;
 
             // Default POST Status = "New"
-            crtProduct.Status = Constants.Status.NEW;
+            crtProduct.Status = Constants.Status.ACTIVE;
 
             try
             {
@@ -241,9 +248,14 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutProduct(int id, [FromForm] ProductUM model)
         {
-
-
-            bool isExisted = _service.GetAll().Where(_ => string.Compare(_.Name, model.Name, true) == 0).Count() == 1;
+            // Product existed if the name is non-duplicate within the store that this user owned
+            bool isExisted = _service.GetAll()
+                                    .Where(
+                                        _ => _.Name.ToLower().Equals(model.Name.ToLower())
+                                        && _.Store.AccountId == int.Parse(User.Identity.Name)
+                                        && _.Id != id
+                                    )
+                                    .Count() == 1;
             if (isExisted)
             {
                 return Conflict();
