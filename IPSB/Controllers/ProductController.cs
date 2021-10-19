@@ -349,16 +349,19 @@ namespace IPSB.Controllers
                             notification.Status = Constants.Status.UNREAD;
                             notification.Date = localTime.DateTime;
                             var crtNotification = await _notificationService.AddAsync(notification);
-                            var data = new Dictionary<String, String>();
-                            data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
-                            data.Add("notificationType", "shopping_list_changed");
-                            data.Add("shoppingListId", item.ShoppingListId.ToString());
-                            _ = _pushNotificationService.SendMessage(
-                                "Product is no longer available",
-                                "Product " + product.Name + " in your shopping list " + item.ShoppingList.Name + " is no longer available",
-                                "shopping_list_id_" + item.ShoppingListId,
-                                data
-                                );
+                            if (await _notificationService.Save() > 0)
+                            {
+                                var data = new Dictionary<String, String>();
+                                data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
+                                data.Add("notificationType", "shopping_list_changed");
+                                data.Add("shoppingListId", item.ShoppingListId.ToString());
+                                _ = _pushNotificationService.SendMessage(
+                                    "Product is no longer available",
+                                    "Product " + product.Name + " in your shopping list " + item.ShoppingList.Name + " is no longer available",
+                                    "shopping_list_id_" + item.ShoppingListId,
+                                    data
+                                    );
+                            }
                         }
                     }
                 }
