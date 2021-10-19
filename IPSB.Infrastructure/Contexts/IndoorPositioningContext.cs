@@ -372,12 +372,15 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("Notification");
 
-                entity.Property(e => e.Content)
+                entity.Property(e => e.Body)
                     .IsRequired()
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
+                    .HasMaxLength(100);
 
                 entity.Property(e => e.Date).HasColumnType("datetime");
+
+                entity.Property(e => e.ImageUrl)
+                    .HasMaxLength(500)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Parameter)
                     .HasMaxLength(100)
@@ -392,6 +395,10 @@ namespace IPSB.Infrastructure.Contexts
                     .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
+
+                entity.Property(e => e.Title)
+                    .IsRequired()
+                    .HasMaxLength(100);
 
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.Notifications)

@@ -8,7 +8,9 @@ namespace IPSB.ViewModels
     public class NotificationVM
     {
         public int Id { get; set; }
-        public string Content { get; set; }
+        public string Title { get; set; }
+        public string Body { get; set; }
+        public string ImageUrl { get; set; }
         public string Screen { get; set; }
         public string Parameter { get; set; }
         public int AccountId { get; set; }
@@ -19,7 +21,9 @@ namespace IPSB.ViewModels
     public class NotificationRefModel
     {
         public int Id { get; set; }
-        public string Content { get; set; }
+        public string Title { get; set; }
+        public string Body { get; set; }
+        public string ImageUrl { get; set; }
         public string Screen { get; set; }
         public string Parameter { get; set; }
         public int AccountId { get; set; }
@@ -30,7 +34,9 @@ namespace IPSB.ViewModels
     public class NotificationSM
     {
         public int Id { get; set; }
-        public string Content { get; set; }
+        public string Title { get; set; }
+        public string Body { get; set; }
+        public string ImageUrl { get; set; }
         public string Screen { get; set; }
         public string Parameter { get; set; }
         public int AccountId { get; set; }
@@ -43,7 +49,10 @@ namespace IPSB.ViewModels
         [Required]
         public string Content { get; set; }
         [Required]
-        public string Screen { get; set; }
+        public string Title { get; set; }
+        [Required]
+        public string Body { get; set; }
+        public string ImageUrl { get; set; }
         public string Parameter { get; set; }
         [Required]
         public int AccountId { get; set; }
@@ -55,7 +64,9 @@ namespace IPSB.ViewModels
     public class NotificationUM
     {
         public int Id { get; set; }
-        public string Content { get; set; }
+        public string Title { get; set; }
+        public string Body { get; set; }
+        public string ImageUrl { get; set; }
         public string Screen { get; set; }
         public string Parameter { get; set; }
         public int AccountId { get; set; }
