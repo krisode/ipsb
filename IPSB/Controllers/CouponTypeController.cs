@@ -90,6 +90,10 @@ namespace IPSB.Controllers
             {
                 couponTypeList = couponTypeList.Where(_ => _.Description.Contains(model.Description));
             }
+            if (!string.IsNullOrEmpty(model.Status))
+            {
+                couponTypeList = couponTypeList.Where(_ => _.Status.Equals(model.Status));
+            }
 
             var pagedModel = _pagingSupport.From(couponTypeList)
                                             .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
@@ -122,7 +126,11 @@ namespace IPSB.Controllers
         public async Task<ActionResult<CouponTypeVM>> CreateCouponType([FromBody] CouponTypeCM model)
         {
             var createdCouponType = _mapper.Map<CouponType>(model);
-
+            bool isExisted = _service.GetAll().Where(_ => _.Name.ToLower().Equals(model.Name)).Count() >= 1;
+            if (isExisted)
+            {
+                return Conflict();
+            }
             try
             {
                 createdCouponType.Status = Constants.Status.ACTIVE;
@@ -164,6 +172,11 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> UpdateCouponType(int id, [FromBody] CouponTypeUM model)
         {
+            bool isExisted = _service.GetAll().Where(_ => _.Name.ToLower().Equals(model.Name) && id != _.Id).Count() >= 1;
+            if (isExisted)
+            {
+                return Conflict();
+            }
             var updateCouponType = await _service.GetByIdAsync(_ => _.Id == id);
 
             try

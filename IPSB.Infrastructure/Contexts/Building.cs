@@ -17,7 +17,7 @@ namespace IPSB.Infrastructure.Contexts
 
         public int Id { get; set; }
         public int? ManagerId { get; set; }
-        public int AdminId { get; set; }
+        public int? AdminId { get; set; }
         public string Name { get; set; }
         public string ImageUrl { get; set; }
         public int NumberOfFloor { get; set; }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using IPSB.Core.Services;
+using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
@@ -20,13 +21,15 @@ namespace IPSB.Controllers
         private readonly ILocationTypeService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<LocationType> _pagingSupport;
+        private readonly IUploadFileService _uploadFileService;
         // private readonly IAuthorizationService _authorizationService;
 
-        public LocationTypeController(ILocationTypeService service, IMapper mapper, IPagingSupport<LocationType> pagingSupport)
+        public LocationTypeController(ILocationTypeService service, IMapper mapper, IPagingSupport<LocationType> pagingSupport, IUploadFileService uploadFileService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
+            _uploadFileService = uploadFileService;
         }
 
         /// <summary>
@@ -131,15 +134,16 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<LocationTypeCM>> CreateLocationType([FromBody] LocationTypeCM model)
+        public async Task<ActionResult<LocationTypeCM>> CreateLocationType([FromForm] LocationTypeCM model)
         {
-            LocationType locationType = _service.GetByIdAsync(_ => _.Name.ToUpper() == model.Name.ToUpper()).Result;
-            if (locationType is not null)
+            bool isExisted = _service.GetAll().Where(_ => _.Name.ToLower().Equals(model.Name)).Count() >= 1;
+            if (isExisted)
             {
                 return Conflict();
             }
 
             LocationType crtLocationType = _mapper.Map<LocationType>(model);
+            crtLocationType.ImageUrl = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "building", "building-detail");
 
             try
             {
@@ -171,21 +175,28 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> PutLocationType(int id, [FromBody] LocationTypeUM model)
+        public async Task<ActionResult> PutLocationType(int id, [FromForm] LocationTypeUM model)
         {
+            bool isExisted = _service.GetAll().Where(_ => _.Name.ToLower().Equals(model.Name) && _.Id != id).Count() >= 1;
+            if (isExisted)
+            {
+                return Conflict();
+            }
             LocationType updLocationType = await _service.GetByIdAsync(_ => _.Id == id);
 
 
-            if (updLocationType.Name.ToUpper() == model.Name.ToUpper())
+            string imageURL = updLocationType.ImageUrl;
+            if (model.ImageUrl is not null)
             {
-                return Conflict();
+                imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "building", "building-detail");
+                updLocationType.ImageUrl = imageURL;
             }
 
             try
             {
                 updLocationType.Name = model.Name;
                 updLocationType.Description = model.Description;
-                updLocationType.ImageUrl = model.ImageUrl;
+                updLocationType.ImageUrl = imageURL;
                 _service.Update(updLocationType);
                 await _service.Save();
             }
