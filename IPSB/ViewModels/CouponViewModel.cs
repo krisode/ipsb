@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace IPSB.ViewModels
@@ -93,13 +94,11 @@ namespace IPSB.ViewModels
         public IFormFileCollection ImageUrl { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public int StoreId { get; set; }
         public string Code { get; set; }
         public int CouponTypeId { get; set; }
-        //public DateTime ExpireDate { get; set; }
         public double Amount { get; set; }
-        public double MaxDiscount { get; set; }
-        public double MinSpend { get; set; }
+        public double? MaxDiscount { get; set; }
+        public double? MinSpend { get; set; }
         public int Limit { get; set; }
     }
 }
