@@ -226,7 +226,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<BuildingCM>> CreateBuilding([FromForm] BuildingCM model)
         {
-            bool isDuplicate = _service.GetAll(_ => _.Name.ToUpper() == model.Name.ToUpper() || _.ManagerId == model.ManagerId)
+            bool isDuplicate = _service.GetAll()
+                                        .Where(_ => _.Name.ToLower().Equals(model.Name.ToLower()) || _.ManagerId == model.ManagerId)
                                         .Count() >= 1;
             if (isDuplicate)
             {
@@ -253,7 +254,7 @@ namespace IPSB.Controllers
                 await _service.AddAsync(crtBuilding);
                 await _service.Save();
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }

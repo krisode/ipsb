@@ -125,22 +125,13 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE && model.Status != Constants.Status.NEW)
                 {
                     return BadRequest();
                 }
-
                 else
                 {
-                    if (model.Status == Constants.Status.ACTIVE)
-                    {
-                        list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
-                    }
-
-                    if (model.Status == Constants.Status.INACTIVE)
-                    {
-                        list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
-                    }
+                    list = list.Where(_ => _.Status == model.Status);
                 }
             }
 
@@ -248,27 +239,6 @@ namespace IPSB.Controllers
                 return Forbid();
             }
 
-            if (updAccount == null || id != model.Id)
-            {
-                return BadRequest();
-            }
-
-            if (!string.IsNullOrEmpty(model.Role))
-            {
-                if (!Constants.Role.ROLE_LIST.Contains(model.Role))
-                {
-                    return BadRequest();
-                }
-            }
-
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-                {
-                    return BadRequest();
-                }
-            }
-
             string imageURL = updAccount.ImageUrl;
 
             if (model.ImageUrl is not null && model.ImageUrl.Length > 0)
@@ -278,12 +248,9 @@ namespace IPSB.Controllers
 
             try
             {
-                updAccount.Id = model.Id;
-                updAccount.Role = model.Role;
                 updAccount.Name = model.Name;
                 updAccount.ImageUrl = imageURL;
                 updAccount.Phone = model.Phone;
-                updAccount.Status = model.Status;
 
                 _service.Update(updAccount);
                 await _service.Save();
@@ -296,12 +263,32 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        // DELETE api/<ProductCategoryController>/5
-        // Change Status to Inactive
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        /// <summary>
+        /// Delete account with specified id
+        /// </summary>
+        /// <param name="id">Account's id</param>
+        /// <response code="204">Delete account successfully</response>
+        /// <response code="500">Failed to delete</response>
+        [HttpDelete]
+        [Authorize(Roles = "Admin")]
+        [Route("{id}")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> Delete(int id)
         {
-
+            var deleteEntity = await _service.GetByIdAsync(_ => _.Id == id);
+            try
+            {
+                deleteEntity.Status = Constants.Status.INACTIVE;
+                _service.Update(deleteEntity);
+                await _service.Save();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            return NoContent();
         }
 
     }

@@ -56,12 +56,8 @@ namespace IPSB.ViewModels
     }
     public class AccountUM
     {
-        public int Id { get; set; }
-        public string Role { get; set; }
         public string Name { get; set; }
         public IFormFile ImageUrl { get; set; }
         public string Phone { get; set; }
-        [Required]
-        public string Status { get; set; }
     }
 }
