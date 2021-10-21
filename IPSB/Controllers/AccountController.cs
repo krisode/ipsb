@@ -56,7 +56,7 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<AccountVM>> GetAccountById(int id)
         {
-            var account = await _service.GetByIdAsync(_ => _.Id == id, _ => _.Store);
+            var account = await _service.GetByIdAsync(_ => _.Id == id, _ => _.Store, _ => _.BuildingManager);
 
             if (account == null)
             {
@@ -98,9 +98,14 @@ namespace IPSB.Controllers
         {
             var list = _service.GetAll(_ => _.Store);
 
-            if (model.NotBuildingManager)
+            if (model.NotManageBuilding)
             {
                 list = list.Where(_ => _.BuildingManager == null);
+            }
+            
+            if (model.NotManageStore)
+            {
+                list = list.Where(_ => _.Store == null);
             }
 
             if (!string.IsNullOrEmpty(model.Role))

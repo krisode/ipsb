@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static IPSB.Utils.Constants;
 
 namespace IPSB.Controllers
 {
@@ -68,7 +69,7 @@ namespace IPSB.Controllers
                         _ => _.Store.Products,
                         _ => _.EdgeFromLocations,
                         _ => _.EdgeToLocations,
-                        _ => _.LocatorTags,
+                        _ => _.LocatorTag,
                         _ => _.VisitPoints).Result;
 
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
@@ -94,7 +95,6 @@ namespace IPSB.Controllers
                 }
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-
         }
 
         /// <summary>
@@ -152,6 +152,17 @@ namespace IPSB.Controllers
                 {
                     list = list.Where(_ => _.Y == model.Y);
                 }
+                if (!string.IsNullOrEmpty(model.Status))
+                {
+                    if (Status.ACTIVE.Equals(model.Status) || Status.INACTIVE.Equals(model.Status))
+                    {
+                        list = list.Where(_ => _.Status == model.Status);
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+                }
 
                 if (model.FloorPlanId != 0)
                 {
@@ -160,7 +171,7 @@ namespace IPSB.Controllers
 
                 if (model.StoreId != 0)
                 {
-                    list = list.Where(_ => _.StoreId == model.StoreId);
+                    list = list.Where(_ => _.Store.Id == model.StoreId);
                 }
 
                 if (model.LocationTypeId != 0)
@@ -273,18 +284,12 @@ namespace IPSB.Controllers
         public async Task<ActionResult> PutLocation(int id, [FromBody] LocationUM model)
         {
             Location updLocation = await _service.GetByIdAsync(_ => _.Id == id);
-            if (updLocation == null || id != model.Id)
-            {
-                return BadRequest();
-            }
 
             try
             {
-                updLocation.Id = model.Id;
                 updLocation.X = model.X;
                 updLocation.Y = model.Y;
                 updLocation.FloorPlanId = model.FloorPlanId;
-                updLocation.StoreId = model.StoreId;
                 updLocation.LocationTypeId = model.LocationTypeId;
                 _service.Update(updLocation);
                 if (await _service.Save() > 0)

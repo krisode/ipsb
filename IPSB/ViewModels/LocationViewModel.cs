@@ -14,10 +14,10 @@ namespace IPSB.ViewModels
         public FloorPlanStoreRefModel FloorPlan { get; set; }
         public LocationTypeRefModel LocationType { get; set; }
         public StoreRefModel Store { get; set; }
-        public ICollection<EdgeRefModel> EdgeFromLocations { get; set; }
-        public ICollection<EdgeRefModel> EdgeToLocations { get; set; }
-        public ICollection<LocatorTagRefModel> LocatorTags { get; set; }
-        public ICollection<VisitPointRefModel> VisitPoints { get; set; }
+        // public ICollection<EdgeRefModel> EdgeFromLocations { get; set; }
+        // public ICollection<EdgeRefModel> EdgeToLocations { get; set; }
+        // public ICollection<LocatorTagRefModel> LocatorTags { get; set; }
+        // public ICollection<VisitPointRefModel> VisitPoints { get; set; }
     }
 
     public class LocationRefModel
@@ -28,7 +28,19 @@ namespace IPSB.ViewModels
         public int FloorPlanId { get; set; }
         public int StoreId { get; set; }
         public int LocationTypeId { get; set; }
+        public string Status { get; set; }
+    }
+
+    public class LocationRefModelForVisitPoint
+    {
+        public int Id { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
+        public int FloorPlanId { get; set; }
+        public int StoreId { get; set; }
         public StoreRefModel Store { get; set; }
+        public int LocationTypeId { get; set; }
+        public string Status { get; set; }
     }
 
     public class LocationRefModelForStore
@@ -37,6 +49,7 @@ namespace IPSB.ViewModels
         public double X { get; set; }
         public double Y { get; set; }
         public int FloorPlanId { get; set; }
+        public string Status { get; set; }
     }
     public class LocationRefModelForEdge
     {
@@ -44,10 +57,11 @@ namespace IPSB.ViewModels
         public double X { get; set; }
         public double Y { get; set; }
         public int FloorPlanId { get; set; }
+        public StoreRefModelForEdge Store { get; set; }
         public FloorPlanStoreRefModel FloorPlan { get; set; }
         public int StoreId { get; set; }
-        public int LocationTypeId { get; set; }
-        public StoreRefModelForEdge Store { get; set; }
+        public string Status { get; set; }
+        
     }
 
     public class LocationSM
@@ -63,6 +77,7 @@ namespace IPSB.ViewModels
         public string LocationTypeName { get; set; }
         public string StoreName { get; set; }
         public string ProductName { get; set; }
+        public string Status { get; set; }
 
     }
 
@@ -71,18 +86,15 @@ namespace IPSB.ViewModels
         public double X { get; set; }
         public double Y { get; set; }
         public int FloorPlanId { get; set; }
-        public int? StoreId { get; set; }
         public int LocationTypeId { get; set; }
 
     }
 
     public class LocationUM
     {
-        public int Id { get; set; }
         public double X { get; set; }
         public double Y { get; set; }
         public int FloorPlanId { get; set; }
-        public int StoreId { get; set; }
         public int LocationTypeId { get; set; }
 
     }

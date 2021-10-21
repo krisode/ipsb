@@ -105,7 +105,6 @@ namespace IPSB.Infrastructure.Contexts
                 entity.HasOne(d => d.Admin)
                     .WithMany(p => p.BuildingAdmins)
                     .HasForeignKey(d => d.AdminId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Building_Account");
 
                 entity.HasOne(d => d.Manager)
@@ -294,6 +293,7 @@ namespace IPSB.Infrastructure.Contexts
                 entity.ToTable("Location");
 
                 entity.Property(e => e.Status)
+                    .IsRequired()
                     .HasMaxLength(20)
                     .IsUnicode(false);
 
@@ -308,11 +308,6 @@ namespace IPSB.Infrastructure.Contexts
                     .HasForeignKey(d => d.LocationTypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Location_LocationType");
-
-                entity.HasOne(d => d.Store)
-                    .WithMany(p => p.Locations)
-                    .HasForeignKey(d => d.StoreId)
-                    .HasConstraintName("FK_Location_Store");
             });
 
             modelBuilder.Entity<LocationType>(entity =>
@@ -341,12 +336,9 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("LocatorTag");
 
-                entity.Property(e => e.LastSeen).HasColumnType("datetime");
-
-                entity.Property(e => e.MacAddress)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsUnicode(false);
+                entity.HasIndex(e => e.LocationId, "idx_LocationId")
+                    .IsUnique()
+                    .HasFilter("([LocationId] IS NOT NULL)");
 
                 entity.Property(e => e.Status)
                     .IsRequired()
@@ -355,6 +347,11 @@ namespace IPSB.Infrastructure.Contexts
 
                 entity.Property(e => e.UpdateTime).HasColumnType("datetime");
 
+                entity.Property(e => e.Uuid)
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
                 entity.HasOne(d => d.FloorPlan)
                     .WithMany(p => p.LocatorTags)
                     .HasForeignKey(d => d.FloorPlanId)
@@ -362,10 +359,15 @@ namespace IPSB.Infrastructure.Contexts
                     .HasConstraintName("FK_LocatorTag_FloorPlan");
 
                 entity.HasOne(d => d.Location)
-                    .WithMany(p => p.LocatorTags)
-                    .HasForeignKey(d => d.LocationId)
+                    .WithOne(p => p.LocatorTag)
+                    .HasForeignKey<LocatorTag>(d => d.LocationId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_LocatorTag_Location");
+
+                entity.HasOne(d => d.LocatorTagGroup)
+                    .WithMany(p => p.InverseLocatorTagGroup)
+                    .HasForeignKey(d => d.LocatorTagGroupId)
+                    .HasConstraintName("FK_LocatorTag_LocatorTag");
             });
 
             modelBuilder.Entity<Notification>(entity =>
@@ -507,6 +509,10 @@ namespace IPSB.Infrastructure.Contexts
                 entity.HasIndex(e => e.AccountId, "UQ__Store__349DA5A7971A9D32")
                     .IsUnique();
 
+                entity.HasIndex(e => e.LocationId, "idx_locationid")
+                    .IsUnique()
+                    .HasFilter("([LocationId] IS NOT NULL)");
+
                 entity.Property(e => e.Description).IsRequired();
 
                 entity.Property(e => e.ImageUrl)
@@ -522,7 +528,6 @@ namespace IPSB.Infrastructure.Contexts
                     .IsUnicode(false);
 
                 entity.Property(e => e.ProductCategoryIds)
-                    .IsRequired()
                     .HasMaxLength(200)
                     .IsUnicode(false);
 
@@ -548,6 +553,11 @@ namespace IPSB.Infrastructure.Contexts
                     .HasForeignKey(d => d.FloorPlanId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Store_FloorPlan");
+
+                entity.HasOne(d => d.Location)
+                    .WithOne(p => p.Store)
+                    .HasForeignKey<Store>(d => d.LocationId)
+                    .HasConstraintName("FK_Store_Location");
             });
 
             modelBuilder.Entity<VisitPoint>(entity =>

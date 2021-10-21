@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using IPSB.Infrastructure.Contexts;
+using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -16,18 +17,13 @@ namespace IPSB.ViewModels
         public string ProductCategoryIds { get; set; }
         public string Phone { get; set; }
         public string Status { get; set; }
+        public LocationRefModel Location { get; set; }
+        public AccountStoreRefModel Account { get; set; }
+        public BuildingRefModelForStore Building { get; set; }
+        public FloorPlanStoreRefModel FloorPlan { get; set; }
 
-        public virtual AccountStoreRefModel Account { get; set; }
-        public virtual BuildingRefModelForStore Building { get; set; }
-        public virtual FloorPlanStoreRefModel FloorPlan { get; set; }
-        //public virtual ICollection<CouponRefModel> Coupons { get; set; }
-        //public ICollection<ProductCategoryRefModel> ProductCategories { get; set; }
-        //public virtual ICollection<FavoriteStoreRefModel> FavoriteStores { get; set; }
-        //public virtual ICollection<LocationRefModel> Locations { get; set; }
-        //public virtual ICollection<ProductGroupRefModel> ProductGroups { get; set; }
-        //public virtual ICollection<ProductRefModel> Products { get; set; }
     }
-    public class StoreLoginModel
+    public class StoreRefModelForAccount
     {
         public int Id { get; set; }
     }
@@ -45,7 +41,6 @@ namespace IPSB.ViewModels
         public string Phone { get; set; }
         public string Status { get; set; }
         public BuildingRefModel Building { get; set; }
-        public ICollection<ProductRefModel> Products { get; set; }
     }
 
     public class StoreRefModelForProduct
@@ -88,23 +83,19 @@ namespace IPSB.ViewModels
         public int AccountId { get; set; }
         public IFormFile ImageUrl { get; set; }
         public int BuildingId { get; set; }
+        public string LocationJson { get; set; }
         public string Description { get; set; }
         public int FloorPlanId { get; set; }
-        public string[] ProductCategoryIds { get; set; }
         public string Phone { get; set; }
     }
     public class StoreUM
     {
-        public int Id { get; set; }
         public string Name { get; set; }
         public int AccountId { get; set; }
         public IFormFile ImageUrl { get; set; }
-        public int BuildingId { get; set; }
         public string Description { get; set; }
         public int FloorPlanId { get; set; }
-        public string[] ProductCategoryIds { get; set; }
+        public string LocationJson { get; set; }
         public string Phone { get; set; }
-        [Required]
-        public string Status { get; set; }
     }
 }

@@ -67,10 +67,7 @@ namespace IPSB.Controllers
             {
                 var floorPlan = await _cacheStore.GetOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
-                    var floorPlan = _service.GetByIdAsync(_ => _.Id == id,
-                        _ => _.Building,
-                        _ => _.LocatorTags,
-                        _ => _.Stores).Result;
+                    var floorPlan = _service.GetByIdAsync(_ => _.Id == id).Result;
 
 
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);

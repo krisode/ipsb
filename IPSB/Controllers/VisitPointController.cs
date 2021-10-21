@@ -81,6 +81,10 @@ namespace IPSB.Controllers
         public ActionResult<IEnumerable<VisitPointVM>> GetAllVisitPoints([FromQuery] VisitPointSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             IQueryable<VisitPoint> list = _service.GetAll(_ => _.Location.Store.Building, _ => _.VisitRoute);
+            // IQueryable<VisitPoint> list = _service.GetAll(_ => _.VisitRoute)
+            //                                         .Include(_ => _.Location)
+            //                                         .ThenInclude(_ => _.Store)
+            //                                         .ThenInclude(_ => _.Building);
 
             if (model.LocationTypeId != 0)
             {
@@ -89,7 +93,7 @@ namespace IPSB.Controllers
             
             if (model.StoreId != 0)
             {
-                list = list.Where(_ => _.Location.StoreId == model.StoreId);
+                list = list.Where(_ => _.Location.Store.Id == model.StoreId);
             }
             
             if (model.BuildingId != 0)

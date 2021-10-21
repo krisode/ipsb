@@ -122,5 +122,10 @@ namespace IPSB.Infrastructure.Repositories
         {
             _dbContext.UpdateRange(entities);
         }
+
+        public bool IsExisted(Expression<Func<T, bool>> predicate)
+        {
+            return _dbContext.Set<T>().AsNoTracking().Where(predicate).Count() >= 1;
+        }
     }
 }
