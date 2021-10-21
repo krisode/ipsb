@@ -10,7 +10,7 @@ namespace IPSB.Core.Services
 {
     public interface IBuildingService : IService<Building, int>
     {
-
+        bool IsExisted(Expression<Func<Building, bool>> predicate);
     }
 
     public class BuildingService : IBuildingService
@@ -40,6 +40,11 @@ namespace IPSB.Core.Services
         public async Task<Building> GetByIdAsync(Expression<Func<Building, bool>> predicate, params Expression<Func<Building, object>>[] includes)
         {
             return await _iRepository.GetByIdAsync(predicate, includes);
+        }
+
+        public bool IsExisted(Expression<Func<Building, bool>> predicate)
+        {
+            return _iRepository.IsExisted(predicate);
         }
 
         public Task<int> Save()

@@ -14,6 +14,7 @@ namespace IPSB.Core.Services
         static int TYPE_POINT_ON_ROUTE = 2;
         Task AddRangeAsync(List<Location> list);
         void DeleteRange(List<int> ids);
+        Task DeleteById(int id);
         void Disable(List<int> ids);
     }
 
@@ -39,6 +40,13 @@ namespace IPSB.Core.Services
         {
             _iRepository.Delete(entity);
         }
+
+        public async Task DeleteById(int id)
+        {
+            var entity = await _iRepository.GetByIdAsync(_ => _.Id == id);
+            _iRepository.Delete(entity);
+        }
+
         public void DeleteRange(List<int> ids)
         {
             var lstRemove = _iRepository.GetAll()

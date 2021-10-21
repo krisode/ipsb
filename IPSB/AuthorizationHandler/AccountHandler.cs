@@ -17,10 +17,9 @@ namespace IPSB.AuthorizationHandler
 
         public AccountHandler(IServiceProvider serviceProvider)
         {
-            using (var scope = serviceProvider.CreateScope())
-            {
-                _storeService = (IStoreService) scope.ServiceProvider.GetService(typeof(IStoreService));
-            }   
+            var scope = serviceProvider.CreateScope();
+            _storeService = (IStoreService)scope.ServiceProvider.GetService(typeof(IStoreService));
+
         }
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, Account resource)
@@ -48,7 +47,7 @@ namespace IPSB.AuthorizationHandler
             }
 
 
-            
+
 
             // Create operation
             if (isCreateOperation)
@@ -67,7 +66,7 @@ namespace IPSB.AuthorizationHandler
                 }
             }
 
-            
+
             if (isUpdateOperation || isDeleteOperation)
             {
                 if (context.User.IsInRole(Constants.Role.ADMIN) && resource.Role == Constants.Role.BUILDING_MANAGER)

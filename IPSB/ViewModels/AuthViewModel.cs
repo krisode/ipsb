@@ -34,7 +34,7 @@ namespace IPSB.ViewModels
         public string Status { get; set; }
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }
-        public StoreLoginModel Store { get; set; }
+        public StoreRefModelForAccount Store { get; set; }
     }
 
     public class AuthLoginSuccess
@@ -48,6 +48,7 @@ namespace IPSB.ViewModels
         public string Status { get; set; }
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }
+        public BuildingRefModelForAccount BuildingManager { get; set; }
 
     }
 

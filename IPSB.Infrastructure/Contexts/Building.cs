@@ -20,7 +20,7 @@ namespace IPSB.Infrastructure.Contexts
         public int? AdminId { get; set; }
         public string Name { get; set; }
         public string ImageUrl { get; set; }
-        public int NumberOfFloor { get; set; }
+        public int? NumberOfFloor { get; set; }
         public string Address { get; set; }
         public string Status { get; set; }
 

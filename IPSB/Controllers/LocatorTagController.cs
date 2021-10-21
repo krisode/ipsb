@@ -7,29 +7,35 @@ using IPSB.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static IPSB.Utils.Constants;
 
 namespace IPSB.Controllers
 {
     [Route("api/v1.0/locator-tags")]
     [ApiController]
     [Authorize(Roles = "Building Manager")]
-    public class LocatorTagController : AuthorizeController
+    public class LocatorTagController : Controller
     {
         private readonly ILocatorTagService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<LocatorTag> _pagingSupport;
         private readonly IAuthorizationService _authorizationService;
-        public LocatorTagController(ILocatorTagService service, IMapper mapper, IPagingSupport<LocatorTag> pagingSupport, IAuthorizationService authorizationService)
+        private readonly ILocationService _locationService;
+
+        public LocatorTagController(ILocatorTagService service, IMapper mapper, IPagingSupport<LocatorTag> pagingSupport, IAuthorizationService authorizationService, ILocationService locationService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _authorizationService = authorizationService;
+            _locationService = locationService;
         }
+
 
         /// <summary>
         /// Get a specific locator tag by id
@@ -90,80 +96,59 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<LocatorTagVM>> GetAllLocatorTags([FromQuery] LocatorTagSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<LocatorTag> list = _service.GetAll(_ => _.FloorPlan, _ => _.Location);
+            IQueryable<LocatorTag> list = _service.GetAll(_ => _.FloorPlan, _ => _.Location, _ => _.LocatorTagGroup);
 
-            IQueryable<LocatorTag> rtnlist = list;
-            if (model.Id is not null && model.Id.Length > 0)
+            if (model.Id != null)
             {
-                List<LocatorTag> locatorTags = new List<LocatorTag>();
-                foreach (var id in model.Id)
-                {
-                    if (list.Where(_ => _.Id == id).FirstOrDefault() is not null)
-                    {
-                        locatorTags.Add(list.Where(_ => _.Id == id).FirstOrDefault());
-                    }
-                }
-                rtnlist = locatorTags.AsQueryable();
+                list = list.Where(_ => model.Id.Contains(_.Id));
             }
 
-            if (!string.IsNullOrEmpty(model.MacAddress))
+            if (!string.IsNullOrEmpty(model.Uuid))
             {
-                rtnlist = rtnlist.Where(_ => _.MacAddress.Contains(model.MacAddress));
+                list = list.Where(_ => _.Uuid.Equals(model.Uuid));
+            }
+
+            if (model.BuildingId != 0)
+            {
+                list = list.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
             }
 
             if (model.FloorPlanId != 0)
             {
-                rtnlist = rtnlist.Where(_ => _.FloorPlanId == model.FloorPlanId);
+                list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
             }
 
             if (model.LocationId != 0)
             {
-                rtnlist = rtnlist.Where(_ => _.LocationId == model.LocationId);
+                list = list.Where(_ => _.LocationId == model.LocationId);
             }
 
             if (model.LowerUpdateTime.HasValue)
             {
-                rtnlist = rtnlist.Where(_ => _.UpdateTime >= model.LowerUpdateTime);
+                list = list.Where(_ => _.UpdateTime >= model.LowerUpdateTime);
             }
 
             if (model.UpperUpdateTime.HasValue)
             {
-                rtnlist = rtnlist.Where(_ => _.UpdateTime <= model.UpperUpdateTime);
+                list = list.Where(_ => _.UpdateTime <= model.UpperUpdateTime);
             }
 
-            if (model.LowerLastSeen.HasValue)
-            {
-                rtnlist = rtnlist.Where(_ => _.LastSeen >= model.LowerLastSeen);
-            }
-
-            if (model.UpperLastSeen.HasValue)
-            {
-                rtnlist = rtnlist.Where(_ => _.LastSeen <= model.UpperLastSeen);
-            }
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE && model.Status != Constants.Status.NEW)
                 {
                     return BadRequest();
                 }
 
                 else
                 {
-                    if (model.Status == Constants.Status.ACTIVE)
-                    {
-                        rtnlist = rtnlist.Where(_ => _.Status == Constants.Status.ACTIVE);
-                    }
-
-                    if (model.Status == Constants.Status.INACTIVE)
-                    {
-                        rtnlist = rtnlist.Where(_ => _.Status == Constants.Status.INACTIVE);
-                    }
+                    list = list.Where(_ => _.Status == model.Status);
                 }
             }
 
 
-            var pagedModel = _pagingSupport.From(rtnlist)
+            var pagedModel = _pagingSupport.From(list)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
                 .Paginate<LocatorTagVM>();
 
@@ -197,7 +182,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<LocatorTagCM>> CreateLocatorTag([FromBody] LocatorTagCM model)
         {
-            LocatorTag locatorTag = _service.GetAllWhere(_ => _.MacAddress == model.MacAddress).FirstOrDefault();
+            LocatorTag locatorTag = _service.GetAllWhere(_ => _.Uuid == model.Uuid).FirstOrDefault();
 
             if (locatorTag is not null)
             {
@@ -209,11 +194,21 @@ namespace IPSB.Controllers
             {
                 return new ObjectResult($"Not authorize to create locator tag") { StatusCode = 403 };
             }*/
-
+            int locationId = 0;
+            if (!string.IsNullOrEmpty(model.LocationJson))
+            {
+                var json = JsonConvert.DeserializeObject<Location>(model.LocationJson);
+                if (json != null && json.Id == 0)
+                {
+                    json.Status = Status.ACTIVE;
+                    var locationToCreate = await _locationService.AddAsync(json);
+                    await _service.Save();
+                    locationId = locationToCreate.Id;
+                }
+            }
             LocatorTag crtLocatorTag = _mapper.Map<LocatorTag>(model);
-            DateTime currentDateTime = DateTime.Now;
-            crtLocatorTag.UpdateTime = currentDateTime;
-            crtLocatorTag.LastSeen = currentDateTime;
+            crtLocatorTag.UpdateTime = DateTime.Now;
+            crtLocatorTag.LocationId = locationId;
 
             // Default POST Status = "Active"
             crtLocatorTag.Status = Constants.Status.ACTIVE;
@@ -247,39 +242,39 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutLocatorTag(int id, [FromBody] LocatorTagUM model)
         {
-
             LocatorTag updLocatorTag = await _service.GetByIdAsync(_ => _.Id == id);
 
-            if (updLocatorTag == null || id != model.Id)
-            {
-                return BadRequest();
-            }
+            // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updLocatorTag, Operations.Read);
+            // if (!authorizedResult.Succeeded)
+            // {
+            //     return new ObjectResult($"Not authorize to update locator tag with id: {id}") { StatusCode = 403 };
+            // }
 
-            if (!string.IsNullOrEmpty(model.Status))
+            if (!string.IsNullOrEmpty(model.LocationJson))
             {
-                if (model.Status != Constants.Status.MISSING && model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                var json = JsonConvert.DeserializeObject<Location>(model.LocationJson);
+                if (json != null && json.Id == 0)
                 {
-                    return BadRequest();
+                    json.Status = Status.ACTIVE;
+                    var locationToUpdate = await _locationService.AddAsync(json);
+                    await _service.Save();
+                    int locationId = locationToUpdate.Id;
+                    if (locationToUpdate.Id != 0)
+                    {
+                        var locationEntity = await _locationService.GetByIdAsync(_ => _.Id == updLocatorTag.LocationId);
+                        locationEntity.Status = Status.INACTIVE;
+                        _locationService.Update(locationEntity);
+                        updLocatorTag.LocationId = locationId;
+                    }
                 }
             }
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updLocatorTag, Operations.Read);
-            if (!authorizedResult.Succeeded)
-            {
-                return new ObjectResult($"Not authorize to update locator tag with id: {id}") { StatusCode = 403 };
-            }
-
-            DateTime currentDateTime = DateTime.Now;
-
             try
             {
-                updLocatorTag.Id = model.Id;
-                updLocatorTag.MacAddress = model.MacAddress;
-                updLocatorTag.Status = model.Status;
-                updLocatorTag.UpdateTime = currentDateTime;
+                updLocatorTag.TxPower = model.TxPower;
+                updLocatorTag.UpdateTime = DateTime.Now;
                 updLocatorTag.FloorPlanId = model.FloorPlanId;
-                updLocatorTag.LocationId = model.LocationId;
-                updLocatorTag.LastSeen = model.LastSeen.Value;
+                updLocatorTag.LocatorTagGroupId = model.LocatorTagGroupId;
 
                 _service.Update(updLocatorTag);
                 await _service.Save();
@@ -307,42 +302,36 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         public async Task<ActionResult> Delete(int id)
         {
-            LocatorTag locatorTag = await _service.GetByIdAsync(_ => _.Id == id);
+            var locatorTag = await _service.GetByIdAsync(_ => _.Id == id);
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, locatorTag, Operations.Delete);
-            
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Delete);
             if (!authorizedResult.Succeeded)
             {
-                return new ObjectResult($"Not authorize to delete locator tag with id: {id}") { StatusCode = 403 };
-            }
+                return new ObjectResult($"Not authorize to delete building with id: {id}") { StatusCode = 403 };
+            }*/
 
-            if (locatorTag is not null)
+            if (locatorTag is null)
             {
                 return BadRequest();
             }
 
-            /*if (locatorTag.Status.Equals(Constants.Status.INACTIVE))
+            if (locatorTag.Status.Equals(Constants.Status.INACTIVE))
             {
                 return BadRequest();
             }
 
-            locatorTag.Status = Constants.Status.INACTIVE;*/
-
+            locatorTag.Status = Status.INACTIVE;
             try
             {
-                _service.Delete(locatorTag);
+                _service.Update(locatorTag);
                 await _service.Save();
             }
             catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            return NoContent();
-        }
 
-        protected override bool IsAuthorize()
-        {
-            throw new NotImplementedException();
+            return NoContent();
         }
     }
 }

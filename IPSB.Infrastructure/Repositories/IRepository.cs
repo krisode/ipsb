@@ -12,6 +12,7 @@ namespace IPSB.Infrastructure.Repositories
         IQueryable<T> GetAllTwoConditionInclude(Expression<Func<T, bool>> firstCondition, Expression<Func<T, bool>> secondCondition, params Expression<Func<T, object>>[] includes);
         IQueryable<T> GetAllWhere(params Expression<Func<T, bool>>[] predicate);
         Task<T> GetByIdAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] expressions);
+        bool IsExisted(Expression<Func<T, bool>> predicate);
         Task<T> AddAsync(T entity);
         Task AddRangeAsync(List<T> list);
         void Update(T entity);

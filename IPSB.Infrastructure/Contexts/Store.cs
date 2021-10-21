@@ -10,7 +10,6 @@ namespace IPSB.Infrastructure.Contexts
         public Store()
         {
             Coupons = new HashSet<Coupon>();
-            Locations = new HashSet<Location>();
             Products = new HashSet<Product>();
         }
 
@@ -20,6 +19,7 @@ namespace IPSB.Infrastructure.Contexts
         public string ImageUrl { get; set; }
         public int BuildingId { get; set; }
         public string Description { get; set; }
+        public int? LocationId { get; set; }
         public int FloorPlanId { get; set; }
         public string ProductCategoryIds { get; set; }
         public string Phone { get; set; }
@@ -28,8 +28,8 @@ namespace IPSB.Infrastructure.Contexts
         public virtual Account Account { get; set; }
         public virtual Building Building { get; set; }
         public virtual FloorPlan FloorPlan { get; set; }
+        public virtual Location Location { get; set; }
         public virtual ICollection<Coupon> Coupons { get; set; }
-        public virtual ICollection<Location> Locations { get; set; }
         public virtual ICollection<Product> Products { get; set; }
     }
 }

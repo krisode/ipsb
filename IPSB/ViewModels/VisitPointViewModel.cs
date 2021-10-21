@@ -9,8 +9,7 @@ namespace IPSB.ViewModels
         public int LocationId { get; set; }
         public int VisitRouteId { get; set; }
         public DateTime RecordTime { get; set; }
-
-        public LocationRefModel Location { get; set; }
+        public LocationRefModelForVisitPoint Location { get; set; }
         public VisitRouteRefModel VisitRoute { get; set; }
     }
     public class VisitPointRefModel

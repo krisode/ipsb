@@ -18,6 +18,11 @@ namespace IPSB.ViewModels
         public ICollection<StoreRefModel> Stores { get; set; }
         public ICollection<VisitRouteRefModel> VisitRoutes { get; set; }
     }
+
+    public class BuildingRefModelForAccount
+    {
+        public int Id { get; set; }
+    }
     public class BuildingRefModel
     {
         public int Id { get; set; }

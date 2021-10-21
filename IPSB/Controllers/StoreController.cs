@@ -8,17 +8,19 @@ using IPSB.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static IPSB.Utils.Constants;
 
 namespace IPSB.Controllers
 {
     [Route("api/v1.0/stores")]
     [ApiController]
     [Authorize(Roles = "Visitor, Building Manager, Store Owner")]
-    public class StoreController : AuthorizeController
+    public class StoreController : Controller
     {
         private readonly IStoreService _service;
         private readonly IProductCategoryService _productCategoryService;
@@ -26,15 +28,19 @@ namespace IPSB.Controllers
         private readonly IPagingSupport<Store> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
         private readonly IAuthorizationService _authorizationService;
-        public StoreController(IStoreService service, IMapper mapper, IPagingSupport<Store> pagingSupport, IUploadFileService uploadFileService, IProductCategoryService productCategoryService, IAuthorizationService authorizationService)
+        private readonly ILocationService _locationService;
+
+        public StoreController(IStoreService service, IProductCategoryService productCategoryService, IMapper mapper, IPagingSupport<Store> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService, ILocationService locationService)
         {
             _service = service;
+            _productCategoryService = productCategoryService;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
-            _productCategoryService = productCategoryService;
             _authorizationService = authorizationService;
+            _locationService = locationService;
         }
+
 
         /// <summary>
         /// Get a specific store by id
@@ -99,7 +105,7 @@ namespace IPSB.Controllers
             //IQueryable<Store> list = _service.GetAll(_ => _.Account, _ => _.Building,
             //    _ => _.FloorPlan, _ => _.Coupons, _ => _.FavoriteStores, _ => _.Locations,
             //    _ => _.ProductGroups, _ => _.Products);
-            IQueryable<Store> list = _service.GetAll(_ => _.Account, _ => _.Building, _ => _.FloorPlan);
+            IQueryable<Store> list = _service.GetAll(_ => _.Account, _ => _.Building, _ => _.FloorPlan, _ => _.Location);
 
             if (model.AccountId != 0)
             {
@@ -158,18 +164,9 @@ namespace IPSB.Controllers
                 {
                     return BadRequest();
                 }
-
                 else
                 {
-                    if (model.Status == Constants.Status.ACTIVE)
-                    {
-                        list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
-                    }
-
-                    if (model.Status == Constants.Status.INACTIVE)
-                    {
-                        list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
-                    }
+                    list = list.Where(_ => _.Status == model.Status);
                 }
             }
 
@@ -227,9 +224,9 @@ namespace IPSB.Controllers
         public async Task<ActionResult<StoreCM>> CreateStore([FromForm] StoreCM model)
         {
 
-            Store store = _service.GetByIdAsync(_ => _.Name.ToUpper() == model.Name.ToUpper()).Result;
 
-            if (store is not null)
+            bool isExisted = _service.IsExisted(_ => _.Name.ToLower().Equals(model.Name.ToLower()));
+            if (isExisted)
             {
                 return Conflict();
             }
@@ -239,28 +236,34 @@ namespace IPSB.Controllers
             {
                 return new ObjectResult($"Not authorize to create store") { StatusCode = 403 };
             }*/
-
+            // Default POST Status = "Active" of Location
+            int locationId = 0;
+            if (!string.IsNullOrEmpty(model.LocationJson))
+            {
+                var json = JsonConvert.DeserializeObject<Location>(model.LocationJson);
+                if (json != null && json.Id == 0)
+                {
+                    json.Status = Status.ACTIVE;
+                    var locationToCreate = await _locationService.AddAsync(json);
+                    await _service.Save();
+                    locationId = locationToCreate.Id;
+                }
+            }
             Store crtStore = _mapper.Map<Store>(model);
+            crtStore.LocationId = locationId;
 
             // Default POST Status = "Active"
             crtStore.Status = Constants.Status.ACTIVE;
+
 
             if (model.ImageUrl != null)
             {
                 crtStore.ImageUrl = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "store", "store-detail");
             }
 
-
-            string productCategoryIds = "";
-            if (model.ProductCategoryIds is not null && model.ProductCategoryIds.Length > 0)
-            {
-                Array.Sort(model.ProductCategoryIds);
-                productCategoryIds = string.Join(",", model.ProductCategoryIds);
-            }
-            crtStore.ProductCategoryIds = productCategoryIds;
-
             try
             {
+
                 await _service.AddAsync(crtStore);
                 await _service.Save();
             }
@@ -290,6 +293,10 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutStore(int id, [FromForm] StoreUM model)
         {
+            if (_service.IsExisted(_ => _.Id != id && _.Name.ToLower().Equals(model.Name.ToLower())))
+            {
+                return Conflict();
+            }
 
             Store updStore = await _service.GetByIdAsync(_ => _.Id == id);
 
@@ -299,76 +306,97 @@ namespace IPSB.Controllers
                 return new ObjectResult($"Not authorize to update store with id: {id}") { StatusCode = 403 };
             }
 
-            if (!updStore.Name.ToUpper().Equals(model.Name.ToUpper()))
-            {
-                Store store = _service.GetByIdAsync(_ => _.Name.ToUpper() == model.Name.ToUpper()).Result;
-                if (store is not null)
-                {
-                    return Conflict();
-                }
-            }
 
-            if (updStore == null || id != model.Id)
-            {
-                return BadRequest();
-            }
-
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
-                {
-                    return BadRequest();
-                }
-            }
 
             if (model.ImageUrl != null)
             {
                 updStore.ImageUrl = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "store", "store-detail");
             }
 
-            string productCategoryIds = updStore.ProductCategoryIds;
 
-            if (model.ProductCategoryIds is not null && model.ProductCategoryIds.Length > 0)
-            {
-                Array.Sort(model.ProductCategoryIds);
-                productCategoryIds = string.Join(",", model.ProductCategoryIds);
-            }
+
 
             try
             {
-                updStore.Id = model.Id;
+                if (!string.IsNullOrEmpty(model.LocationJson))
+                {
+                    var json = JsonConvert.DeserializeObject<Location>(model.LocationJson);
+                    if (json != null && json.Id == 0)
+                    {
+                        json.Status = Status.ACTIVE;
+                        var locationToUpdate = await _locationService.AddAsync(json);
+                        await _service.Save();
+                        if (locationToUpdate.Id != 0)
+                        {
+                            var locationEntity = await _locationService.GetByIdAsync(_ => _.Id == updStore.LocationId);
+                            locationEntity.Status = Status.INACTIVE;
+                            _locationService.Update(locationEntity);
+                            updStore.LocationId = locationToUpdate.Id;
+                        }
+                    }
+                }
                 updStore.Name = model.Name;
                 updStore.AccountId = model.AccountId;
-                //updStore.ImageUrl = imageUrl;
-                updStore.BuildingId = model.BuildingId;
                 updStore.Description = model.Description;
                 updStore.FloorPlanId = model.FloorPlanId;
-                updStore.ProductCategoryIds = productCategoryIds;
                 updStore.Phone = model.Phone;
-                updStore.Status = model.Status;
-
                 _service.Update(updStore);
                 await _service.Save();
             }
             catch (Exception e)
             {
+
                 return BadRequest(e);
             }
 
             return NoContent();
         }
 
-        // DELETE api/<ProductCategoryController>/5
-        // Change Status to Inactive
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        /// <summary>
+        /// Change the status of store to inactive
+        /// </summary>
+        /// <param name="id">Store's id</param>
+        /// <response code="204">Update store's status successfully</response>
+        /// <response code="400">Store's id does not exist</response>
+        /// <response code="500">Failed to update</response>
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpDelete]
+        [Route("{id}")]
+        [Produces("application/json")]
+        public async Task<ActionResult> Delete(int id)
         {
+            var store = await _service.GetByIdAsync(_ => _.Id == id);
 
-        }
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Delete);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to delete building with id: {id}") { StatusCode = 403 };
+            }*/
 
-        protected override bool IsAuthorize()
-        {
-            throw new NotImplementedException();
+            if (store is null)
+            {
+                return BadRequest();
+            }
+
+            if (store.Status.Equals(Constants.Status.INACTIVE))
+            {
+                return BadRequest();
+            }
+
+            store.Status = Constants.Status.INACTIVE;
+            try
+            {
+                _service.Update(store);
+                await _service.Save();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return NoContent();
         }
     }
 }

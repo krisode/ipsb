@@ -13,16 +13,10 @@ namespace IPSB.ViewModels
         public string Phone { get; set; }
         public string Email { get; set; }
         public string Status { get; set; }
-
-        public StoreRefModel Store { get; set; }
-
-
-        public ICollection<BuildingRefModel> BuildingAdmins { get; set; }
-        public ICollection<BuildingRefModel> BuildingManagers { get; set; }
-        public ICollection<CouponInUseRefModel> CouponInUses { get; set; }
-        
-        public ICollection<VisitRouteRefModel> VisitRoutes { get; set; }
+        public StoreRefModelForAccount Store { get; set; }
+        public BuildingRefModelForAccount BuildingManager { get; set; }
     }
+
     public class AccountRefModel
     {
         public int Id { get; set; }
@@ -39,7 +33,8 @@ namespace IPSB.ViewModels
     }
     public class AccountSM
     {
-        public bool NotBuildingManager { get; set; }
+        public bool NotManageBuilding { get; set; }
+        public bool NotManageStore { get; set; }
         public string Role { get; set; }
         public string Name { get; set; }
         public string Phone { get; set; }

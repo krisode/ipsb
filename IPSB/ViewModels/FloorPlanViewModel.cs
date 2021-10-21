@@ -19,6 +19,7 @@ namespace IPSB.ViewModels
         public ICollection<LocatorTagRefModel> LocatorTags { get; set; }
         public ICollection<StoreRefModel> Stores { get; set; }
     }
+
     public class FloorPlanRefModel
     {
         public int Id { get; set; }

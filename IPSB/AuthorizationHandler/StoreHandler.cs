@@ -1,7 +1,12 @@
-﻿using IPSB.Infrastructure.Contexts;
+﻿using IPSB.Core.Services;
+using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace IPSB.AuthorizationHandler
@@ -9,9 +14,24 @@ namespace IPSB.AuthorizationHandler
     public class StoreHandler : AuthorizationHandler<OperationAuthorizationRequirement, Store>
     {
 
+        private readonly IStoreService _storeService;
+
+        public StoreHandler(IServiceProvider serviceProvider)
+        {
+            var scope = serviceProvider.CreateScope();
+            _storeService = (IStoreService) scope.ServiceProvider.GetService(typeof(IStoreService));
+
+        }
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, Store resource)
         {
 
+            bool isUpdateOperation = requirement.Equals(Operations.Update);
+            int accountId = int.Parse(context.User.Identity.Name);
+            if (isUpdateOperation && context.User.IsInRole(Constants.Role.BUILDING_MANAGER) && CheckBuildingManagerValid(accountId, resource))
+            {
+                context.Succeed(requirement);
+                return Task.CompletedTask;
+            }
             if (context.User.IsInRole(Constants.Role.STORE_OWNER) || context.User.IsInRole(Constants.Role.VISITOR))
             {
                 int storeOwnerId = int.Parse(context.User.Identity.Name);
@@ -25,7 +45,7 @@ namespace IPSB.AuthorizationHandler
                 bool isCreateOperation = requirement.Equals(Operations.Create);
                 bool isReadOperation = requirement.Equals(Operations.Read);
                 bool isDeleteOperation = requirement.Equals(Operations.Delete);
-                bool isUpdateOperation = requirement.Equals(Operations.Update);
+
 
                 bool needAuthorized = isCreateOperation || isReadOperation || isDeleteOperation || isUpdateOperation;
 
@@ -39,7 +59,7 @@ namespace IPSB.AuthorizationHandler
                 {
                     context.Succeed(requirement);
                 }
-            } 
+            }
             else
             {
                 context.Fail();
@@ -47,6 +67,11 @@ namespace IPSB.AuthorizationHandler
             }
 
             return Task.CompletedTask;
+        }
+
+        private bool CheckBuildingManagerValid(int managerId, Store resource)
+        {
+            return _storeService.GetAll().Where(_ => _.Building.ManagerId == managerId && _.Id == resource.Id).Count() >= 1;
         }
     }
 }
