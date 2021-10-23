@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using static IPSB.Utils.Constants;
 
 namespace IPSB.Controllers
 {
@@ -102,7 +103,7 @@ namespace IPSB.Controllers
             {
                 list = list.Where(_ => _.BuildingManager == null);
             }
-            
+
             if (model.NotManageStore)
             {
                 list = list.Where(_ => _.Store == null);
@@ -188,12 +189,9 @@ namespace IPSB.Controllers
             //    }
             //}
 
-            if (!string.IsNullOrEmpty(model.Role))
+            if (!Role.BUILDING_MANAGER.Equals(model.Role) && !Role.ADMIN.Equals(model.Role))
             {
-                if (!Constants.Role.ROLE_LIST.Contains(model.Role))
-                {
-                    return BadRequest();
-                }
+                return BadRequest();
             }
 
             Account crtAccount = _mapper.Map<Account>(model);

@@ -28,7 +28,7 @@ namespace IPSB.Controllers
         private readonly IPushNotificationService _pushNotificationService;
         private readonly INotificationService _notificationService;
 
-        public CouponInUseController(ICouponInUseService service, IMapper mapper, IPagingSupport<CouponInUse> pagingSupport, 
+        public CouponInUseController(ICouponInUseService service, IMapper mapper, IPagingSupport<CouponInUse> pagingSupport,
             IUploadFileService uploadFileService, IAuthorizationService authorizationService, IPushNotificationService pushNotificationService,
             INotificationService notificationService)
         {
@@ -300,7 +300,10 @@ namespace IPSB.Controllers
                             notification.ImageUrl = updCouponInUse.Coupon.ImageUrl;
                             notification.Screen = Constants.Route.FEEDBACK;
                             notification.Parameter = "couponId:" + updCouponInUse.CouponId;
-                            notification.AccountId = updCouponInUse.Coupon.Store.AccountId;
+                            if (updCouponInUse.Coupon.Store.AccountId != null)
+                            {
+                                notification.AccountId = (int)updCouponInUse.Coupon.Store.AccountId;
+                            }
                             notification.Status = Constants.Status.UNREAD;
                             notification.Date = localTime.DateTime;
                             Notification crtNotification = await _notificationService.AddAsync(notification);
@@ -318,7 +321,7 @@ namespace IPSB.Controllers
                                     data
                                     );
                             }
-                            
+
                         }
                         else if (updCouponInUse.Status.Equals(Constants.Status.USED) && string.IsNullOrEmpty(updCouponInUse.FeedbackContent) && string.IsNullOrEmpty(updCouponInUse.FeedbackReply))
                         {

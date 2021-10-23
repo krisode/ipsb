@@ -126,7 +126,7 @@ namespace IPSB.Controllers
             {
                 var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
-                    var list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store);
+                    var list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store, _ => _.LocatorTag, _ => _.Facility);
 
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
 

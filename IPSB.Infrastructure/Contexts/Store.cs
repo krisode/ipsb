@@ -15,7 +15,7 @@ namespace IPSB.Infrastructure.Contexts
 
         public int Id { get; set; }
         public string Name { get; set; }
-        public int AccountId { get; set; }
+        public int? AccountId { get; set; }
         public string ImageUrl { get; set; }
         public int BuildingId { get; set; }
         public string Description { get; set; }

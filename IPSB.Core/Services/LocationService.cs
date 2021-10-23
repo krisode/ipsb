@@ -1,10 +1,13 @@
 ﻿using ApplicationCore.Services;
+using IPSB;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Infrastructure.Repositories;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace IPSB.Core.Services
@@ -16,6 +19,8 @@ namespace IPSB.Core.Services
         void DeleteRange(List<int> ids);
         Task DeleteById(int id);
         void Disable(List<int> ids);
+        Task<int?> SaveLocationJson(string json, [Optional] int? prevLocationId);
+        Task<bool> DisableLocation(int? id);
     }
 
     public class LocationService : ILocationService
@@ -61,7 +66,22 @@ namespace IPSB.Core.Services
             .ToList();
             lstLocation.ForEach(loc => loc.Status = "Inactive");
             _iRepository.UpdateRange(lstLocation);
+        }
 
+        public async Task<bool> DisableLocation(int? id)
+        {
+            if (id != null)
+            {
+                var entity = await _iRepository.GetByIdAsync(_ => _.Id == id);
+                if (entity != null)
+                {
+                    var inActiveStatus = "Inactive";
+                    entity.Status = inActiveStatus;
+                    _iRepository.Update(entity);
+                    return true;
+                }
+            }
+            return false;
         }
 
         public IQueryable<Location> GetAll(params Expression<Func<Location, object>>[] includes)
@@ -77,6 +97,32 @@ namespace IPSB.Core.Services
         public Task<int> Save()
         {
             return _iRepository.Save();
+        }
+
+        public async Task<int?> SaveLocationJson(string json, [Optional] int? prevLocationId)
+        {
+            var activeStatus = "Active";
+            var inActiveStatus = "Inactive";
+            int? locationId = null;
+            if (!string.IsNullOrEmpty(json))
+            {
+
+                var locationEntity = JsonConvert.DeserializeObject<Location>(json);
+                if (locationEntity != null && locationEntity.Id == 0)
+                {
+                    locationEntity.Status = activeStatus;
+                    var locationToCreate = await AddAsync(locationEntity);
+                    await Save();
+                    locationId = locationToCreate.Id;
+                }
+                if (prevLocationId != null)
+                {
+                    var prevLocation = await GetByIdAsync(_ => _.Id == prevLocationId);
+                    prevLocation.Status = inActiveStatus;
+                    Update(prevLocation);
+                }
+            }
+            return locationId;
         }
 
         public void Update(Location entity)

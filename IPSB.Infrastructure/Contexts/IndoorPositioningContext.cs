@@ -41,6 +41,7 @@ namespace IPSB.Infrastructure.Contexts
         {
             if (!optionsBuilder.IsConfigured)
             {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
                 optionsBuilder.UseSqlServer("Server=indoor-positioning.cm4zyhsrdgxp.ap-southeast-1.rds.amazonaws.com, 1433;Initial Catalog=indoor_positioning_main;User ID=admin;Password=TheHien2407abcX123");
             }
         }
@@ -252,6 +253,11 @@ namespace IPSB.Infrastructure.Contexts
                     .HasMaxLength(20)
                     .IsUnicode(false);
 
+                entity.HasOne(d => d.FloorPlan)
+                    .WithMany(p => p.Facilities)
+                    .HasForeignKey(d => d.FloorPlanId)
+                    .HasConstraintName("FK_Facility_FloorPlan");
+
                 entity.HasOne(d => d.Location)
                     .WithOne(p => p.Facility)
                     .HasForeignKey<Facility>(d => d.LocationId)
@@ -361,7 +367,6 @@ namespace IPSB.Infrastructure.Contexts
                 entity.HasOne(d => d.Location)
                     .WithOne(p => p.LocatorTag)
                     .HasForeignKey<LocatorTag>(d => d.LocationId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_LocatorTag_Location");
 
                 entity.HasOne(d => d.LocatorTagGroup)
@@ -506,8 +511,9 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("Store");
 
-                entity.HasIndex(e => e.AccountId, "UQ__Store__349DA5A7971A9D32")
-                    .IsUnique();
+                entity.HasIndex(e => e.AccountId, "idx_AccountId")
+                    .IsUnique()
+                    .HasFilter("([AccountId] IS NOT NULL)");
 
                 entity.HasIndex(e => e.LocationId, "idx_locationid")
                     .IsUnique()
@@ -539,7 +545,6 @@ namespace IPSB.Infrastructure.Contexts
                 entity.HasOne(d => d.Account)
                     .WithOne(p => p.Store)
                     .HasForeignKey<Store>(d => d.AccountId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Store_Account");
 
                 entity.HasOne(d => d.Building)

@@ -14,6 +14,9 @@ namespace IPSB.ViewModels
         public FloorPlanStoreRefModel FloorPlan { get; set; }
         public LocationTypeRefModel LocationType { get; set; }
         public StoreRefModel Store { get; set; }
+        public LocatorTagRefModel LocatorTag { get; set; }
+        public FacilityRefModel Facility { get; set; }
+
         // public ICollection<EdgeRefModel> EdgeFromLocations { get; set; }
         // public ICollection<EdgeRefModel> EdgeToLocations { get; set; }
         // public ICollection<LocatorTagRefModel> LocatorTags { get; set; }
@@ -29,6 +32,7 @@ namespace IPSB.ViewModels
         public int StoreId { get; set; }
         public int LocationTypeId { get; set; }
         public string Status { get; set; }
+        public LocationTypeRefModel LocationType { get; set; }
     }
 
     public class LocationRefModelForVisitPoint
@@ -61,7 +65,7 @@ namespace IPSB.ViewModels
         public FloorPlanStoreRefModel FloorPlan { get; set; }
         public int StoreId { get; set; }
         public string Status { get; set; }
-        
+
     }
 
     public class LocationSM

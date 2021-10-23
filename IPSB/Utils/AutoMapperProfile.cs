@@ -71,6 +71,7 @@ namespace IPSB.Utils
 
             #region LocationTypeModel
             CreateMap<Facility, FacilityVM>();
+            CreateMap<Facility, FacilityRefModel>();
             CreateMap<FacilityCM, Facility>();
             #endregion
 

@@ -89,6 +89,10 @@ namespace IPSB.Controllers
         {
             IQueryable<LocationType> list = _service.GetAll(_ => _.Locations);
 
+            if (model.NotLocationTypeIds != null)
+            {
+                list = list.Where(_ => !model.NotLocationTypeIds.Contains(_.Id));
+            }
             if (!string.IsNullOrEmpty(model.Name))
             {
                 list = list.Where(_ => _.Name.Contains(model.Name));
