@@ -20,8 +20,7 @@ namespace IPSB.Infrastructure.Contexts
         public int BuildingId { get; set; }
         public string FloorCode { get; set; }
         public int FloorNumber { get; set; }
-        public string FloorType { get; set; }
-        public DateTime? CreateDate { get; set; }
+        public double? RotationAngle { get; set; }
         public string Status { get; set; }
 
         public virtual Building Building { get; set; }

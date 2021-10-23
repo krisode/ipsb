@@ -13,13 +13,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static IPSB.Utils.Constants;
 
 namespace IPSB.Controllers
 {
     [Route("api/v1.0/floor-plans")]
     [ApiController]
     [Authorize(Roles = "Building Manager, Visitor")]
-    public class FloorPlanController : AuthorizeController
+    public class FloorPlanController : Controller
     {
         private readonly IFloorPlanService _service;
         private readonly IMapper _mapper;
@@ -143,7 +144,6 @@ namespace IPSB.Controllers
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
 
                     return Task.FromResult(list);
-
                 }, setLastModified: (cachedTime) =>
                  {
                      Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
@@ -160,13 +160,13 @@ namespace IPSB.Controllers
                     list = list.Where(_ => _.FloorCode.Contains(model.FloorCode));
                 }
 
-                if (model.FloorNumber > 0)
+                if (Status.ACTIVE.Equals(model.Status) || Status.INACTIVE.Equals(model.Status))
                 {
-                    list = list.Where(_ => _.FloorNumber == model.FloorNumber);
+                    list = list.Where(_ => _.Status == model.Status);
                 }
 
                 var pagedModel = _pagingSupport.From(list)
-                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
+                    .GetRange(pageIndex, pageSize, _ => _.FloorNumber, isAll, isAscending)
                     .Paginate<FloorPlanVM>();
 
                 return Ok(pagedModel);
@@ -218,11 +218,9 @@ namespace IPSB.Controllers
                 return new ObjectResult($"Not authorize to create floor plan") { StatusCode = 403 };
             }*/
 
-            string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "floor-plan", "floor-plan-map");
             FloorPlan crtFloorPlan = _mapper.Map<FloorPlan>(model);
-            crtFloorPlan.ImageUrl = imageURL;
-            crtFloorPlan.Status = "Inactive";
-            crtFloorPlan.CreateDate = DateTime.Now;
+            crtFloorPlan.ImageUrl = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "floor-plan", "floor-plan-map");;
+            crtFloorPlan.Status = Status.ACTIVE;
 
             try
             {
@@ -257,13 +255,8 @@ namespace IPSB.Controllers
         {
 
             FloorPlan updLocationType = await _service.GetByIdAsync(_ => _.Id == id);
-            if (updLocationType == null || id != model.Id)
-            {
-                return BadRequest();
-            }
 
-            if (model.FloorNumber < 0)
-            {
+            if(!Status.ACTIVE.Equals(model.Status) && !Status.INACTIVE.Equals(model.Status)){
                 return BadRequest();
             }
 
@@ -275,18 +268,18 @@ namespace IPSB.Controllers
 
             string imageURL = updLocationType.ImageUrl;
 
-            if (model.ImageUrl is not null && model.ImageUrl.Length > 0)
+            if (model.ImageUrl is not null)
             {
                 imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "floor-plan", "floor-plan-map");
             }
 
             try
             {
-                updLocationType.Id = model.Id;
                 updLocationType.ImageUrl = imageURL;
-                updLocationType.BuildingId = model.BuildingId;
                 updLocationType.FloorCode = model.FloorCode;
                 updLocationType.FloorNumber = model.FloorNumber;
+                updLocationType.RotationAngle = model.RotationAngle;
+                updLocationType.Status = model.Status;
                 _service.Update(updLocationType);
                 if (await _service.Save() > 0)
                 {
@@ -322,11 +315,11 @@ namespace IPSB.Controllers
         {
             FloorPlan floorPlan = await _service.GetByIdAsync(_ => _.Id == id);
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, floorPlan, Operations.Delete);
-            if (!authorizedResult.Succeeded)
-            {
-                return new ObjectResult($"Not authorize to delete floor plan with id: {id}") { StatusCode = 403 };
-            }
+            // var authorizedResult = await _authorizationService.AuthorizeAsync(User, floorPlan, Operations.Delete);
+            // if (!authorizedResult.Succeeded)
+            // {
+            //     return new ObjectResult($"Not authorize to delete floor plan with id: {id}") { StatusCode = 403 };
+            // }
 
             if (floorPlan is not null)
             {
@@ -352,9 +345,5 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        protected override bool IsAuthorize()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

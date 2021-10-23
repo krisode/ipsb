@@ -41,7 +41,6 @@ namespace IPSB.Infrastructure.Contexts
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
                 optionsBuilder.UseSqlServer("Server=indoor-positioning.cm4zyhsrdgxp.ap-southeast-1.rds.amazonaws.com, 1433;Initial Catalog=indoor_positioning_main;User ID=admin;Password=TheHien2407abcX123");
             }
         }
@@ -268,15 +267,9 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("FloorPlan");
 
-                entity.Property(e => e.CreateDate).HasColumnType("datetime");
-
                 entity.Property(e => e.FloorCode)
                     .IsRequired()
-                    .HasMaxLength(10)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.FloorType)
-                    .HasMaxLength(30)
+                    .HasMaxLength(20)
                     .IsUnicode(false);
 
                 entity.Property(e => e.ImageUrl)
