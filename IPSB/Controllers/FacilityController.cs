@@ -17,15 +17,19 @@ namespace IPSB.Controllers
     public class FacilityController : Controller
     {
         private readonly IFacilityService _service;
+        private readonly ILocationService _locationService;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<Facility> _pagingSupport;
 
-        public FacilityController(IFacilityService service, IMapper mapper, IPagingSupport<Facility> pagingSupport)
+        public FacilityController(IFacilityService service, ILocationService locationService, IMapper mapper, IPagingSupport<Facility> pagingSupport)
         {
             _service = service;
+            _locationService = locationService;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
         }
+
+
 
         /// <summary>
         /// Get a specific facility by id
@@ -82,7 +86,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult GetAllFacilities([FromQuery] FacilitySM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            var facilityList = _service.GetAll(_ => _.Location);
+            var facilityList = _service.GetAll(_ => _.Location.LocationType, _ => _.FloorPlan);
 
             if (!string.IsNullOrEmpty(model.Name))
             {
@@ -92,9 +96,9 @@ namespace IPSB.Controllers
             {
                 facilityList = facilityList.Where(_ => _.Description.Contains(model.Description));
             }
-            if (model.LocationId > 0)
+            if (model.BuildingId > 0)
             {
-                facilityList = facilityList.Where(_ => _.LocationId == model.LocationId);
+                facilityList = facilityList.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
             }
             if (!string.IsNullOrEmpty(model.LocationType))
             {
@@ -137,6 +141,7 @@ namespace IPSB.Controllers
             try
             {
                 createdFacility.Status = Constants.Status.ACTIVE;
+                createdFacility.LocationId = await _locationService.SaveLocationJson(model.LocationJson);
                 await _service.AddAsync(createdFacility);
                 await _service.Save();
             }
@@ -177,12 +182,12 @@ namespace IPSB.Controllers
         public async Task<ActionResult> UpdateFacility(int id, [FromBody] FacilityUM model)
         {
             var updateFacility = await _service.GetByIdAsync(_ => _.Id == id);
-
             try
             {
                 updateFacility.Name = model.Name;
                 updateFacility.Description = model.Description;
-                updateFacility.LocationId = model.LocationId;
+                updateFacility.FloorPlanId = model.FloorPlanId;
+                updateFacility.LocationId = await _locationService.SaveLocationJson(model.LocationJson, updateFacility.LocationId);
                 _service.Update(updateFacility);
                 await _service.Save();
             }
@@ -212,6 +217,8 @@ namespace IPSB.Controllers
             try
             {
                 deleteFacility.Status = Constants.Status.INACTIVE;
+                deleteFacility.LocationId = null;
+                await _locationService.DisableLocation(deleteFacility.LocationId);
                 _service.Update(deleteFacility);
                 await _service.Save();
             }

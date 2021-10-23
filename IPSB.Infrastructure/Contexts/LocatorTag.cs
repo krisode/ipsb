@@ -16,7 +16,7 @@ namespace IPSB.Infrastructure.Contexts
         public string Uuid { get; set; }
         public DateTime? UpdateTime { get; set; }
         public int FloorPlanId { get; set; }
-        public int LocationId { get; set; }
+        public int? LocationId { get; set; }
         public int? LocatorTagGroupId { get; set; }
         public double? TxPower { get; set; }
         public string Status { get; set; }

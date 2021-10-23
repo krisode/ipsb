@@ -7,16 +7,26 @@ namespace IPSB.ViewModels
         public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public int? LocationId { get; set; }
         public string Status { get; set; }
+        public int FloorPlanId { get; set; }
         public virtual LocationRefModel Location { get; set; }
+        public FloorPlanStoreRefModel FloorPlan { get; set; }
+    }
+
+    public class FacilityRefModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Status { get; set; }
+        public int FloorPlanId { get; set; }
     }
 
     public class FacilitySM
     {
         public string Name { get; set; }
         public string Description { get; set; }
-        public int? LocationId { get; set; }
+        public int BuildingId { get; set; }
         public string LocationType { get; set; }
         public string Status { get; set; }
     }
@@ -28,17 +38,17 @@ namespace IPSB.ViewModels
         [Required]
         public string Description { get; set; }
         [Required]
-        public int LocationId { get; set; }
+        public int FloorPlanId { get; set; }
+        [Required]
+        public string LocationJson { get; set; }
     }
 
     public class FacilityUM
     {
-        [Required]
         public string Name { get; set; }
-        [Required]
         public string Description { get; set; }
-        [Required]
-        public int LocationId { get; set; }
+        public int FloorPlanId { get; set; }
+        public string LocationJson { get; set; }
     }
 }
 

@@ -250,27 +250,11 @@ namespace IPSB.Controllers
             //     return new ObjectResult($"Not authorize to update locator tag with id: {id}") { StatusCode = 403 };
             // }
 
-            if (!string.IsNullOrEmpty(model.LocationJson))
-            {
-                var json = JsonConvert.DeserializeObject<Location>(model.LocationJson);
-                if (json != null && json.Id == 0)
-                {
-                    json.Status = Status.ACTIVE;
-                    var locationToUpdate = await _locationService.AddAsync(json);
-                    await _service.Save();
-                    int locationId = locationToUpdate.Id;
-                    if (locationToUpdate.Id != 0)
-                    {
-                        var locationEntity = await _locationService.GetByIdAsync(_ => _.Id == updLocatorTag.LocationId);
-                        locationEntity.Status = Status.INACTIVE;
-                        _locationService.Update(locationEntity);
-                        updLocatorTag.LocationId = locationId;
-                    }
-                }
-            }
+            
 
             try
             {
+                updLocatorTag.LocationId = await _locationService.SaveLocationJson(model.LocationJson, updLocatorTag.LocationId);
                 updLocatorTag.TxPower = model.TxPower;
                 updLocatorTag.UpdateTime = DateTime.Now;
                 updLocatorTag.FloorPlanId = model.FloorPlanId;

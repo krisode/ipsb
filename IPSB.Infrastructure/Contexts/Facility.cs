@@ -12,7 +12,9 @@ namespace IPSB.Infrastructure.Contexts
         public string Description { get; set; }
         public int? LocationId { get; set; }
         public string Status { get; set; }
+        public int? FloorPlanId { get; set; }
 
+        public virtual FloorPlan FloorPlan { get; set; }
         public virtual Location Location { get; set; }
     }
 }

@@ -24,6 +24,7 @@ namespace IPSB.ViewModels
 
     public class LocationTypeSM
     {
+        public int[] NotLocationTypeIds { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Status { get; set; }
@@ -43,6 +44,7 @@ namespace IPSB.ViewModels
     {
         public string Name { get; set; }
         public string Description { get; set; }
+        public string LocationJson { get; set; }
         public IFormFile ImageUrl { get; set; }
     }
 }

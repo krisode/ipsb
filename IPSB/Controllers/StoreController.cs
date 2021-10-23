@@ -237,23 +237,12 @@ namespace IPSB.Controllers
                 return new ObjectResult($"Not authorize to create store") { StatusCode = 403 };
             }*/
             // Default POST Status = "Active" of Location
-            int locationId = 0;
-            if (!string.IsNullOrEmpty(model.LocationJson))
-            {
-                var json = JsonConvert.DeserializeObject<Location>(model.LocationJson);
-                if (json != null && json.Id == 0)
-                {
-                    json.Status = Status.ACTIVE;
-                    var locationToCreate = await _locationService.AddAsync(json);
-                    await _service.Save();
-                    locationId = locationToCreate.Id;
-                }
-            }
+            
             Store crtStore = _mapper.Map<Store>(model);
-            crtStore.LocationId = locationId;
-
+            
             // Default POST Status = "Active"
             crtStore.Status = Constants.Status.ACTIVE;
+            crtStore.LocationId = await _locationService.SaveLocationJson(model.LocationJson);
 
 
             if (model.ImageUrl != null)
@@ -318,28 +307,13 @@ namespace IPSB.Controllers
 
             try
             {
-                if (!string.IsNullOrEmpty(model.LocationJson))
-                {
-                    var json = JsonConvert.DeserializeObject<Location>(model.LocationJson);
-                    if (json != null && json.Id == 0)
-                    {
-                        json.Status = Status.ACTIVE;
-                        var locationToUpdate = await _locationService.AddAsync(json);
-                        await _service.Save();
-                        if (locationToUpdate.Id != 0)
-                        {
-                            var locationEntity = await _locationService.GetByIdAsync(_ => _.Id == updStore.LocationId);
-                            locationEntity.Status = Status.INACTIVE;
-                            _locationService.Update(locationEntity);
-                            updStore.LocationId = locationToUpdate.Id;
-                        }
-                    }
-                }
+                
                 updStore.Name = model.Name;
                 updStore.AccountId = model.AccountId;
                 updStore.Description = model.Description;
                 updStore.FloorPlanId = model.FloorPlanId;
                 updStore.Phone = model.Phone;
+                updStore.LocationId = await _locationService.SaveLocationJson(model.LocationJson, updStore.LocationId);
                 _service.Update(updStore);
                 await _service.Save();
             }
@@ -386,6 +360,7 @@ namespace IPSB.Controllers
             }
 
             store.Status = Constants.Status.INACTIVE;
+            store.AccountId = null;      
             try
             {
                 _service.Update(store);
