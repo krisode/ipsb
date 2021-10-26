@@ -254,7 +254,7 @@ namespace IPSB.Controllers
 
             try
             {
-                updLocatorTag.LocationId = await _locationService.SaveLocationJson(model.LocationJson, updLocatorTag.LocationId);
+                await _locationService.UpdateLocationJson(updLocatorTag.LocationId, model.LocationJson);
                 updLocatorTag.TxPower = model.TxPower;
                 updLocatorTag.UpdateTime = DateTime.Now;
                 updLocatorTag.FloorPlanId = model.FloorPlanId;

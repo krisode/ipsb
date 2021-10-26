@@ -52,7 +52,7 @@ namespace IPSB.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<AccountVM>> CheckLogin(AuthWebLogin authAccount)
         {
-            var account = _accountService.CheckLogin(authAccount.Email, authAccount.Password, _ => _.Store, _ => _.BuildingManager);
+            var account = _accountService.CheckLogin(authAccount.Email, authAccount.Password, _ => _.Store, _ => _.Building);
 
             if (account == null)
             {

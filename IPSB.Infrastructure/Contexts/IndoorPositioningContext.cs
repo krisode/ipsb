@@ -82,8 +82,9 @@ namespace IPSB.Infrastructure.Contexts
             {
                 entity.ToTable("Building");
 
-                entity.HasIndex(e => e.ManagerId, "UQ__Building__3BA2AAE0CB321A0A")
-                    .IsUnique();
+                entity.HasIndex(e => e.ManagerId, "Idx_Building")
+                    .IsUnique()
+                    .HasFilter("([ManagerId] IS NOT NULL)");
 
                 entity.Property(e => e.Address)
                     .IsRequired()
@@ -102,15 +103,10 @@ namespace IPSB.Infrastructure.Contexts
                     .HasMaxLength(40)
                     .IsUnicode(false);
 
-                entity.HasOne(d => d.Admin)
-                    .WithMany(p => p.BuildingAdmins)
-                    .HasForeignKey(d => d.AdminId)
-                    .HasConstraintName("FK_Building_Account");
-
                 entity.HasOne(d => d.Manager)
-                    .WithOne(p => p.BuildingManager)
+                    .WithOne(p => p.Building)
                     .HasForeignKey<Building>(d => d.ManagerId)
-                    .HasConstraintName("FK_Building_Account1");
+                    .HasConstraintName("FK_Building_Account");
             });
 
             modelBuilder.Entity<Coupon>(entity =>
@@ -237,7 +233,8 @@ namespace IPSB.Infrastructure.Contexts
                 entity.ToTable("Facility");
 
                 entity.HasIndex(e => e.LocationId, "IX_Facility")
-                    .IsUnique();
+                    .IsUnique()
+                    .HasFilter("([LocationId] IS NOT NULL)");
 
                 entity.Property(e => e.Description)
                     .IsRequired()

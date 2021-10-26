@@ -247,7 +247,6 @@ namespace IPSB.Controllers
         public async Task<ActionResult> CreateLocation([FromBody] List<LocationCM> listModel)
         {
             List<Location> list = listModel.Select(model => _mapper.Map<Location>(model))
-                .ToList()
                 .Select(_ =>
                 {
                     _.Status = "Active";
@@ -263,8 +262,8 @@ namespace IPSB.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
-            var rtnItemIds = list.Select(_ => _.Id);
-            return CreatedAtAction("CreateLocation", rtnItemIds);
+            var listRefModel = list.Select(_ => _mapper.Map<LocationRefModel>(_));
+            return CreatedAtAction("CreateLocation", listRefModel);
         }
 
         /// <summary>

@@ -242,7 +242,7 @@ namespace IPSB.Controllers
             
             // Default POST Status = "Active"
             crtStore.Status = Constants.Status.ACTIVE;
-            crtStore.LocationId = await _locationService.SaveLocationJson(model.LocationJson);
+            crtStore.LocationId = await _locationService.CreateLocationJson(model.LocationJson);
 
 
             if (model.ImageUrl != null)
@@ -302,9 +302,6 @@ namespace IPSB.Controllers
                 updStore.ImageUrl = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "store", "store-detail");
             }
 
-
-
-
             try
             {
                 
@@ -313,7 +310,7 @@ namespace IPSB.Controllers
                 updStore.Description = model.Description;
                 updStore.FloorPlanId = model.FloorPlanId;
                 updStore.Phone = model.Phone;
-                updStore.LocationId = await _locationService.SaveLocationJson(model.LocationJson, updStore.LocationId);
+                await _locationService.UpdateLocationJson(updStore.LocationId, model.LocationJson);
                 _service.Update(updStore);
                 await _service.Save();
             }

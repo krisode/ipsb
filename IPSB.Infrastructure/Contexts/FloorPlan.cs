@@ -19,6 +19,7 @@ namespace IPSB.Infrastructure.Contexts
         public string ImageUrl { get; set; }
         public int BuildingId { get; set; }
         public string FloorCode { get; set; }
+        public double? MapScale { get; set; }
         public int FloorNumber { get; set; }
         public double? RotationAngle { get; set; }
         public string Status { get; set; }

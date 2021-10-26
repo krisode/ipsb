@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using static IPSB.Utils.Constants;
 
@@ -57,7 +56,7 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<AccountVM>> GetAccountById(int id)
         {
-            var account = await _service.GetByIdAsync(_ => _.Id == id, _ => _.Store, _ => _.BuildingManager);
+            var account = await _service.GetByIdAsync(_ => _.Id == id, _ => _.Store, _ => _.Building);
 
             if (account == null)
             {
@@ -101,7 +100,7 @@ namespace IPSB.Controllers
 
             if (model.NotManageBuilding)
             {
-                list = list.Where(_ => _.BuildingManager == null);
+                list = list.Where(_ => _.Building == null);
             }
 
             if (model.NotManageStore)

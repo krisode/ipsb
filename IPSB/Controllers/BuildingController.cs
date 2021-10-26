@@ -310,6 +310,7 @@ namespace IPSB.Controllers
                 updBuilding.Name = model.Name;
                 updBuilding.ImageUrl = imageURL;
                 updBuilding.Address = model.Address;
+                updBuilding.EnvironmentFactor = model.EnvironmentFactor;
 
                 _service.Update(updBuilding);
                 if (await _service.Save() > 0)
