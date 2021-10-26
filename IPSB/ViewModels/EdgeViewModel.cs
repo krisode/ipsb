@@ -21,6 +21,7 @@ namespace IPSB.ViewModels
         public double UpperDistance { get; set; }
         public int FloorPlanId { get; set; }
         public int BuildingId { get; set; }
+        public string Status { get; set; }
     }
 
 

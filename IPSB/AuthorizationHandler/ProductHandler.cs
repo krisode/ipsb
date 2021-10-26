@@ -14,7 +14,7 @@ namespace IPSB.AuthorizationHandler
             {
                 int userId = int.Parse(context.User.Identity.Name);
 
-                if (context.User.IsInRole(Constants.Role.STORE_OWNER) && !resource.Store.Building.AdminId.Equals(userId))
+                if (context.User.IsInRole(Constants.Role.STORE_OWNER) )
                 {
                     context.Fail();
                     return Task.CompletedTask;

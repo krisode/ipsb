@@ -141,7 +141,7 @@ namespace IPSB.Controllers
             try
             {
                 createdFacility.Status = Constants.Status.ACTIVE;
-                createdFacility.LocationId = await _locationService.SaveLocationJson(model.LocationJson);
+                createdFacility.LocationId = await _locationService.CreateLocationJson(model.LocationJson);
                 await _service.AddAsync(createdFacility);
                 await _service.Save();
             }
@@ -184,10 +184,10 @@ namespace IPSB.Controllers
             var updateFacility = await _service.GetByIdAsync(_ => _.Id == id);
             try
             {
+                await _locationService.UpdateLocationJson(updateFacility.LocationId, model.LocationJson);
                 updateFacility.Name = model.Name;
                 updateFacility.Description = model.Description;
                 updateFacility.FloorPlanId = model.FloorPlanId;
-                updateFacility.LocationId = await _locationService.SaveLocationJson(model.LocationJson, updateFacility.LocationId);
                 _service.Update(updateFacility);
                 await _service.Save();
             }

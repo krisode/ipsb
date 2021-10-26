@@ -19,7 +19,8 @@ namespace IPSB.Core.Services
         void DeleteRange(List<int> ids);
         Task DeleteById(int id);
         void Disable(List<int> ids);
-        Task<int?> SaveLocationJson(string json, [Optional] int? prevLocationId);
+        Task<int?> CreateLocationJson(string json);
+        Task<bool> UpdateLocationJson(int? id, string json);
         Task<bool> DisableLocation(int? id);
     }
 
@@ -99,10 +100,9 @@ namespace IPSB.Core.Services
             return _iRepository.Save();
         }
 
-        public async Task<int?> SaveLocationJson(string json, [Optional] int? prevLocationId)
+        public async Task<int?> CreateLocationJson(string json)
         {
             var activeStatus = "Active";
-            var inActiveStatus = "Inactive";
             int? locationId = null;
             if (!string.IsNullOrEmpty(json))
             {
@@ -115,12 +115,6 @@ namespace IPSB.Core.Services
                     await Save();
                     locationId = locationToCreate.Id;
                 }
-                if (prevLocationId != null)
-                {
-                    var prevLocation = await GetByIdAsync(_ => _.Id == prevLocationId);
-                    prevLocation.Status = inActiveStatus;
-                    Update(prevLocation);
-                }
             }
             return locationId;
         }
@@ -128,6 +122,27 @@ namespace IPSB.Core.Services
         public void Update(Location entity)
         {
             _iRepository.Update(entity);
+        }
+
+
+        public async Task<bool> UpdateLocationJson(int? locationId, string json)
+        {
+            if (!string.IsNullOrEmpty(json) && locationId != null)
+            {
+                var locationEntity = JsonConvert.DeserializeObject<Location>(json);
+                if (locationEntity != null && locationEntity.Id == 0)
+                {
+                    var updateEntity = await GetByIdAsync(_ => _.Id == locationId);
+                    if (updateEntity != null)
+                    {
+                        updateEntity.X = locationEntity.X;
+                        updateEntity.Y = locationEntity.Y;
+                        return true;
+                    }
+
+                }
+            }
+            return false;
         }
     }
 }

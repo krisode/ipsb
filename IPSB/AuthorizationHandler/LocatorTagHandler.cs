@@ -18,11 +18,7 @@ namespace IPSB.AuthorizationHandler
 
             int userId = int.Parse(context.User.Identity.Name);
 
-            if (!resource.FloorPlan.Building.AdminId.Equals(userId))
-            {
-                context.Fail();
-                return Task.CompletedTask;
-            }
+           
 
             bool isCreateOperation = requirement.Equals(Operations.Create);
             bool isReadOperation = requirement.Equals(Operations.Read);

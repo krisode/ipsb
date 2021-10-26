@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static IPSB.Utils.Constants;
 
 namespace IPSB.Controllers
 {
@@ -177,6 +178,10 @@ namespace IPSB.Controllers
                     list = list.Where(_ => _.FromLocation.FloorPlan.BuildingId == model.BuildingId);
                 }
 
+                if (!string.IsNullOrEmpty(model.Status)){
+                    list = list.Where(_ => Status.ACTIVE.Equals(_.ToLocation.Status) && Status.ACTIVE.Equals(_.FromLocation.Status));
+                }
+
                 var pagedModel = _pagingSupport.From(list)
                     .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
                     .Paginate<EdgeVM>();
@@ -191,9 +196,6 @@ namespace IPSB.Controllers
                 }
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            /*
-                        IQueryable<Edge> list = _service.GetAll(_ => _.FromLocation.FloorPlan, _ => _.ToLocation.FloorPlan, _ => _.FromLocation.Store, _ => _.ToLocation.Store);
-            */
         }
 
         /// <summary>

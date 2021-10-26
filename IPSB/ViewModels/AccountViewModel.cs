@@ -14,7 +14,7 @@ namespace IPSB.ViewModels
         public string Email { get; set; }
         public string Status { get; set; }
         public StoreRefModelForAccount Store { get; set; }
-        public BuildingRefModelForAccount BuildingManager { get; set; }
+        public BuildingRefModelForAccount Building { get; set; }
     }
 
     public class AccountRefModel

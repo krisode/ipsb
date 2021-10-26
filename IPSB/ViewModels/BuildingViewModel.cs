@@ -10,6 +10,7 @@ namespace IPSB.ViewModels
         public int ManagerId { get; set; }
         public string Name { get; set; }
         public string ImageUrl { get; set; }
+        public double? EnvironmentFactor { get; set; }
         public string Address { get; set; }
         public string Status { get; set; }
 
@@ -29,6 +30,7 @@ namespace IPSB.ViewModels
         public int ManagerId { get; set; }
         public string Name { get; set; }
         public string ImageUrl { get; set; }
+        public double? EnvironmentFactor { get; set; }
         public string Address { get; set; }
         public string Status { get; set; }
     }
@@ -64,12 +66,14 @@ namespace IPSB.ViewModels
         public IFormFile ImageUrl { get; set; }
         [Required]
         public string Address { get; set; }
+        public double? EnvironmentFactor { get; set; }
     }
     public class BuildingUM
     {
         public int ManagerId { get; set; }
         public string Name { get; set; }
         public IFormFile ImageUrl { get; set; }
+        public double? EnvironmentFactor { get; set; }
         public string Address { get; set; }
     }
 }
