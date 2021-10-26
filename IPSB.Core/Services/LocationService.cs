@@ -20,7 +20,7 @@ namespace IPSB.Core.Services
         Task DeleteById(int id);
         void Disable(List<int> ids);
         Task<int?> CreateLocationJson(string json);
-        Task<bool> UpdateLocationJson(int? id, string json);
+        Task<int?> UpdateLocationJson(int? id, string json);
         Task<bool> DisableLocation(int? id);
     }
 
@@ -125,24 +125,37 @@ namespace IPSB.Core.Services
         }
 
 
-        public async Task<bool> UpdateLocationJson(int? locationId, string json)
+        public async Task<int?> UpdateLocationJson(int? locationId, string json)
         {
-            if (!string.IsNullOrEmpty(json) && locationId != null)
+            int? updateLocationId = null;
+            var activeStatus = "Active";
+            if (!string.IsNullOrEmpty(json))
             {
                 var locationEntity = JsonConvert.DeserializeObject<Location>(json);
+
                 if (locationEntity != null && locationEntity.Id == 0)
                 {
-                    var updateEntity = await GetByIdAsync(_ => _.Id == locationId);
-                    if (updateEntity != null)
+                    if (locationId != null)
                     {
-                        updateEntity.X = locationEntity.X;
-                        updateEntity.Y = locationEntity.Y;
-                        return true;
+                        var updateEntity = await GetByIdAsync(_ => _.Id == locationId);
+                        if (updateEntity != null)
+                        {
+                            updateEntity.X = locationEntity.X;
+                            updateEntity.Y = locationEntity.Y;
+                            updateLocationId = updateEntity.Id;
+                            Update(updateEntity);
+                        }
                     }
-
+                    else
+                    {
+                        locationEntity.Status = activeStatus;
+                        await AddAsync(locationEntity);
+                        await Save();
+                        updateLocationId = locationEntity.Id;
+                    }
                 }
             }
-            return false;
+            return updateLocationId;
         }
     }
 }

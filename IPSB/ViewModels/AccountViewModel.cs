@@ -35,6 +35,7 @@ namespace IPSB.ViewModels
     {
         public bool NotManageBuilding { get; set; }
         public bool NotManageStore { get; set; }
+        public int BuildingId { get; set; }
         public string Role { get; set; }
         public string Name { get; set; }
         public string Phone { get; set; }

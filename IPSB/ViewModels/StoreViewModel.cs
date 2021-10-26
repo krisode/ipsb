@@ -26,6 +26,7 @@ namespace IPSB.ViewModels
     public class StoreRefModelForAccount
     {
         public int Id { get; set; }
+        public string Name { get; set; }
     }
 
     public class StoreRefModel
