@@ -310,7 +310,7 @@ namespace IPSB.Controllers
                 updStore.Description = model.Description;
                 updStore.FloorPlanId = model.FloorPlanId;
                 updStore.Phone = model.Phone;
-                await _locationService.UpdateLocationJson(updStore.LocationId, model.LocationJson);
+                updStore.LocationId = await _locationService.UpdateLocationJson(updStore.LocationId, model.LocationJson);
                 _service.Update(updStore);
                 await _service.Save();
             }

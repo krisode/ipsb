@@ -96,7 +96,7 @@ namespace IPSB.Controllers
         //[Authorize(Policy = Policies.QUERY_ACCOUNT)]
         public ActionResult<IEnumerable<AccountVM>> GetAllAccounts([FromQuery] AccountSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            var list = _service.GetAll(_ => _.Store);
+            var list = _service.GetAll(_ => _.Store, _ => _.Building);
 
             if (model.NotManageBuilding)
             {
@@ -106,6 +106,11 @@ namespace IPSB.Controllers
             if (model.NotManageStore)
             {
                 list = list.Where(_ => _.Store == null);
+            }
+
+            if (model.BuildingId > 0)
+            {
+                list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
             }
 
             if (!string.IsNullOrEmpty(model.Role))

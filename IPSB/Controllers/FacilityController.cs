@@ -184,7 +184,7 @@ namespace IPSB.Controllers
             var updateFacility = await _service.GetByIdAsync(_ => _.Id == id);
             try
             {
-                await _locationService.UpdateLocationJson(updateFacility.LocationId, model.LocationJson);
+                updateFacility.LocationId =  await _locationService.UpdateLocationJson(updateFacility.LocationId, model.LocationJson);
                 updateFacility.Name = model.Name;
                 updateFacility.Description = model.Description;
                 updateFacility.FloorPlanId = model.FloorPlanId;
