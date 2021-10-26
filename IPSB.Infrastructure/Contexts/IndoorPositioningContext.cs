@@ -345,7 +345,7 @@ namespace IPSB.Infrastructure.Contexts
 
                 entity.Property(e => e.Uuid)
                     .IsRequired()
-                    .HasMaxLength(20)
+                    .HasMaxLength(36)
                     .IsUnicode(false);
 
                 entity.HasOne(d => d.FloorPlan)
