@@ -320,9 +320,6 @@ namespace IPSB.Controllers
                 {
                     // Delete location if location is point on route
                     _service.DeleteRange(model.Ids);
-                    // Change location status to "Inactive" if location is not point on route
-                    _service.Disable(model.Ids);
-
                 }
 
                 await _service.Save();
