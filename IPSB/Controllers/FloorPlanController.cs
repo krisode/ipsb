@@ -211,7 +211,12 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<FloorPlanCM>> CreateFloorPlan([FromForm] FloorPlanCM model)
         {
-            FloorPlan floorPlan = _service.GetByIdAsync(_ => _.FloorCode.ToUpper() == model.FloorCode).Result;
+            
+            FloorPlan floorPlan = _service.GetByIdAsync(
+                _ => _.FloorCode.ToUpper() == model.FloorCode.ToUpper()
+                && _.BuildingId != model.BuildingId
+                )
+                .Result;
             if (floorPlan is not null)
             {
                 return Conflict();
