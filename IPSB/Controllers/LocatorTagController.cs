@@ -194,24 +194,16 @@ namespace IPSB.Controllers
             {
                 return new ObjectResult($"Not authorize to create locator tag") { StatusCode = 403 };
             }*/
-            int locationId = 0;
-            if (!string.IsNullOrEmpty(model.LocationJson))
-            {
-                var json = JsonConvert.DeserializeObject<Location>(model.LocationJson);
-                if (json != null && json.Id == 0)
-                {
-                    json.Status = Status.ACTIVE;
-                    var locationToCreate = await _locationService.AddAsync(json);
-                    await _service.Save();
-                    locationId = locationToCreate.Id;
-                }
-            }
-            LocatorTag crtLocatorTag = _mapper.Map<LocatorTag>(model);
-            crtLocatorTag.UpdateTime = DateTime.Now;
-            crtLocatorTag.LocationId = locationId;
+            
 
-            // Default POST Status = "Active"
-            crtLocatorTag.Status = Constants.Status.ACTIVE;
+            LocatorTag crtLocatorTag = _mapper.Map<LocatorTag>(model);
+            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTimeOffset localServerTime = DateTimeOffset.Now;
+            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
+            crtLocatorTag.UpdateTime = localTime.DateTime;
+
+            // Default POST Status = "New"
+            crtLocatorTag.Status = Constants.Status.NEW;
 
             try
             {
@@ -250,15 +242,69 @@ namespace IPSB.Controllers
             //     return new ObjectResult($"Not authorize to update locator tag with id: {id}") { StatusCode = 403 };
             // }
 
-            
+            LocatorTag crtLocatorTag = _mapper.Map<LocatorTag>(model);
+            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTimeOffset localServerTime = DateTimeOffset.Now;
+            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
 
             try
             {
                 updLocatorTag.LocationId = await _locationService.UpdateLocationJson(updLocatorTag.LocationId, model.LocationJson);
                 updLocatorTag.TxPower = model.TxPower;
-                updLocatorTag.UpdateTime = DateTime.Now;
+                updLocatorTag.UpdateTime = localTime.DateTime;
                 updLocatorTag.FloorPlanId = model.FloorPlanId;
                 updLocatorTag.LocatorTagGroupId = model.LocatorTagGroupId;
+
+                _service.Update(updLocatorTag);
+                await _service.Save();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Update locator tag's tx power with specified uuid
+        /// </summary>
+        /// <param name="uuid">Locator tag's uuid</param>
+        /// <param name="txPower">Locator tag's tx power</param>
+        /// <response code="204">Update tx power successfully</response>
+        /// <response code="400">Locator tag's uuid does not exist</response>
+        /// <response code="500">Failed to update</response>
+        [HttpPut]
+        [Route("tx-power/{uuid}")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> PutLocatorTag(string uuid, float txPower)
+        {
+            LocatorTag updLocatorTag = await _service.GetByIdAsync(_ => _.Uuid == uuid);
+
+            if (updLocatorTag is null)
+            {
+                return BadRequest();
+            }
+
+            // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updLocatorTag, Operations.Read);
+            // if (!authorizedResult.Succeeded)
+            // {
+            //     return new ObjectResult($"Not authorize to update locator tag with id: {id}") { StatusCode = 403 };
+            // }
+
+
+            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTimeOffset localServerTime = DateTimeOffset.Now;
+            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
+
+
+            try
+            {
+                updLocatorTag.TxPower = txPower;
+                updLocatorTag.UpdateTime = localTime.DateTime;
 
                 _service.Update(updLocatorTag);
                 await _service.Save();

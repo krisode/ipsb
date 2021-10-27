@@ -47,12 +47,6 @@ namespace IPSB.ViewModels
     {
         [Required]
         public string Uuid { get; set; }
-        public double? TxPower { get; set; }
-        [Required]
-        public int FloorPlanId { get; set; }
-        [Required]
-        public string LocationJson { get; set; }        
-        public int? LocatorTagGroupId { get; set; }
     }
     public class LocatorTagUM
     {
