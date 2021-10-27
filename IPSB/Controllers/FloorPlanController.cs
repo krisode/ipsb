@@ -211,13 +211,12 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<FloorPlanCM>> CreateFloorPlan([FromForm] FloorPlanCM model)
         {
-            
-            FloorPlan floorPlan = _service.GetByIdAsync(
+
+            int existed = _service.GetAll().Where(
                 _ => _.FloorCode.ToUpper() == model.FloorCode.ToUpper()
-                && _.BuildingId != model.BuildingId
-                )
-                .Result;
-            if (floorPlan is not null)
+                && _.BuildingId == model.BuildingId
+                ).Count();
+            if (existed >= 1)
             {
                 return Conflict();
             }
@@ -263,6 +262,15 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutFloorPlan(int id, [FromForm] FloorPlanUM model)
         {
+
+            int existed = _service.GetAll().Where(
+                            _ => _.FloorCode.ToUpper() == model.FloorCode.ToUpper()
+                            && _.BuildingId == id
+                            ).Count();
+            if (existed >= 1)
+            {
+                return Conflict();
+            }
 
             FloorPlan updLocationType = await _service.GetByIdAsync(_ => _.Id == id);
 
