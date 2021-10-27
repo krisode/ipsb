@@ -18,7 +18,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/locator-tags")]
     [ApiController]
-    [Authorize(Roles = "Building Manager")]
+    /*[Authorize(Roles = "Building Manager")]*/
     public class LocatorTagController : Controller
     {
         private readonly ILocatorTagService _service;
