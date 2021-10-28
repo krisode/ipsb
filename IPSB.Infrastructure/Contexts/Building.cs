@@ -10,6 +10,7 @@ namespace IPSB.Infrastructure.Contexts
         public Building()
         {
             FloorPlans = new HashSet<FloorPlan>();
+            LocatorTags = new HashSet<LocatorTag>();
             ShoppingLists = new HashSet<ShoppingList>();
             Stores = new HashSet<Store>();
             VisitRoutes = new HashSet<VisitRoute>();
@@ -25,6 +26,7 @@ namespace IPSB.Infrastructure.Contexts
 
         public virtual Account Manager { get; set; }
         public virtual ICollection<FloorPlan> FloorPlans { get; set; }
+        public virtual ICollection<LocatorTag> LocatorTags { get; set; }
         public virtual ICollection<ShoppingList> ShoppingLists { get; set; }
         public virtual ICollection<Store> Stores { get; set; }
         public virtual ICollection<VisitRoute> VisitRoutes { get; set; }

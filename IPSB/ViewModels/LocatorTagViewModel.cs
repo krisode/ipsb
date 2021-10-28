@@ -13,6 +13,7 @@ namespace IPSB.ViewModels
         public int? LocatorTagGroupId { get; set; }
         public int FloorPlanId { get; set; }
         public int LocationId { get; set; }
+        public int BuildingId { get; set; }
         public FloorPlanRefModel FloorPlan { get; set; }
         public LocationRefModel Location { get; set; }
         public LocatorTagRefModel LocatorTagGroup { get; set; }
@@ -27,6 +28,7 @@ namespace IPSB.ViewModels
         public int? LocatorTagGroupId { get; set; }
         public int FloorPlanId { get; set; }
         public int LocationId { get; set; }
+        public int BuildingId { get; set; }
         public string Status { get; set; }
     }
     public class LocatorTagSM
@@ -47,6 +49,8 @@ namespace IPSB.ViewModels
     {
         [Required]
         public string Uuid { get; set; }
+        [Required]
+        public int BuildingId { get; set; }
     }
     public class LocatorTagUM
     {
@@ -54,6 +58,7 @@ namespace IPSB.ViewModels
         public int FloorPlanId { get; set; }
         public string LocationJson { get; set; }
         public int? LocatorTagGroupId { get; set; }
+        public int? BuildingId { get; set; }
         
     }
 
