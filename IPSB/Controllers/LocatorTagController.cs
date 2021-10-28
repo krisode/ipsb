@@ -280,7 +280,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> PutLocatorTag(string uuid, float txPower)
+        public async Task<ActionResult> PutLocatorTag(string uuid, [FromBody] float txPower)
         {
             LocatorTag updLocatorTag = await _service.GetByIdAsync(_ => _.Uuid == uuid);
 
