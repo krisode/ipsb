@@ -110,7 +110,7 @@ namespace IPSB.Controllers
 
             if (model.BuildingId != 0)
             {
-                list = list.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
+                list = list.Where(_ => _.BuildingId == model.BuildingId);
             }
 
             if (model.FloorPlanId != 0)
@@ -253,6 +253,7 @@ namespace IPSB.Controllers
                 updLocatorTag.TxPower = model.TxPower;
                 updLocatorTag.UpdateTime = localTime.DateTime;
                 updLocatorTag.FloorPlanId = model.FloorPlanId;
+                updLocatorTag.BuildingId = model.BuildingId;
                 updLocatorTag.LocatorTagGroupId = model.LocatorTagGroupId;
 
                 _service.Update(updLocatorTag);
@@ -270,7 +271,7 @@ namespace IPSB.Controllers
         /// Update locator tag's tx power with specified uuid
         /// </summary>
         /// <param name="uuid">Locator tag's uuid</param>
-        /// <param name="txPower">Locator tag's tx power</param>
+        /// <param name="model">Locator tag model used to update tx power</param>
         /// <response code="204">Update tx power successfully</response>
         /// <response code="400">Locator tag's uuid does not exist</response>
         /// <response code="500">Failed to update</response>
