@@ -280,7 +280,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> PutLocatorTag(string uuid, [FromBody] float txPower)
+        public async Task<ActionResult> PutLocatorTag(string uuid, [FromBody] LocatorTagTxPowerUM model)
         {
             LocatorTag updLocatorTag = await _service.GetByIdAsync(_ => _.Uuid == uuid);
 
@@ -303,7 +303,7 @@ namespace IPSB.Controllers
 
             try
             {
-                updLocatorTag.TxPower = txPower;
+                updLocatorTag.TxPower = model.TxPower;
                 updLocatorTag.UpdateTime = localTime.DateTime;
 
                 _service.Update(updLocatorTag);

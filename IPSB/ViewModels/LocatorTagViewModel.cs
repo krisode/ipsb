@@ -56,4 +56,11 @@ namespace IPSB.ViewModels
         public int? LocatorTagGroupId { get; set; }
         
     }
+
+    public class LocatorTagTxPowerUM
+    {
+        [Required]
+        public double TxPower { get; set; }
+
+    }
 }
