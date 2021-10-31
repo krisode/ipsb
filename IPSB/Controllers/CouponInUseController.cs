@@ -92,11 +92,9 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All coupon in uses</returns>
         /// <response code="200">Returns all coupon in uses</response>
-        /// <response code="404">No coupon in uses found</response>
         [HttpGet]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<CouponInUseVM>> GetAllCouponInUses([FromQuery] CouponInUseSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             IQueryable<CouponInUse> list = _service.GetAll(_ => _.Coupon, _ => _.Visitor);
@@ -171,6 +169,99 @@ namespace IPSB.Controllers
                 .Paginate<CouponInUseVM>();
 
             return Ok(pagedModel);
+        }
+
+
+        /// <summary>
+        /// Count coupon in uses
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///         
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>Number of coupon in uses</returns>
+        /// <response code="200">Returns number of coupon in uses</response>
+        [HttpGet]
+        [Route("count")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public ActionResult<IEnumerable<CouponInUseVM>> CountCouponInUses([FromQuery] CouponInUseSM model)
+        {
+            IQueryable<CouponInUse> list = _service.GetAll(_ => _.Coupon, _ => _.Visitor);
+
+            if (model.CouponId != 0)
+            {
+                list = list.Where(_ => _.CouponId == model.CouponId);
+            }
+
+            if (model.VisitorId != 0)
+            {
+                list = list.Where(_ => _.VisitorId == model.VisitorId);
+            }
+
+            if (model.LowerRedeemDate.HasValue)
+            {
+                list = list.Where(_ => _.RedeemDate >= model.LowerRedeemDate);
+            }
+
+            if (model.UpperRedeemDate.HasValue)
+            {
+                list = list.Where(_ => _.RedeemDate <= model.UpperRedeemDate);
+            }
+
+            if (model.LowerApplyDate.HasValue)
+            {
+                list = list.Where(_ => _.ApplyDate >= model.LowerApplyDate);
+            }
+
+            if (model.UpperApplyDate.HasValue)
+            {
+                list = list.Where(_ => _.ApplyDate <= model.UpperApplyDate);
+            }
+
+            if (!string.IsNullOrEmpty(model.Status))
+            {
+                if (model.Status != Constants.Status.USED && model.Status != Constants.Status.NOT_USED && model.Status != Constants.Status.DELETED)
+                {
+                    return BadRequest();
+                }
+
+                else
+                {
+                    if (model.Status == Constants.Status.USED)
+                    {
+                        list = list.Where(_ => _.Status == Constants.Status.USED);
+                    }
+
+                    if (model.Status == Constants.Status.NOT_USED)
+                    {
+                        list = list.Where(_ => _.Status == Constants.Status.NOT_USED);
+                    }
+
+                    if (model.Status == Constants.Status.DELETED)
+                    {
+                        list = list.Where(_ => _.Status == Constants.Status.DELETED);
+                    }
+                }
+            }
+            if (model.StoreId != 0)
+            {
+                list = list.Where(_ => _.Coupon.StoreId == model.StoreId);
+            }
+
+            if (model.FeedbackExist)
+            {
+                list = list.Where(_ => _.RateScore != null);
+            }
+
+
+            return Ok(list.Count());
         }
 
         /// <summary>
