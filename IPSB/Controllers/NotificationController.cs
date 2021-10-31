@@ -233,13 +233,11 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All notifications</returns>
         /// <response code="200">Returns all notifications</response>
-        /// <response code="404">No notifications found</response>
         [HttpGet]
         [Route("count")]
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<int>>> CountNotification([FromQuery] NotificationSM model)
         {
             var cacheId = new CacheKey<Notification>(Constants.DefaultValue.INTEGER);
