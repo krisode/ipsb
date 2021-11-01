@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 
 namespace IPSB.ViewModels
 {
@@ -13,6 +14,8 @@ namespace IPSB.ViewModels
     public class ProductCategorySM
     {
         public string Name { get; set; }
+
+        public string Status { get; set; }
     }
 
     public class ProductCategoryRefModel
@@ -26,11 +29,15 @@ namespace IPSB.ViewModels
     public class ProductCategoryCM
     {
         public string Name { get; set; }
+
+        public IFormFile ImageUrl { get; set; }
     }
 
     public class ProductCategoryUM
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public IFormFile ImageUrl { get; set; }
+
     }
 }
