@@ -80,13 +80,15 @@ namespace IPSB.ViewModels
         public DateTime? PublishDate { get; set; }
         [Required]
         public DateTime? ExpireDate { get; set; }
-        [Required]
-        [Range(double.MinValue, 10000)]
-        public double Amount { get; set; }
+        [Range(0, double.MaxValue)]
+        public double? Amount { get; set; }
+        [Range(0, double.MaxValue)]
         public double? MaxDiscount { get; set; }
+        [Required]
+        [Range(0, double.MaxValue)]
         public double? MinSpend { get; set; }
         [Required]
-        [Range(Int32.MinValue, 5)]
+        [Range(0, int.MaxValue)]
         public int Limit { get; set; }
     }
     public class CouponUM
@@ -96,9 +98,13 @@ namespace IPSB.ViewModels
         public string Description { get; set; }
         public string Code { get; set; }
         public int CouponTypeId { get; set; }
-        public double Amount { get; set; }
+        [Range(0, double.MaxValue)]
+        public double? Amount { get; set; }
+        [Range(0, double.MaxValue)]
         public double? MaxDiscount { get; set; }
+        [Range(0, double.MaxValue)]
         public double? MinSpend { get; set; }
+        [Range(0, int.MaxValue)]
         public int Limit { get; set; }
     }
 }

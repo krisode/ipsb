@@ -130,14 +130,6 @@ namespace IPSB.Infrastructure.Contexts
                     .IsRequired()
                     .HasMaxLength(100);
 
-                entity.Property(e => e.ProductExclude)
-                    .HasMaxLength(100)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.ProductInclude)
-                    .HasMaxLength(100)
-                    .IsFixedLength(true);
-
                 entity.Property(e => e.PublishDate).HasColumnType("datetime");
 
                 entity.Property(e => e.Status)
