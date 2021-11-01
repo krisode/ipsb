@@ -81,6 +81,13 @@ namespace IPSB.Utils
             public const string UNREAD = "Unread";
         }
 
+        public static class CouponType
+        {
+            public const int FIXED = 2;
+
+            public const int PERCENTAGE = 3;
+        }
+
         public static class Route {
             public const string FEEDBACK = "/feedback";
             public const string SHOPPING_LIST_DETAIL = "/shoppingListDetail";
