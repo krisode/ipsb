@@ -149,9 +149,12 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<VisitPointCM>> CreateVisitPoint([FromBody] VisitPointCM model)
         {
+            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTimeOffset localServerTime = DateTimeOffset.Now;
+            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
 
             VisitPoint crtVisitPoint = _mapper.Map<VisitPoint>(model);
-            DateTime currentDateTime = DateTime.Now;
+            DateTime currentDateTime = localTime.DateTime;
             crtVisitPoint.RecordTime = currentDateTime;
 
             try

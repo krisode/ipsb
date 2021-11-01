@@ -294,6 +294,10 @@ namespace IPSB.Controllers
                 return Conflict();
             }
 
+            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTimeOffset localServerTime = DateTimeOffset.Now;
+            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
+
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, couponInUse, Operations.Create);
             if (!authorizedResult.Succeeded)
             {
@@ -304,7 +308,7 @@ namespace IPSB.Controllers
 
             // Default POST Status = "New"
             crtCouponInUse.Status = Constants.Status.NOT_USED;
-            crtCouponInUse.RedeemDate = DateTime.Now;
+            crtCouponInUse.RedeemDate = localTime.DateTime;
 
             try
             {
@@ -349,6 +353,10 @@ namespace IPSB.Controllers
             //     return new ObjectResult($"Not authorize to update coupon in use with id: {id}") { StatusCode = 403 };
             // }
 
+            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTimeOffset localServerTime = DateTimeOffset.Now;
+            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
+
             try
             {
                 bool needUpdate = false;
@@ -367,7 +375,7 @@ namespace IPSB.Controllers
                     }
                     updCouponInUse.FeedbackContent = model.FeedbackContent;
                     updCouponInUse.RateScore = model.RateScore;
-                    updCouponInUse.FeedbackDate = DateTime.Now;
+                    updCouponInUse.FeedbackDate = localTime.DateTime;
                     needUpdate = true;
                 }
                 else if (updCouponInUse.FeedbackReply == null && model.FeedbackReply != null)
@@ -382,9 +390,7 @@ namespace IPSB.Controllers
                     {
                         if (!string.IsNullOrEmpty(updCouponInUse.FeedbackContent) && string.IsNullOrEmpty(updCouponInUse.FeedbackReply))
                         {
-                            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
-                            DateTimeOffset localServerTime = DateTimeOffset.Now;
-                            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
+                           
                             var notification = new Notification();
                             notification.Title = "Feedback on coupon";
                             notification.Body = "Coupon " + updCouponInUse.Coupon.Name + " has just received feedback from customer";
@@ -416,9 +422,6 @@ namespace IPSB.Controllers
                         }
                         else if (updCouponInUse.Status.Equals(Constants.Status.USED) && string.IsNullOrEmpty(updCouponInUse.FeedbackContent) && string.IsNullOrEmpty(updCouponInUse.FeedbackReply))
                         {
-                            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
-                            DateTimeOffset localServerTime = DateTimeOffset.Now;
-                            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
                             var notification = new Notification();
                             notification.Title = "Apply coupon successfully";
                             notification.Body = "You have successfully applied the coupon " + updCouponInUse.Coupon.Name;

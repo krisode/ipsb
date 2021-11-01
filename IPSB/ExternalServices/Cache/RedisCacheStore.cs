@@ -52,7 +52,11 @@ namespace IPSB.Cache
 
             }
 
-            string updateTime = DateTime.Now.ToString("ddd, dd MMM yyy HH:mm:ss") + " GMT";
+            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTimeOffset localServerTime = DateTimeOffset.Now;
+            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
+
+            string updateTime = localTime.DateTime.ToString("ddd, dd MMM yyy HH:mm:ss") + " GMT";
 
             var newItem = await func(updateTime);
 
@@ -108,8 +112,11 @@ namespace IPSB.Cache
 
             }
 
+            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTimeOffset localServerTime = DateTimeOffset.Now;
+            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
+            string updateTime = localTime.DateTime.ToString("ddd, dd MMM yyy HH:mm:ss") + " GMT";
 
-            string updateTime = DateTime.Now.ToString("ddd, dd MMM yyy HH:mm:ss") + " GMT";
             var newItem = await func(updateTime);
 
             if (newItem != null)
