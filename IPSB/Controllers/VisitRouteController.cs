@@ -132,9 +132,12 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<VisitRouteCM>> CreateRoute([FromBody] VisitRouteCM model)
         {
+            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTimeOffset localServerTime = DateTimeOffset.Now;
+            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
 
             VisitRoute crtVisitRoute = _mapper.Map<VisitRoute>(model);
-            DateTime currentDateTime = DateTime.Now;
+            DateTime currentDateTime = localTime.DateTime;
             crtVisitRoute.RecordTime = currentDateTime;
 
             try

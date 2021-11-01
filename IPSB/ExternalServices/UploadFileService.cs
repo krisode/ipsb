@@ -60,13 +60,17 @@ namespace IPSB.ExternalServices
 
             String token = Guid.NewGuid().ToString();
 
+            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTimeOffset localServerTime = DateTimeOffset.Now;
+            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
+
             var obj = new Google.Apis.Storage.v1.Data.Object
             {
                 Bucket = bucketName,
                 Name = filePath,
                 ContentType = "image/png",
                 Metadata = new Dictionary<string, string>(){
-                    {"customTime", DateTime.Now.ToString() }
+                    {"customTime", localTime.DateTime.ToString() }
                 },
             };
             var storageObject = storageClient.UploadObject(obj, file.OpenReadStream());
