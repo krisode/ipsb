@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace IPSB.ViewModels
 {
+    public class BaseAuth
+    {
+        public string AccessToken { get; set; }
+        public string RefreshToken { get; set; }
+    }
     public class AuthFirebaseLogin
     {
         [Required]
@@ -23,21 +28,17 @@ namespace IPSB.ViewModels
 
     }
 
-    public class AuthPartnerLoginSuccess
+    public class AuthPhoneLogin
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
+        [Required]
+        [MinLength(10)]
         public string Phone { get; set; }
-        public string ImageUrl { get; set; }
-        public string Role { get; set; }
-        public string Status { get; set; }
-        public string AccessToken { get; set; }
-        public string RefreshToken { get; set; }
-        public StoreRefModelForAccount Store { get; set; }
+        [Required]
+        public string Password { get; set; }
     }
 
-    public class AuthLoginSuccess
+
+    public class AuthLoginSuccess : BaseAuth
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -46,9 +47,8 @@ namespace IPSB.ViewModels
         public string ImageUrl { get; set; }
         public string Role { get; set; }
         public string Status { get; set; }
-        public string AccessToken { get; set; }
-        public string RefreshToken { get; set; }
         public BuildingRefModelForAccount Building { get; set; }
+        public StoreRefModelForAccount Store { get; set; }
 
     }
 
