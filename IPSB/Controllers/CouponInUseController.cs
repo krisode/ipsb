@@ -60,7 +60,7 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<CouponInUseVM> GetCouponInUseById(int id)
         {
-            var couponInUse = _service.GetByIdAsync(_ => _.Id == id, _ => _.Coupon, _ => _.Visitor).Result;
+            var couponInUse = _service.GetByIdAsync(_ => _.Id == id, _ => _.Coupon.Store, _ => _.Visitor).Result;
 
             if (couponInUse == null)
             {
@@ -97,7 +97,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<CouponInUseVM>> GetAllCouponInUses([FromQuery] CouponInUseSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<CouponInUse> list = _service.GetAll(_ => _.Coupon, _ => _.Visitor);
+            IQueryable<CouponInUse> list = _service.GetAll(_ => _.Coupon.Store, _ => _.Visitor);
 
             if (model.CouponId != 0)
             {
