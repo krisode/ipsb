@@ -17,7 +17,7 @@ namespace IPSB.ViewModels
         public string FeedbackImage { get; set; }
         public DateTime? FeedbackDate { get; set; }
         public double? RateScore { get; set; }
-        public CouponRefModel Coupon { get; set; }
+        public CouponVM Coupon { get; set; }
         public AccountRefModel Visitor { get; set; }
     }
     public class CouponInUseRefModel
