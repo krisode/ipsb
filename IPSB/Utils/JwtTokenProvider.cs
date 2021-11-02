@@ -9,6 +9,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using IPSB.ViewModels;
+using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using static IPSB.Utils.Constants;
 
 namespace IPSB.Utils
@@ -19,17 +22,19 @@ namespace IPSB.Utils
         Task<string> GetRefreshToken(List<Claim> additionalClaims);
         List<Claim> GetAdditionalClaims(Account account);
         int GetIdFromToken(string tokenString);
-
+        Task<T> GetUserAuth<T>(Account account, HttpResponse response) where T : BaseAuth;
     }
     public class JwtTokenProvider : IJwtTokenProvider
     {
         private readonly JwtSecurityTokenHandler _jwtSecurityTokenHandler;
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
 
-        public JwtTokenProvider(IConfiguration configuration)
+        public JwtTokenProvider(IConfiguration configuration, IMapper mapper)
         {
+            _jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
             _configuration = configuration;
-            _jwtSecurityTokenHandler = _jwtSecurityTokenHandler ?? new JwtSecurityTokenHandler();
+            _mapper = mapper;
         }
 
         public Task<string> GenerateToken(List<Claim> additionalClaims, DateTime expiredPeriod)
@@ -80,12 +85,28 @@ namespace IPSB.Utils
         public int GetIdFromToken(string tokenString)
         {
             var handler = new JwtSecurityTokenHandler();
-            var claims = handler.ValidateToken(tokenString, 
-                JwtBearerTokenConfig.GetTokenValidationParameters(_configuration), 
+            var claims = handler.ValidateToken(tokenString,
+                JwtBearerTokenConfig.GetTokenValidationParameters(_configuration),
                 out var tokenSecure
                 );
             var accountId = int.Parse(claims.Identity.Name);
             return accountId;
+        }
+
+        public async Task<T> GetUserAuth<T>(Account account, HttpResponse response) where T : BaseAuth
+        {
+            var rtnAccount = _mapper.Map<T>(account);
+            // Claims for generating JWT
+            var additionalClaims = GetAdditionalClaims(account);
+
+            string accessToken = await GetAccessToken(additionalClaims);
+            string refreshToken = await GetRefreshToken(additionalClaims);
+
+            rtnAccount.AccessToken = accessToken;
+            rtnAccount.RefreshToken = refreshToken;
+
+            response.Cookies.Append(CookieConfig.REFRESH_TOKEN, rtnAccount.RefreshToken, CookieConfig.AUTH_COOKIE_OPTIONS);
+            return rtnAccount;
         }
     }
 }

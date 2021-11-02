@@ -7,7 +7,6 @@ using IPSB.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RestSharp;
 using RestSharp.Authenticators;
 using System;
@@ -53,47 +52,52 @@ namespace IPSB.Controllers
         public async Task<ActionResult<AccountVM>> CheckLogin(AuthWebLogin authAccount)
         {
             var account = _accountService.CheckLogin(authAccount.Email, authAccount.Password, _ => _.Store, _ => _.Building);
-
+            
             if (account == null)
             {
                 return Unauthorized();
             }
 
-            if (account.Role.Equals(Role.STORE_OWNER))
-            {
-                var rtnAccount = _mapper.Map<AuthPartnerLoginSuccess>(account);
-                // Claims for generating JWT
-                var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(account);
-
-                string accessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
-
-                string refreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
-
-                rtnAccount.AccessToken = accessToken;
-                rtnAccount.RefreshToken = refreshToken;
-
-                Response.Cookies.Append(CookieConfig.REFRESH_TOKEN, rtnAccount.RefreshToken, CookieConfig.AUTH_COOKIE_OPTIONS);
-
-                return Ok(rtnAccount);
-            }
-            else
-            {
-                var rtnAccount = _mapper.Map<AuthLoginSuccess>(account);
-                // Claims for generating JWT
-                var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(account);
-
-                string accessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
-
-                string refreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
-
-                rtnAccount.AccessToken = accessToken;
-                rtnAccount.RefreshToken = refreshToken;
-
-                Response.Cookies.Append(CookieConfig.REFRESH_TOKEN, rtnAccount.RefreshToken, CookieConfig.AUTH_COOKIE_OPTIONS);
-
-                return Ok(rtnAccount);
+            if(account.Role.Equals(Role.VISITOR)){
+                return BadRequest();
             }
 
+            var rtnAccount = await _jwtTokenProvider.GetUserAuth<AuthLoginSuccess>(account, Response);
+            return Ok(rtnAccount);
+        }
+
+        /// <summary>
+        /// Check phone and password of an account
+        /// </summary>
+        /// <remarks>
+        /// Sample Request:
+        /// 
+        ///     POST {
+        ///         "Phone" : "0918938432"
+        ///         "Password" : "123456"
+        ///     }
+        /// </remarks>
+        /// <returns>Return the account with the corresponding id</returns>
+        /// <response code="200">Account exists in the system</response>
+        /// <response code="401">No accounts found with the given username and password</response>
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [HttpPost("login-phone")]
+        public async Task<ActionResult<AccountVM>> LoginPhone(AuthPhoneLogin authAccount)
+        {
+            var account = await _accountService.GetByIdAsync(_ => _.Phone == authAccount.Phone && _.Password == authAccount.Password);
+            if (account == null)
+            {
+                return Unauthorized();
+            }
+
+            if(!account.Role.Equals(Role.VISITOR)){
+                return BadRequest();
+            }
+
+            var rtnAccount = await _jwtTokenProvider.GetUserAuth<AuthLoginSuccess>(account, Response);
+            return Ok(rtnAccount);
         }
 
         /// <summary>
@@ -118,7 +122,6 @@ namespace IPSB.Controllers
             Response.Cookies.Delete(CookieConfig.REFRESH_TOKEN);
             return NoContent();
         }
-
 
         /// <summary>
         /// Check valid of user login via firebase
@@ -151,7 +154,7 @@ namespace IPSB.Controllers
                 decodedToken.Claims.TryGetValue(TokenClaims.EMAIL, out var emailvar);
                 phone = (string)phoneVar;
                 email = (string)emailvar;
-            }
+            } 
             catch (Exception)
             {
                 return Unauthorized("Invalid login, please try again!");
@@ -202,12 +205,7 @@ namespace IPSB.Controllers
                 return Unauthorized();
             }
 
-            var rtnAccount = _mapper.Map<AuthLoginSuccess>(accountCreate);
-            var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(accountCreate);
-            rtnAccount.AccessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
-            rtnAccount.RefreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
-
-            Response.Cookies.Append(CookieConfig.REFRESH_TOKEN, rtnAccount.RefreshToken, CookieConfig.AUTH_COOKIE_OPTIONS);
+            var rtnAccount = await _jwtTokenProvider.GetUserAuth<AuthLoginSuccess>(accountCreate, Response);
             return Ok(rtnAccount);
         }
 
@@ -257,14 +255,7 @@ namespace IPSB.Controllers
                 return Unauthorized();
             }
 
-            var rtnAccount = _mapper.Map<AuthPartnerLoginSuccess>(accountFound);
-
-            var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(accountFound);
-
-            rtnAccount.AccessToken = await _jwtTokenProvider.GetAccessToken(additionalClaims);
-            rtnAccount.RefreshToken = await _jwtTokenProvider.GetRefreshToken(additionalClaims);
-
-            Response.Cookies.Append(CookieConfig.REFRESH_TOKEN, rtnAccount.RefreshToken, CookieConfig.AUTH_COOKIE_OPTIONS);
+            var rtnAccount = await _jwtTokenProvider.GetUserAuth<AuthLoginSuccess>(accountFound, Response);
             return Ok(rtnAccount);
         }
 
@@ -416,8 +407,8 @@ namespace IPSB.Controllers
 
             return Ok(accessToken);
         }
+
+
+
     }
-
-
-
 }
