@@ -249,13 +249,15 @@ namespace IPSB.Controllers
             {
                 return BadRequest();
             }
+            
             // Created coupon has expired date less than current date
             if (model.ExpireDate < localTime.DateTime)
             {
                 return BadRequest();
             }
+
             // Created coupon has publish date less than expired date
-            if (model.PublishDate < model.ExpireDate)
+            if (model.PublishDate.Value.AddHours(2) > model.ExpireDate)
             {
                 return BadRequest();
             }
@@ -285,7 +287,7 @@ namespace IPSB.Controllers
                 }
 
                 // CASE-2: Created coupon has value for amount field 
-                if (model.Amount.HasValue)
+                if (!model.Amount.HasValue)
                 {
                     return BadRequest();
                 }
@@ -313,7 +315,7 @@ namespace IPSB.Controllers
                         return BadRequest();
                     }
                 }
-                // CASE-2: Coupon has status as INACTIVE
+                /*// CASE-2: Coupon has status as INACTIVE
                 else if (coupon.Status.Equals(Constants.Status.INACTIVE))
                 {
                     // CASE-2-1: Created coupon has publish date less than current date
@@ -326,7 +328,7 @@ namespace IPSB.Controllers
                     {
                         return BadRequest();
                     }
-                }
+                }*/
 
             }
 
@@ -396,42 +398,6 @@ namespace IPSB.Controllers
             //     return new ObjectResult($"Not authorize to update coupon with id: {id}") { StatusCode = 403 };
             // }
 
-            // CASE: Created coupon has coupon type as FIXED
-            if (model.CouponTypeId == Constants.CouponType.FIXED)
-            {
-                // CASE-1: Created coupon does not has value for amount field 
-                if (!model.Amount.HasValue)
-                {
-                    return BadRequest();
-                }
-                // CASE-2: Created coupon has value for max discount field 
-                if (model.MaxDiscount.HasValue)
-                {
-                    return BadRequest();
-                }
-
-                // Max discount is NULL in case coupon type as FIXED
-                model.MaxDiscount = null;
-            }
-
-            // CASE: Coupon has coupon type as PERCENTAGE
-            if (model.CouponTypeId == Constants.CouponType.PERCENTAGE)
-            {
-                // CASE-1: Created coupon does not has value for max discount field 
-                if (!model.MaxDiscount.HasValue)
-                {
-                    return BadRequest();
-                }
-
-                // CASE-2: Created coupon has value for amount field 
-                if (model.Amount.HasValue)
-                {
-                    return BadRequest();
-                }
-
-                // Amount is NULL in case coupon type as PERCENTAGE
-                model.Amount = null;
-            }
 
             string imageUrl = updCoupon.ImageUrl;
 
@@ -451,12 +417,6 @@ namespace IPSB.Controllers
                 updCoupon.ImageUrl = imageUrl;
                 updCoupon.Name = model.Name;
                 updCoupon.Description = model.Description;
-                updCoupon.Code = model.Code;
-                updCoupon.CouponTypeId = model.CouponTypeId;
-                updCoupon.Amount = model.Amount;
-                updCoupon.MaxDiscount = model.MaxDiscount;
-                updCoupon.MinSpend = model.MinSpend;
-                updCoupon.Limit = model.Limit;
 
                 _service.Update(updCoupon);
                 await _service.Save();

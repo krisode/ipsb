@@ -96,15 +96,5 @@ namespace IPSB.ViewModels
         public IFormFileCollection ImageUrl { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public string Code { get; set; }
-        public int CouponTypeId { get; set; }
-        [Range(0, double.MaxValue)]
-        public double? Amount { get; set; }
-        [Range(0, double.MaxValue)]
-        public double? MaxDiscount { get; set; }
-        [Range(0, double.MaxValue)]
-        public double? MinSpend { get; set; }
-        [Range(0, int.MaxValue)]
-        public int Limit { get; set; }
     }
 }
