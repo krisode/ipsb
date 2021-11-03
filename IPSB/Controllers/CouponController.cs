@@ -249,7 +249,7 @@ namespace IPSB.Controllers
             {
                 return BadRequest();
             }
-            
+
             // Created coupon has expired date less than current date
             if (model.ExpireDate < localTime.DateTime)
             {
@@ -292,29 +292,35 @@ namespace IPSB.Controllers
                     return BadRequest();
                 }
             }
-            
 
-            // Get coupon with the same code with the latest date
-            var coupon = _service.GetAll().Where(_ => _.Code == model.Code).OrderByDescending(_ => _.ExpireDate).FirstOrDefault();
+
+            // Get list coupon with the same code
+            var listCoupon = _service.GetAll().Where(_ => _.Code == model.Code).Where(_ => _.Status == Constants.Status.ACTIVE).ToList();
+
+
 
             // CASE: Coupon with the same code do exist
-            if (coupon is not null)
+            if (listCoupon.Count > 0)
             {
-                // CASE-1: Coupon has status as ACTIVE
-                if (coupon.Status.Equals(Constants.Status.ACTIVE))
+                foreach (var coupon in listCoupon)
                 {
-                    // CASE-1-1: Created coupon has publish date between the publish date and the expired date of the coupon with the same code
-                    if (model.PublishDate >= coupon.PublishDate && model.PublishDate <= coupon.ExpireDate)
+                    // CASE-1: Coupon has status as ACTIVE
+                    if (coupon.Status.Equals(Constants.Status.ACTIVE))
                     {
-                        return BadRequest();
-                    }
+                        // CASE-1-1: Created coupon has publish date between the publish date and the expired date of the coupon with the same code
+                        if (model.PublishDate >= coupon.PublishDate && model.PublishDate <= coupon.ExpireDate)
+                        {
+                            return BadRequest();
+                        }
 
-                    // CASE-1-2: Created coupon has expired date between the publish date and the expired date of the coupon with the same code
-                    if (model.ExpireDate >= coupon.PublishDate && model.ExpireDate <= coupon.ExpireDate)
-                    {
-                        return BadRequest();
+                        // CASE-1-2: Created coupon has expired date between the publish date and the expired date of the coupon with the same code
+                        if (model.ExpireDate >= coupon.PublishDate && model.ExpireDate <= coupon.ExpireDate)
+                        {
+                            return BadRequest();
+                        }
                     }
                 }
+
                 /*// CASE-2: Coupon has status as INACTIVE
                 else if (coupon.Status.Equals(Constants.Status.INACTIVE))
                 {
