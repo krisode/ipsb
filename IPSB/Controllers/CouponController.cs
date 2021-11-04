@@ -87,12 +87,10 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All coupons</returns>
         /// <response code="200">Returns all coupons</response>
-        /// <response code="404">No coupons found</response>
         [HttpGet]
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<CouponVM>> GetAllCoupons([FromQuery] CouponSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             IQueryable<Coupon> list = _service.GetAll(_ => _.Store, _ => _.CouponInUses, _ => _.CouponType);
@@ -203,6 +201,133 @@ namespace IPSB.Controllers
                 .Paginate<CouponVM>();
 
             return Ok(pagedModel);
+        }
+
+        /// <summary>
+        /// Count coupons
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///         
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>Number of coupons</returns>
+        /// <response code="200">Returns number of coupons</response>
+        [HttpGet]
+        [Route("count")]
+        [AllowAnonymous]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<CouponVM>> CountCoupons([FromQuery] CouponSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
+        {
+            IQueryable<Coupon> list = _service.GetAll(_ => _.Store, _ => _.CouponInUses, _ => _.CouponType);
+
+            if (model.BuildingId != 0)
+            {
+                list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
+            }
+            if (model.StoreId != 0)
+            {
+                list = list.Where(_ => _.StoreId == model.StoreId);
+            }
+
+            if (!string.IsNullOrEmpty(model.Name))
+            {
+                list = list.Where(_ => _.Name.Contains(model.Name));
+            }
+
+            if (!string.IsNullOrEmpty(model.Description))
+            {
+                list = list.Where(_ => _.Description.Contains(model.Description));
+            }
+
+            if (!string.IsNullOrEmpty(model.Code))
+            {
+                list = list.Where(_ => _.Code.Contains(model.Code));
+            }
+
+            if (model.CouponTypeId > 0)
+            {
+                list = list.Where(_ => _.CouponTypeId == model.CouponTypeId);
+            }
+
+            if (model.LowerPublishDate.HasValue)
+            {
+                list = list.Where(_ => _.PublishDate >= model.LowerPublishDate);
+            }
+
+            if (model.UpperPublishDate.HasValue)
+            {
+                list = list.Where(_ => _.PublishDate <= model.UpperPublishDate);
+            }
+
+            if (model.LowerExpireDate.HasValue)
+            {
+                list = list.Where(_ => _.ExpireDate >= model.LowerExpireDate);
+            }
+
+            if (model.UpperExpireDate.HasValue)
+            {
+                list = list.Where(_ => _.ExpireDate <= model.UpperExpireDate);
+            }
+
+            if (model.LowerAmount != 0)
+            {
+                list = list.Where(_ => _.Amount >= model.LowerAmount);
+            }
+
+            if (model.UpperAmount != 0)
+            {
+                list = list.Where(_ => _.Amount <= model.UpperAmount);
+            }
+
+            if (model.MaxDiscount != 0)
+            {
+                list = list.Where(_ => _.MaxDiscount == model.MaxDiscount);
+            }
+
+            if (model.MinSpend != 0)
+            {
+                list = list.Where(_ => _.MinSpend <= model.MinSpend);
+            }
+
+
+            if (model.LowerLimit != 0)
+            {
+                list = list.Where(_ => _.Limit >= model.LowerLimit);
+            }
+
+            if (model.UpperLimit != 0)
+            {
+                list = list.Where(_ => _.Limit <= model.UpperLimit);
+            }
+
+            if (!string.IsNullOrEmpty(model.Status))
+            {
+                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                {
+                    return BadRequest();
+                }
+
+                else
+                {
+                    if (model.Status == Constants.Status.ACTIVE)
+                    {
+                        list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
+                    }
+
+                    if (model.Status == Constants.Status.INACTIVE)
+                    {
+                        list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
+                    }
+                }
+            }
+
+            return Ok(list.Count());
         }
 
         /// <summary>

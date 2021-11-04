@@ -190,7 +190,6 @@ namespace IPSB.Controllers
         [Route("count")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<CouponInUseVM>> CountCouponInUses([FromQuery] CouponInUseSM model)
         {
             IQueryable<CouponInUse> list = _service.GetAll(_ => _.Coupon, _ => _.Visitor);

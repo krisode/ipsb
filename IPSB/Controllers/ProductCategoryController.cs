@@ -92,12 +92,10 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All product categories</returns>
         /// <response code="200">Returns all product categories</response>
-        /// <response code="404">No product categories found</response>
         [HttpGet]
         [Produces("application/json")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<ProductCategoryRefModel>> GetAllProductCategories([FromQuery] ProductCategorySM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             var list = _service.GetAll();
@@ -133,6 +131,58 @@ namespace IPSB.Controllers
                 .Paginate<ProductCategoryRefModel>();
 
             return Ok(pagedModel);
+        }
+        
+        /// <summary>
+        /// Count product categories
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///         
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>Number of product categories</returns>
+        /// <response code="200">Returns number of product categories</response>
+        [HttpGet]
+        [Route("count")]
+        [Produces("application/json")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<ProductCategoryRefModel>> CountProductCategories([FromQuery] ProductCategorySM model)
+        {
+            var list = _service.GetAll();
+
+            if (!string.IsNullOrEmpty(model.Name))
+            {
+                list = list.Where(_ => _.Name.Contains(model.Name));
+            }
+
+            if (!string.IsNullOrEmpty(model.Status))
+            {
+                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                {
+                    return BadRequest();
+                }
+
+                else
+                {
+                    if (model.Status == Constants.Status.ACTIVE)
+                    {
+                        list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
+                    }
+
+                    if (model.Status == Constants.Status.INACTIVE)
+                    {
+                        list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
+                    }
+                }
+            }
+
+            return Ok(list.Count());
         }
 
         /// <summary>

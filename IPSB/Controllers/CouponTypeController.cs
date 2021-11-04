@@ -73,11 +73,9 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All coupon types</returns>
         /// <response code="200">Returns all coupon types</response>
-        /// <response code="404">No coupon types found</response>
         [HttpGet]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult GetAllCouponTypes([FromQuery] CouponTypeSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             var couponTypeList = _service.GetAll();
@@ -100,6 +98,45 @@ namespace IPSB.Controllers
                                             .Paginate<CouponTypeVM>();
 
             return Ok(pagedModel);
+        }
+
+        /// <summary>
+        /// Count coupon types
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///     
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>Number of coupon types</returns>
+        /// <response code="200">Returns number of coupon types</response>
+        [HttpGet]
+        [Route("count")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult CountCouponTypes([FromQuery] CouponTypeSM model)
+        {
+            var couponTypeList = _service.GetAll();
+
+            if (!string.IsNullOrEmpty(model.Name))
+            {
+                couponTypeList = couponTypeList.Where(_ => _.Name.Contains(model.Name));
+            }
+            if (!string.IsNullOrEmpty(model.Description))
+            {
+                couponTypeList = couponTypeList.Where(_ => _.Description.Contains(model.Description));
+            }
+            if (!string.IsNullOrEmpty(model.Status))
+            {
+                couponTypeList = couponTypeList.Where(_ => _.Status.Equals(model.Status));
+            }
+
+            
+            return Ok(couponTypeList.Count());
         }
 
         /// <summary>

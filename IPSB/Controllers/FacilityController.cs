@@ -79,11 +79,9 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All facilities</returns>
         /// <response code="200">Returns all facilities</response>
-        /// <response code="404">No facilities found</response>
         [HttpGet]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult GetAllFacilities([FromQuery] FacilitySM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             var facilityList = _service.GetAll(_ => _.Location.LocationType, _ => _.FloorPlan);
@@ -110,6 +108,49 @@ namespace IPSB.Controllers
                                             .Paginate<FacilityVM>();
 
             return Ok(pagedModel);
+        }
+
+        /// <summary>
+        /// Count facilities
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///     
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>Number of facilities</returns>
+        /// <response code="200">Returns number of facilities</response>
+        [HttpGet]
+        [Route("count")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult CountFacilities([FromQuery] FacilitySM model)
+        {
+            var facilityList = _service.GetAll(_ => _.Location.LocationType, _ => _.FloorPlan);
+
+            if (!string.IsNullOrEmpty(model.Name))
+            {
+                facilityList = facilityList.Where(_ => _.Name.Contains(model.Name));
+            }
+            if (!string.IsNullOrEmpty(model.Description))
+            {
+                facilityList = facilityList.Where(_ => _.Description.Contains(model.Description));
+            }
+            if (model.BuildingId > 0)
+            {
+                facilityList = facilityList.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
+            }
+            if (!string.IsNullOrEmpty(model.LocationType))
+            {
+                facilityList = facilityList.Where(_ => _.Location.LocationType.Name.Contains(model.LocationType));
+            }
+
+            
+            return Ok(facilityList.Count());
         }
 
         /// <summary>

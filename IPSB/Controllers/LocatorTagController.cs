@@ -88,12 +88,10 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All locator tags</returns>
         /// <response code="200">Returns all locator tags</response>
-        /// <response code="404">No locator tags found</response>
         [HttpGet]
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<LocatorTagVM>> GetAllLocatorTags([FromQuery] LocatorTagSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             IQueryable<LocatorTag> list = _service.GetAll(_ => _.FloorPlan, _ => _.Location, _ => _.LocatorTagGroup);
@@ -153,6 +151,82 @@ namespace IPSB.Controllers
                 .Paginate<LocatorTagVM>();
 
             return Ok(pagedModel);
+        }
+
+        /// <summary>
+        /// Count locator tags
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///         
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>Number of locator tags</returns>
+        /// <response code="200">Returns number of locator tags</response>
+        [HttpGet]
+        [Route("count")]
+        [AllowAnonymous]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<LocatorTagVM>> CountLocatorTags([FromQuery] LocatorTagSM model)
+        {
+            IQueryable<LocatorTag> list = _service.GetAll(_ => _.FloorPlan, _ => _.Location, _ => _.LocatorTagGroup);
+
+            if (model.Id != null)
+            {
+                list = list.Where(_ => model.Id.Contains(_.Id));
+            }
+
+            if (!string.IsNullOrEmpty(model.Uuid))
+            {
+                list = list.Where(_ => _.Uuid.Equals(model.Uuid));
+            }
+
+            if (model.BuildingId != 0)
+            {
+                list = list.Where(_ => _.BuildingId == model.BuildingId);
+            }
+
+            if (model.FloorPlanId != 0)
+            {
+                list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
+            }
+
+            if (model.LocationId != 0)
+            {
+                list = list.Where(_ => _.LocationId == model.LocationId);
+            }
+
+            if (model.LowerUpdateTime.HasValue)
+            {
+                list = list.Where(_ => _.UpdateTime >= model.LowerUpdateTime);
+            }
+
+            if (model.UpperUpdateTime.HasValue)
+            {
+                list = list.Where(_ => _.UpdateTime <= model.UpperUpdateTime);
+            }
+
+
+            if (!string.IsNullOrEmpty(model.Status))
+            {
+                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE && model.Status != Constants.Status.NEW)
+                {
+                    return BadRequest();
+                }
+
+                else
+                {
+                    list = list.Where(_ => _.Status == model.Status);
+                }
+            }
+
+
+            return Ok(list.Count());
         }
 
         /// <summary>

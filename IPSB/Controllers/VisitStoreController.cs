@@ -60,7 +60,7 @@ namespace IPSB.Controllers
         }
 
         /// <summary>
-        /// Get all visit points
+        /// Get all visit stores
         /// </summary>
         /// <remarks>
         /// Sample request:
@@ -71,13 +71,11 @@ namespace IPSB.Controllers
         ///     }
         ///
         /// </remarks>
-        /// <returns>All visit points</returns>
-        /// <response code="200">Returns all visit points</response>
-        /// <response code="404">No visit points found</response>
+        /// <returns>All visit stores</returns>
+        /// <response code="200">Returns all visit stores</response>
         [HttpGet]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<VisitStoreVM>> GetAllVisitStores([FromQuery] VisitStoreSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             IQueryable<VisitStore> list = _service.GetAll(_ => _.Store.Building);
@@ -111,6 +109,51 @@ namespace IPSB.Controllers
                 .Paginate<VisitStoreVM>();
 
             return Ok(pagedModel);
+        }
+
+        /// <summary>
+        /// Count visit stores
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///         
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>Number of visit stores</returns>
+        /// <response code="200">Returns number of visit stores</response>
+        [HttpGet]
+        [Route("count")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<VisitStoreVM>> CountVisitStores([FromQuery] VisitStoreSM model)
+        {
+            IQueryable<VisitStore> list = _service.GetAll(_ => _.Store.Building);
+            
+            if (model.StoreId != 0)
+            {
+                list = list.Where(_ =>_.StoreId == model.StoreId);
+            }
+            
+            if (model.BuildingId != 0)
+            {
+                list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
+            }
+
+            if (model.LowerRecordTime.HasValue)
+            {
+                list = list.Where(_ => _.RecordTime >= model.LowerRecordTime);
+            }
+
+            if (model.UpperRecordTime.HasValue)
+            {
+                list = list.Where(_ => _.RecordTime <= model.UpperRecordTime);
+            }
+           
+            return Ok(list.Count());
         }
 
         /// <summary>
