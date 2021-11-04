@@ -78,7 +78,6 @@ namespace IPSB.Controllers
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<ShoppingListVM>> GetAllShoppingLists([FromQuery] ShoppingListSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             var result = _service.GetAll(_ => _.Building);
@@ -111,6 +110,47 @@ namespace IPSB.Controllers
                 .Paginate<ShoppingListVM>();
 
             return Ok(pagedModel);
+        }
+        
+        /// <summary>
+        /// Count shopping lists
+        /// </summary>
+        /// <returns>Number of shopping lists</returns>
+        /// <response code="200">Returns number of shopping lists</response>
+        [HttpGet]
+        [Route("count")]
+        [AllowAnonymous]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<ShoppingListVM>> CountShoppingLists([FromQuery] ShoppingListSM model)
+        {
+            var result = _service.GetAll(_ => _.Building);
+            if (model.BuildingId > 0)
+            {
+                result.Where(_ => _.BuildingId == model.BuildingId);
+            }
+            if (model.AccountId > 0)
+            {
+                result.Where(_ => _.AccountId == model.AccountId);
+            }
+            if (model.Name != null)
+            {
+                result.Where(_ => _.Name.Contains(model.Name));
+            }
+            if (model.StartShoppingDate != null)
+            {
+                result.Where(_ => _.ShoppingDate >= model.StartShoppingDate);
+            }
+            if (model.EndShoppingDate != null)
+            {
+                result.Where(_ => _.ShoppingDate <= model.EndShoppingDate);
+            }
+            if (model.Status != null)
+            {
+                result.Where(_ => _.Status.Equals(model.Status));
+            }
+
+            return Ok(result.Count());
         }
 
         /// <summary>

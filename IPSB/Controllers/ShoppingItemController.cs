@@ -66,12 +66,10 @@ namespace IPSB.Controllers
         /// </summary>
         /// <returns>All shopping items</returns>
         /// <response code="200">Returns all shopping items</response>
-        /// <response code="404">No shopping items found</response>
         [HttpGet]
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<ShoppingItemVM>> GetAllShoppingItems([FromQuery] ShoppingItemSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             var result = _service.GetAll(_ => _.Product);
@@ -89,6 +87,31 @@ namespace IPSB.Controllers
                 .Paginate<ShoppingItemVM>();
 
             return Ok(pagedModel);
+        }
+        
+        /// <summary>
+        /// Count shopping items
+        /// </summary>
+        /// <returns>Number of shopping items</returns>
+        /// <response code="200">Returns number of shopping items</response>
+        [HttpGet]
+        [Route("count")]
+        [AllowAnonymous]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<ShoppingItemVM>> CountShoppingItems([FromQuery] ShoppingItemSM model)
+        {
+            var result = _service.GetAll(_ => _.Product);
+            if (model.ShoppingListId > 0)
+            {
+                result.Where(_ => _.ShoppingListId == model.ShoppingListId);
+            }
+            if (model.Note != null)
+            {
+                result.Where(_ => _.Note.Contains(model.Note));
+            }
+
+            return Ok(result.Count());
         }
 
         /// <summary>

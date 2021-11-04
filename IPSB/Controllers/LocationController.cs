@@ -110,12 +110,10 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All locations</returns>
         /// <response code="200">Returns all locations</response>
-        /// <response code="404">No locations found</response>
         [HttpGet]
         [Produces("application/json")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<LocationVM>>> GetAllLocations([FromQuery] LocationSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             var cacheId = new CacheKey<Location>(Utils.Constants.DefaultValue.INTEGER);
@@ -208,6 +206,127 @@ namespace IPSB.Controllers
                     .Paginate<LocationVM>();
 
                 return Ok(pagedModel);
+
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+        }
+
+        /// <summary>
+        /// Count locations
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///         
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>Number of locations</returns>
+        /// <response code="200">Returns number of locations</response>
+        [HttpGet]
+        [Route("count")]
+        [Produces("application/json")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<LocationVM>>> CountLocations([FromQuery] LocationSM model)
+        {
+            var cacheId = new CacheKey<Location>(Utils.Constants.DefaultValue.INTEGER);
+            var cacheObjectType = new Location();
+            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
+            try
+            {
+                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                {
+                    var list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store, _ => _.LocatorTag, _ => _.Facility);
+
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                    return Task.FromResult(list);
+
+                }, setLastModified: (cachedTime) =>
+                 {
+                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
+                     return cachedTime;
+                 }, ifModifiedSince);
+
+                if (model.BuildingId != 0)
+                {
+                    list = list.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
+                }
+
+                if (model.X != 0)
+                {
+                    list = list.Where(_ => _.X == model.X);
+                }
+
+                if (model.Y != 0)
+                {
+                    list = list.Where(_ => _.Y == model.Y);
+                }
+                if (!string.IsNullOrEmpty(model.Status))
+                {
+                    if (Status.ACTIVE.Equals(model.Status) || Status.INACTIVE.Equals(model.Status))
+                    {
+                        list = list.Where(_ => _.Status == model.Status);
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+                }
+
+                if (model.FloorPlanId != 0)
+                {
+                    list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
+                }
+
+                if (model.StoreId != 0)
+                {
+                    list = list.Where(_ => _.Store.Id == model.StoreId);
+                }
+
+                if (model.LocationTypeId != 0)
+                {
+                    list = list.Where(_ => _.LocationTypeId == model.LocationTypeId);
+                }
+
+                if (model.NotLocationTypeId != 0)
+                {
+                    list = list.Where(_ => _.LocationTypeId != model.NotLocationTypeId);
+                }
+                if (model.LocationTypeIds != null && model.LocationTypeIds.Length > 0)
+                {
+                    list = list.Where(_ => model.LocationTypeIds.Contains(_.LocationTypeId));
+                }
+
+                if (!string.IsNullOrEmpty(model.LocationTypeName))
+                {
+                    list = list.Where(_ => _.LocationType.Name.Contains(model.LocationTypeName));
+                }
+
+                if (!string.IsNullOrEmpty(model.StoreName))
+                {
+                    list = list.Where(_ => _.Store.Name.Contains(model.StoreName));
+                }
+
+                if (!string.IsNullOrEmpty(model.ProductName))
+                {
+
+                    list = list.Where(_ => _.Store.Products.Any(_ => _.Name.Contains(model.ProductName)));
+                }
+
+                
+                return Ok(list.Count());
 
             }
             catch (Exception e)

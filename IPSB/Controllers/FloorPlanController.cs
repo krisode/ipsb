@@ -117,12 +117,10 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All floor plans</returns>
         /// <response code="200">Returns all floor plans</response>
-        /// <response code="404">No floor plans found</response>
         [HttpGet]
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<FloorPlanVM>>> GetAllFloorPlans([FromQuery] FloorPlanSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             if (model.FloorNumber < 0)
@@ -175,6 +173,85 @@ namespace IPSB.Controllers
                     .Paginate<FloorPlanVM>();
 
                 return Ok(pagedModel);
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+        }
+        
+        /// <summary>
+        /// Count floor plans
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///         
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>Number of floor plans</returns>
+        /// <response code="200">Returns number of floor plans</response>
+        [HttpGet]
+        [Route("count")]
+        [AllowAnonymous]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<FloorPlanVM>>> CountFloorPlans([FromQuery] FloorPlanSM model)
+        {
+            if (model.FloorNumber < 0)
+            {
+                return BadRequest();
+            }
+
+            var cacheId = new CacheKey<FloorPlan>(Utils.Constants.DefaultValue.INTEGER);
+            var cacheObjectType = new FloorPlan();
+            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
+
+            try
+            {
+
+                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                {
+                    var list = _service.GetAll();
+
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                    return Task.FromResult(list);
+                }, setLastModified: (cachedTime) =>
+                 {
+                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
+                     return cachedTime;
+                 }, ifModifiedSince);
+
+                if (model.NotFloorPlanId > 0)
+                {
+                    list = list.Where(_ => _.Id != model.NotFloorPlanId);
+                }
+
+                if (model.BuildingId != 0)
+                {
+                    list = list.Where(_ => _.BuildingId == model.BuildingId);
+                }
+
+                if (!string.IsNullOrEmpty(model.FloorCode))
+                {
+                    list = list.Where(_ => _.FloorCode.Contains(model.FloorCode));
+                }
+
+                if (Status.ACTIVE.Equals(model.Status) || Status.INACTIVE.Equals(model.Status))
+                {
+                    list = list.Where(_ => _.Status == model.Status);
+                }
+
+                return Ok(list.Count());
             }
             catch (Exception e)
             {

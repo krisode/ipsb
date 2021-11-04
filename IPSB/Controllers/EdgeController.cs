@@ -118,12 +118,10 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All edges</returns>
         /// <response code="200">Returns all edges</response>
-        /// <response code="404">No edges found</response>
         [HttpGet]
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<EdgeVM>>> GetAllEdges([FromQuery] EdgeSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             var cacheId = new CacheKey<Edge>(Utils.Constants.DefaultValue.INTEGER);
@@ -187,6 +185,95 @@ namespace IPSB.Controllers
                     .Paginate<EdgeVM>();
 
                 return Ok(pagedModel);
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+        
+        /// <summary>
+        /// Count edges
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///         
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>Number of edges</returns>
+        /// <response code="200">Returns number of edges</response>
+        [HttpGet]
+        [Route("count")]
+        [AllowAnonymous]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<EdgeVM>>> CountEdges([FromQuery] EdgeSM model)
+        {
+            var cacheId = new CacheKey<Edge>(Utils.Constants.DefaultValue.INTEGER);
+            var cacheObjectType = new Edge();
+            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
+            try
+            {
+                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                {
+                    var list = _service.GetAll(_ => _.FromLocation.FloorPlan,
+                        _ => _.ToLocation.FloorPlan,
+                        _ => _.FromLocation.Store,
+                        _ => _.ToLocation.Store);
+
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                    return Task.FromResult(list);
+
+                }, setLastModified: (cachedTime) =>
+                {
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
+                    return cachedTime;
+                }, ifModifiedSince);
+
+                if (model.FromLocationId != 0)
+                {
+                    list = list.Where(_ => _.FromLocationId == model.FromLocationId);
+                }
+
+                if (model.ToLocationId != 0)
+                {
+                    list = list.Where(_ => _.ToLocationId == model.ToLocationId);
+                }
+
+                if (model.LowerDistance != 0)
+                {
+                    list = list.Where(_ => _.Distance >= model.LowerDistance);
+                }
+
+                if (model.UpperDistance != 0)
+                {
+                    list = list.Where(_ => _.Distance <= model.UpperDistance);
+                }
+
+                if (model.FloorPlanId != 0)
+                {
+                    list = list.Where(_ => _.FromLocation.FloorPlanId == model.FloorPlanId || _.ToLocation.FloorPlanId == model.FloorPlanId);
+                }
+
+                if (model.BuildingId != 0)
+                {
+                    list = list.Where(_ => _.FromLocation.FloorPlan.BuildingId == model.BuildingId);
+                }
+
+                if (!string.IsNullOrEmpty(model.Status)){
+                    list = list.Where(_ => Status.ACTIVE.Equals(_.ToLocation.Status) && Status.ACTIVE.Equals(_.FromLocation.Status));
+                }
+
+                return Ok(list.Count());
             }
             catch (Exception e)
             {

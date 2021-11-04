@@ -114,12 +114,10 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All buildings</returns>
         /// <response code="200">Returns all buildings</response>
-        /// <response code="404">No buildings found</response>
         [HttpGet]
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<BuildingVM>>> GetAllBuildings([FromQuery] BuildingSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             var cacheId = new CacheKey<Building>(Utils.Constants.DefaultValue.INTEGER);
@@ -195,7 +193,98 @@ namespace IPSB.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
-            /*IQueryable<Building> list = _service.GetAll(_ => _.Admin, _ => _.Manager, _ => _.FloorPlans, _ => _.Stores, _ => _.VisitRoutes);*/
+        }
+
+        /// <summary>
+        /// Count buildings
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///         
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>Number of buildings</returns>
+        /// <response code="200">Returns number of buildings</response>
+        [HttpGet]
+        [Route("count")]
+        [AllowAnonymous]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<BuildingVM>>> CountBuildings([FromQuery] BuildingSM model)
+        {
+            var cacheId = new CacheKey<Building>(Utils.Constants.DefaultValue.INTEGER);
+            var cacheObjectType = new Building();
+            string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
+
+            try
+            {
+                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                {
+                    var list = _service.GetAll(_ => _.Manager);
+
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                    return Task.FromResult(list);
+
+                }, setLastModified: (cachedTime) =>
+                {
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
+                    return cachedTime;
+                }, ifModifiedSince);
+
+
+                if (!string.IsNullOrEmpty(model.Status))
+                {
+                    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                    {
+                        return BadRequest();
+                    }
+
+                    else
+                    {
+                        if (model.Status == Constants.Status.ACTIVE)
+                        {
+                            list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
+                        }
+
+                        if (model.Status == Constants.Status.INACTIVE)
+                        {
+                            list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
+                        }
+                    }
+                }
+
+                if (model.ManagerId != 0)
+                {
+                    list = list.Where(_ => _.ManagerId == model.ManagerId);
+                }
+
+
+                if (!string.IsNullOrEmpty(model.Name))
+                {
+                    list = list.Where(_ => _.Name.Contains(model.Name));
+                }
+
+                if (!string.IsNullOrEmpty(model.Address))
+                {
+                    list = list.Where(_ => _.Address.Contains(model.Address));
+                }
+
+
+                return Ok(list.Count());
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
 
         }
 

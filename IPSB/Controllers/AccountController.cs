@@ -88,11 +88,9 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All accounts</returns>
         /// <response code="200">Returns all accounts</response>
-        /// <response code="404">No accounts found</response>
         [HttpGet]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         //[Authorize(Policy = Policies.QUERY_ACCOUNT)]
         public ActionResult<IEnumerable<AccountVM>> GetAllAccounts([FromQuery] AccountSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
@@ -135,7 +133,7 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE && model.Status != Constants.Status.NEW)
+                if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE && model.Status != Status.NEW)
                 {
                     return BadRequest();
                 }
@@ -151,6 +149,79 @@ namespace IPSB.Controllers
                 .Paginate<AccountVM>();
 
             return Ok(pagedModel);
+        }
+        
+        /// <summary>
+        /// Count accounts
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///         
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>Number of accounts</returns>
+        /// <response code="200">Returns number of accounts</response>
+        [HttpGet]
+        [Route("count")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        //[Authorize(Policy = Policies.QUERY_ACCOUNT)]
+        public ActionResult<IEnumerable<AccountVM>> CountAccounts([FromQuery] AccountSM model)
+        {
+            var list = _service.GetAll(_ => _.Store, _ => _.Building);
+
+            if (model.NotManageBuilding)
+            {
+                list = list.Where(_ => _.Building == null);
+            }
+
+            if (model.NotManageStore)
+            {
+                list = list.Where(_ => _.Store == null);
+            }
+
+            if (model.BuildingId > 0)
+            {
+                list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
+            }
+
+            if (!string.IsNullOrEmpty(model.Role))
+            {
+                list = list.Where(_ => _.Role.ToUpper() == model.Role.ToUpper());
+            }
+
+            if (!string.IsNullOrEmpty(model.Name))
+            {
+                list = list.Where(_ => _.Name.Contains(model.Name));
+            }
+
+            if (!string.IsNullOrEmpty(model.Phone))
+            {
+                list = list.Where(_ => _.Phone.Contains(model.Phone));
+            }
+
+            if (!string.IsNullOrEmpty(model.Email))
+            {
+                list = list.Where(_ => _.Email.Contains(model.Email));
+            }
+
+            if (!string.IsNullOrEmpty(model.Status))
+            {
+                if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE && model.Status != Status.NEW)
+                {
+                    return BadRequest();
+                }
+                else
+                {
+                    list = list.Where(_ => _.Status == model.Status);
+                }
+            }
+
+            return Ok(list.Count());
         }
 
         /// <summary>

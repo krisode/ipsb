@@ -94,12 +94,10 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All products</returns>
         /// <response code="200">Returns all products</response>
-        /// <response code="404">No products found</response>
         [HttpGet]
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<ProductVM>> GetAllProducts([FromQuery] ProductSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             IQueryable<Product> list = _service.GetAll(_ => _.ProductCategory, _ => _.Store);
@@ -163,6 +161,86 @@ namespace IPSB.Controllers
                 .Paginate<ProductVM>();
 
             return Ok(pagedModel);
+        }
+
+        /// <summary>
+        /// Count products
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///         
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>Number of products</returns>
+        /// <response code="200">Returns number of products</response>
+        [HttpGet]
+        [Route("count")]
+        [AllowAnonymous]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<ProductVM>> CountProducts([FromQuery] ProductSM model)
+        {
+            IQueryable<Product> list = _service.GetAll(_ => _.ProductCategory, _ => _.Store);
+
+            if (model.StoreId > 0)
+            {
+                list = list.Where(_ => _.StoreId == model.StoreId);
+            }
+            if (model.BuildingId > 0)
+            {
+                list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
+            }
+            if (model.ProductCategoryId > 0)
+            {
+                list = list.Where(_ => _.ProductCategoryId == model.ProductCategoryId);
+            }
+
+            if (!string.IsNullOrEmpty(model.Name))
+            {
+                list = list.Where(_ => _.Name.Contains(model.Name));
+            }
+
+            if (!string.IsNullOrEmpty(model.Description))
+            {
+                list = list.Where(_ => _.Description.Contains(model.Description));
+            }
+
+            if (model.LowerPrice > 0)
+            {
+                list = list.Where(_ => _.Price >= model.LowerPrice);
+            }
+
+            if (model.UpperPrice > 0)
+            {
+                list = list.Where(_ => _.Price <= model.UpperPrice);
+            }
+
+            if (!string.IsNullOrEmpty(model.Status))
+            {
+                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                {
+                    return BadRequest();
+                }
+
+                else
+                {
+                    if (model.Status == Constants.Status.ACTIVE)
+                    {
+                        list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
+                    }
+
+                    if (model.Status == Constants.Status.INACTIVE)
+                    {
+                        list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
+                    }
+                }
+            }
+
+            return Ok(list.Count());
         }
 
         /// <summary>

@@ -112,12 +112,10 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All notifications</returns>
         /// <response code="200">Returns all notifications</response>
-        /// <response code="404">No notifications found</response>
         [HttpGet]
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<NotificationVM>>> GetAllNotifications([FromQuery] NotificationSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             var cacheId = new CacheKey<Notification>(Constants.DefaultValue.INTEGER);
@@ -321,10 +319,6 @@ namespace IPSB.Controllers
                 {
                     list = list.Where(_ => _.Date <= model.UpperDate);
                 }
-
-                /*var pagedModel = _pagingSupport.From(list)
-                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
-                    .Paginate<NotificationVM>();*/
 
                 return Ok(list.Count());
             }

@@ -94,17 +94,12 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All stores</returns>
         /// <response code="200">Returns all stores</response>
-        /// <response code="404">No stores found</response>
         [HttpGet]
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<StoreVM>> GetAllStores([FromQuery] StoreSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            //IQueryable<Store> list = _service.GetAll(_ => _.Account, _ => _.Building,
-            //    _ => _.FloorPlan, _ => _.Coupons, _ => _.FavoriteStores, _ => _.Locations,
-            //    _ => _.ProductGroups, _ => _.Products);
             IQueryable<Store> list = _service.GetAll(_ => _.Account, _ => _.Building, _ => _.FloorPlan, _ => _.Location);
 
             if (model.AccountId != 0)
@@ -145,19 +140,7 @@ namespace IPSB.Controllers
                 }
             }
 
-            //foreach (var store in list)
-            //{
-            //    if (store.ProductCategoryIds.Length > 1)
-            //    {
-            //        foreach (var productCategoryId in store.ProductCategoryIds)
-            //        {
-            //            ProductCategory productCategory = _productCategoryService.GetByIdAsync(_ => _.Id == productCategoryId).Result;
-            //            store.ProductCategory.Add(productCategory);
-            //        }
-            //    }
-            //}
-
-
+            
             if (!string.IsNullOrEmpty(model.Status))
             {
                 if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
@@ -174,25 +157,85 @@ namespace IPSB.Controllers
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
                 .Paginate<StoreVM>();
 
-            //foreach (var store in pagedModel.Content.ToList())
-            //{
-            //    List<ProductCategoryRefModel> listProCate = new List<ProductCategoryRefModel>();
-
-            //    foreach (var productCategoryId in store.ProductCategoryIds)
-            //    {
-            //        int idd = 0;
-            //        if (!productCategoryId.ToString().Equals(","))
-            //        {
-            //            idd = int.Parse(productCategoryId.ToString());
-            //            ProductCategory productCategory = _productCategoryService.GetByIdAsync(_ => _.Id == idd).Result;
-            //            ProductCategoryRefModel productCategoryRefModel = _mapper.Map<ProductCategoryRefModel>(productCategory);
-            //            listProCate.Add(productCategoryRefModel);
-            //        }
-            //    }
-            //    store.ProductCategories = listProCate;
-
-            //}
+            
             return Ok(pagedModel);
+        }
+        
+        /// <summary>
+        /// Count stores
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///         
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>Number of stores</returns>
+        /// <response code="200">Returns number of stores</response>
+        [HttpGet]
+        [Route("count")]
+        [AllowAnonymous]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<StoreVM>> CountStores([FromQuery] StoreSM model)
+        {
+            IQueryable<Store> list = _service.GetAll(_ => _.Account, _ => _.Building, _ => _.FloorPlan, _ => _.Location);
+
+            if (model.AccountId != 0)
+            {
+                list = list.Where(_ => _.AccountId == model.AccountId);
+            }
+
+            if (model.BuildingId != 0)
+            {
+                list = list.Where(_ => _.BuildingId == model.BuildingId);
+            }
+
+            if (model.FloorPlanId != 0)
+            {
+                list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
+            }
+
+            if (!string.IsNullOrEmpty(model.Name))
+            {
+                list = list.Where(_ => _.Name.Contains(model.Name));
+            }
+
+            if (!string.IsNullOrEmpty(model.Description))
+            {
+                list = list.Where(_ => _.Description.Contains(model.Description));
+            }
+
+            if (!string.IsNullOrEmpty(model.Phone))
+            {
+                list = list.Where(_ => _.Phone.Contains(model.Phone));
+            }
+
+            if (model.ProductCategoryIds is not null && model.ProductCategoryIds.Length > 0)
+            {
+                foreach (var include in model.ProductCategoryIds)
+                {
+                    list = list.Where(_ => _.ProductCategoryIds.Contains(include));
+                }
+            }
+
+            if (!string.IsNullOrEmpty(model.Status))
+            {
+                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                {
+                    return BadRequest();
+                }
+                else
+                {
+                    list = list.Where(_ => _.Status == model.Status);
+                }
+            }
+
+            
+            return Ok(list.Count());
         }
 
         /// <summary>

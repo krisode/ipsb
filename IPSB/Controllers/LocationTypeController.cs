@@ -80,11 +80,9 @@ namespace IPSB.Controllers
         /// </remarks>
         /// <returns>All location types</returns>
         /// <response code="200">Returns all location types</response>
-        /// <response code="404">No location types found</response>
         [HttpGet]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<LocationTypeVM>> GetAllLocationTypes([FromQuery] LocationTypeSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             IQueryable<LocationType> list = _service.GetAll(_ => _.Locations);
@@ -112,6 +110,49 @@ namespace IPSB.Controllers
                 .Paginate<LocationTypeRefModel>();
 
             return Ok(pagedModel);
+        }
+        
+        /// <summary>
+        /// Count location types
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET 
+        ///     {
+        ///     
+        ///     }
+        ///
+        /// </remarks>
+        /// <returns>Number of location types</returns>
+        /// <response code="200">Returns number of location types</response>
+        [HttpGet]
+        [Route("count")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<LocationTypeVM>> CountLocationTypes([FromQuery] LocationTypeSM model)
+        {
+            IQueryable<LocationType> list = _service.GetAll(_ => _.Locations);
+
+            if (model.NotLocationTypeIds != null)
+            {
+                list = list.Where(_ => !model.NotLocationTypeIds.Contains(_.Id));
+            }
+            if (!string.IsNullOrEmpty(model.Name))
+            {
+                list = list.Where(_ => _.Name.Contains(model.Name));
+            }
+
+            if (!string.IsNullOrEmpty(model.Description))
+            {
+                list = list.Where(_ => _.Description.Contains(model.Description));
+            }
+            if (!string.IsNullOrEmpty(model.Status))
+            {
+                list = list.Where(_ => _.Status == model.Status);
+            }
+
+            return Ok(list.Count());
         }
 
         /// <summary>
