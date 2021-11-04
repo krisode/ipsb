@@ -18,7 +18,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/locations")]
     [ApiController]
     [Authorize(Roles = "Building Manager")]
-    public class LocationController : Controller
+    public class LocationController : ControllerBase
     {
         private readonly ILocationService _service;
         private readonly IMapper _mapper;

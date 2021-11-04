@@ -19,7 +19,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/buildings")]
     [ApiController]
     [Authorize(Roles = "Admin, Building Manager")]
-    public class BuildingController : AuthorizeController
+    public class BuildingController : ControllerBase
     {
         private readonly IBuildingService _service;
         private readonly IMapper _mapper;
@@ -377,11 +377,6 @@ namespace IPSB.Controllers
             }
 
             return NoContent();
-        }
-
-        protected override bool IsAuthorize()
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -19,7 +19,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/edges")]
     [ApiController]
     [Authorize(Roles = "Building Manager, Visitor")]
-    public class EdgeController : Controller
+    public class EdgeController : ControllerBase
     {
         private readonly IEdgeService _service;
         private readonly IMapper _mapper;

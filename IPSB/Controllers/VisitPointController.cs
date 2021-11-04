@@ -15,7 +15,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/visit-points")]
     [ApiController]
-    public class VisitPointController : AuthorizeController
+    public class VisitPointController : ControllerBase
     {
         private readonly IVisitPointService _service;
         private readonly IMapper _mapper;
@@ -218,11 +218,6 @@ namespace IPSB.Controllers
         public void Delete(int id)
         {
 
-        }
-
-        protected override bool IsAuthorize()
-        {
-            throw new NotImplementedException();
         }
     }
 }

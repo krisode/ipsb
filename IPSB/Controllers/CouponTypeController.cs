@@ -14,7 +14,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/coupon-types")]
     [ApiController]
-    public class CouponTypeController : Controller
+    public class CouponTypeController : ControllerBase
     {
         private readonly ICouponTypeService _service;
         private readonly IMapper _mapper;

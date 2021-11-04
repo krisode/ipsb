@@ -21,7 +21,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/product-categories")]
     [ApiController]
     [Authorize(Roles = "Admin")]
-    public class ProductCategoryController : Controller
+    public class ProductCategoryController : ControllerBase
     {
         private readonly IProductCategoryService _service;
         private readonly IMapper _mapper;

@@ -17,7 +17,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/shopping-lists")]
     [ApiController]
     // [Authorize(Roles = "Visitor")]
-    public class ShoppingListController : Controller
+    public class ShoppingListController : ControllerBase
     {
         private readonly IShoppingListService _service;
         private readonly IShoppingItemService _shoppingItemService;

@@ -20,7 +20,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/stores")]
     [ApiController]
     [Authorize(Roles = "Visitor, Building Manager, Store Owner")]
-    public class StoreController : Controller
+    public class StoreController : ControllerBase
     {
         private readonly IStoreService _service;
         private readonly IProductCategoryService _productCategoryService;
