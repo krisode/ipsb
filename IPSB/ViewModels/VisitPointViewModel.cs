@@ -3,43 +3,35 @@
 namespace IPSB.ViewModels
 {
 
-    public class VisitPointVM
+    public class VisitStoreVM
     {
         public int Id { get; set; }
-        public int LocationId { get; set; }
-        public int VisitRouteId { get; set; }
+        public int StoreId { get; set; }
         public DateTime RecordTime { get; set; }
-        public LocationRefModelForVisitPoint Location { get; set; }
-        public VisitRouteRefModel VisitRoute { get; set; }
-    }
-    public class VisitPointRefModel
-    {
-        public int Id { get; set; }
-        public int LocationId { get; set; }
-        public int VisitRouteId { get; set; }
-        public DateTime RecordTime { get; set; }
-    }
-    public class VisitPointSM
-    {
-        public int LocationId { get; set; }
-        public int VisitRouteId { get; set; }
-        public int BuildingId { get; set; }
 
-        public int LocationTypeId { get; set; }
+        public StoreRefModel Store { get; set; }
+    }
+    public class VisitStoreRefModel
+    {
+        public int Id { get; set; }
+        public int StoreId { get; set; }
+        public DateTime RecordTime { get; set; }
+    }
+    public class VisitStoreSM
+    {
+        public int BuildingId { get; set; }
         public int StoreId { get; set; }
         public DateTime? LowerRecordTime { get; set; }
         public DateTime? UpperRecordTime { get; set; }
     }
-    public class VisitPointCM
+    public class VisitStoreCM
     {
-        public int LocationId { get; set; }
-        public int VisitRouteId { get; set; }
+        public int StoreId { get; set; }
     }
-    public class VisitPointUM
+    public class VisitStoreUM
     {
         public int Id { get; set; }
-        public int LocationId { get; set; }
-        public int VisitRouteId { get; set; }
+        public int StoreId { get; set; }
         public DateTime? RecordTime { get; set; }
     }
 }

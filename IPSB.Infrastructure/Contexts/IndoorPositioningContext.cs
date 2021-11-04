@@ -34,8 +34,7 @@ namespace IPSB.Infrastructure.Contexts
         public virtual DbSet<ShoppingItem> ShoppingItems { get; set; }
         public virtual DbSet<ShoppingList> ShoppingLists { get; set; }
         public virtual DbSet<Store> Stores { get; set; }
-        public virtual DbSet<VisitPoint> VisitPoints { get; set; }
-        public virtual DbSet<VisitRoute> VisitRoutes { get; set; }
+        public virtual DbSet<VisitStore> VisitStores { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -551,42 +550,17 @@ namespace IPSB.Infrastructure.Contexts
                     .HasConstraintName("FK_Store_Location");
             });
 
-            modelBuilder.Entity<VisitPoint>(entity =>
+            modelBuilder.Entity<VisitStore>(entity =>
             {
-                entity.ToTable("VisitPoint");
+                entity.ToTable("VisitStore");
 
                 entity.Property(e => e.RecordTime).HasColumnType("datetime");
 
-                entity.HasOne(d => d.Location)
-                    .WithMany(p => p.VisitPoints)
-                    .HasForeignKey(d => d.LocationId)
+                entity.HasOne(d => d.Store)
+                    .WithMany(p => p.VisitStores)
+                    .HasForeignKey(d => d.StoreId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_VisitPoint_Location");
-
-                entity.HasOne(d => d.VisitRoute)
-                    .WithMany(p => p.VisitPoints)
-                    .HasForeignKey(d => d.VisitRouteId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_VisitPoint_VisitRoute");
-            });
-
-            modelBuilder.Entity<VisitRoute>(entity =>
-            {
-                entity.ToTable("VisitRoute");
-
-                entity.Property(e => e.RecordTime).HasColumnType("datetime");
-
-                entity.HasOne(d => d.Account)
-                    .WithMany(p => p.VisitRoutes)
-                    .HasForeignKey(d => d.AccountId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_VisitRoute_Account");
-
-                entity.HasOne(d => d.Building)
-                    .WithMany(p => p.VisitRoutes)
-                    .HasForeignKey(d => d.BuildingId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_VisitRoute_Building");
+                    .HasConstraintName("FK_VisitStore_Store");
             });
 
             OnModelCreatingPartial(modelBuilder);

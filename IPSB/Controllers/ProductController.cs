@@ -324,6 +324,11 @@ namespace IPSB.Controllers
         /// <response code="404">Product not found</response>
         /// <response code="500">Failed to delete</response>
         [HttpDelete("{id}")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
             Product product = _service.GetAll().Include(_ => _.ShoppingItems).ThenInclude(_ => _.ShoppingList).FirstOrDefault(_ => _.Id == id);

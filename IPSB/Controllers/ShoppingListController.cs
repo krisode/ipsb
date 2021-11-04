@@ -198,8 +198,13 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        // DELETE api/<ShoppingListController>/5
-        // Change Status to Inactive
+        /// <summary>
+        /// Delete shopping list with specified id
+        /// </summary>
+        /// <param name="id">Shopping list's id</param>
+        /// <response code="204">Delete shopping list successfully</response>
+        /// <response code="400">Shopping list's id does not exist</response>
+        /// <response code="500">Failed to delete</response>
         [HttpDelete]
         [Route("{id}")]
         [Produces("application/json")]
@@ -216,7 +221,10 @@ namespace IPSB.Controllers
             }
             try
             {
+                // Delete all shopping items inside shopping list
                 _shoppingItemService.DeleteRange(dataToDelete.ShoppingItems);
+
+                // Then execute deleting shopping list
                 _service.Delete(dataToDelete);
                 await _service.Save();
             }

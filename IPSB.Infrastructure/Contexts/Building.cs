@@ -13,7 +13,6 @@ namespace IPSB.Infrastructure.Contexts
             LocatorTags = new HashSet<LocatorTag>();
             ShoppingLists = new HashSet<ShoppingList>();
             Stores = new HashSet<Store>();
-            VisitRoutes = new HashSet<VisitRoute>();
         }
 
         public int Id { get; set; }
@@ -29,6 +28,5 @@ namespace IPSB.Infrastructure.Contexts
         public virtual ICollection<LocatorTag> LocatorTags { get; set; }
         public virtual ICollection<ShoppingList> ShoppingLists { get; set; }
         public virtual ICollection<Store> Stores { get; set; }
-        public virtual ICollection<VisitRoute> VisitRoutes { get; set; }
     }
 }

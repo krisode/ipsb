@@ -11,7 +11,6 @@ namespace IPSB.Infrastructure.Contexts
         {
             EdgeFromLocations = new HashSet<Edge>();
             EdgeToLocations = new HashSet<Edge>();
-            VisitPoints = new HashSet<VisitPoint>();
         }
 
         public int Id { get; set; }
@@ -28,6 +27,5 @@ namespace IPSB.Infrastructure.Contexts
         public virtual Store Store { get; set; }
         public virtual ICollection<Edge> EdgeFromLocations { get; set; }
         public virtual ICollection<Edge> EdgeToLocations { get; set; }
-        public virtual ICollection<VisitPoint> VisitPoints { get; set; }
     }
 }

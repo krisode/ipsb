@@ -12,7 +12,6 @@ namespace IPSB.Infrastructure.Contexts
             CouponInUses = new HashSet<CouponInUse>();
             Notifications = new HashSet<Notification>();
             ShoppingLists = new HashSet<ShoppingList>();
-            VisitRoutes = new HashSet<VisitRoute>();
         }
 
         public int Id { get; set; }
@@ -29,6 +28,5 @@ namespace IPSB.Infrastructure.Contexts
         public virtual ICollection<CouponInUse> CouponInUses { get; set; }
         public virtual ICollection<Notification> Notifications { get; set; }
         public virtual ICollection<ShoppingList> ShoppingLists { get; set; }
-        public virtual ICollection<VisitRoute> VisitRoutes { get; set; }
     }
 }

@@ -8,36 +8,36 @@ using System.Threading.Tasks;
 
 namespace IPSB.Core.Services
 {
-    public interface IVisitPointService : IService<VisitPoint, int>
+    public interface IVisitStoreService : IService<VisitStore, int>
     {
 
     }
 
-    public class VisitPointService : IVisitPointService
+    public class VisitStoreService : IVisitStoreService
     {
-        private readonly IRepository<VisitPoint, int> _iRepository;
+        private readonly IRepository<VisitStore, int> _iRepository;
 
-        public VisitPointService(IRepository<VisitPoint, int> iRepository)
+        public VisitStoreService(IRepository<VisitStore, int> iRepository)
         {
             _iRepository = iRepository;
         }
 
-        public async Task<VisitPoint> AddAsync(VisitPoint entity)
+        public async Task<VisitStore> AddAsync(VisitStore entity)
         {
             return await _iRepository.AddAsync(entity);
         }
 
-        public void Delete(VisitPoint entity)
+        public void Delete(VisitStore entity)
         {
             _iRepository.Delete(entity);
         }
 
-        public IQueryable<VisitPoint> GetAll(params Expression<Func<VisitPoint, object>>[] includes)
+        public IQueryable<VisitStore> GetAll(params Expression<Func<VisitStore, object>>[] includes)
         {
             return _iRepository.GetAll(includes);
         }
 
-        public async Task<VisitPoint> GetByIdAsync(Expression<Func<VisitPoint, bool>> predicate, params Expression<Func<VisitPoint, object>>[] includes)
+        public async Task<VisitStore> GetByIdAsync(Expression<Func<VisitStore, bool>> predicate, params Expression<Func<VisitStore, object>>[] includes)
         {
             return await _iRepository.GetByIdAsync(predicate, includes);
         }
@@ -47,7 +47,7 @@ namespace IPSB.Core.Services
             return _iRepository.Save();
         }
 
-        public void Update(VisitPoint entity)
+        public void Update(VisitStore entity)
         {
             _iRepository.Update(entity);
         }

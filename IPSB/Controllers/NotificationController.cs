@@ -510,15 +510,15 @@ namespace IPSB.Controllers
         /// Delete notification
         /// </summary>
         /// <param name="id">Notification's id</param>
-        /// <response code="204">Update notification's status successfully</response>
+        /// <response code="204">Delete notification's status successfully</response>
         /// <response code="400">Notification's id does not exist</response>
-        /// <response code="500">Failed to update</response>
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        /// <response code="500">Failed to delete</response>
         [HttpDelete]
         [Route("{id}")]
         [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
             Notification notification = await _service.GetByIdAsync(_ => _.Id == id);
