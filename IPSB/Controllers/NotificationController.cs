@@ -19,7 +19,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/notifications")]
     [ApiController]
     /*[Authorize(Roles = "Admin, Building Manager")]*/
-    public class NotificationController : AuthorizeController
+    public class NotificationController : ControllerBase
     {
         private readonly INotificationService _service;
         private readonly IMapper _mapper;
@@ -545,11 +545,6 @@ namespace IPSB.Controllers
             }
 
             return NoContent();
-        }
-
-        protected override bool IsAuthorize()
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -16,7 +16,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/location-types")]
     [ApiController]
-    public class LocationTypeController : Controller
+    public class LocationTypeController : ControllerBase
     {
         private readonly ILocationTypeService _service;
         private readonly IMapper _mapper;

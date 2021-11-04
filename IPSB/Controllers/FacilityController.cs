@@ -14,7 +14,7 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/facilities")]
     [ApiController]
-    public class FacilityController : Controller
+    public class FacilityController : ControllerBase
     {
         private readonly IFacilityService _service;
         private readonly ILocationService _locationService;

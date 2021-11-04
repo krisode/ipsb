@@ -20,7 +20,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/floor-plans")]
     [ApiController]
     [Authorize(Roles = "Building Manager, Visitor")]
-    public class FloorPlanController : Controller
+    public class FloorPlanController : ControllerBase
     {
         private readonly IFloorPlanService _service;
         private readonly IMapper _mapper;

@@ -18,7 +18,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/coupons")]
     [ApiController]
     // [Authorize(Roles = "Building Manager, Store Owner, Visitor")]
-    public class CouponController : AuthorizeController
+    public class CouponController : ControllerBase
     {
         private readonly ICouponService _service;
         private readonly IMapper _mapper;
@@ -481,11 +481,6 @@ namespace IPSB.Controllers
             }
 
             return NoContent();
-        }
-
-        protected override bool IsAuthorize()
-        {
-            throw new NotImplementedException();
         }
     }
 }

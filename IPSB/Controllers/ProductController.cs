@@ -19,7 +19,7 @@ namespace IPSB.Controllers
     [Route("api/v1.0/products")]
     [ApiController]
     [Authorize(Roles = "Visitor, Store Owner")]
-    public class ProductController : Controller
+    public class ProductController : ControllerBase
     {
         private readonly IProductService _service;
         private readonly IMapper _mapper;
