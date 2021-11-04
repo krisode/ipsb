@@ -15,13 +15,13 @@ namespace IPSB.Controllers
 {
     [Route("api/v1.0/visit-points")]
     [ApiController]
-    public class VisitPointController : ControllerBase
+    public class VisitStoreController : ControllerBase
     {
-        private readonly IVisitPointService _service;
+        private readonly IVisitStoreService _service;
         private readonly IMapper _mapper;
-        private readonly IPagingSupport<VisitPoint> _pagingSupport;
+        private readonly IPagingSupport<VisitStore> _pagingSupport;
         // private readonly IAuthorizationService _authorizationService;
-        public VisitPointController(IVisitPointService service, IMapper mapper, IPagingSupport<VisitPoint> pagingSupport)
+        public VisitStoreController(IVisitStoreService service, IMapper mapper, IPagingSupport<VisitStore> pagingSupport)
         {
             _service = service;
             _mapper = mapper;
@@ -29,7 +29,7 @@ namespace IPSB.Controllers
         }
 
         /// <summary>
-        /// Get a specific visit point by id
+        /// Get a specific visit store by id
         /// </summary>
         /// <remarks>
         /// Sample Request:
@@ -38,25 +38,25 @@ namespace IPSB.Controllers
         ///         "id" : "1"
         ///     }
         /// </remarks>
-        /// <returns>Return the visit point with the corresponding id</returns>
-        /// <response code="200">Returns the visit point with the specified id</response>
-        /// <response code="404">No visit points found with the specified id</response>
+        /// <returns>Return the visit store with the corresponding id</returns>
+        /// <response code="200">Returns the visit store with the specified id</response>
+        /// <response code="404">No visit stores found with the specified id</response>
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id}")]
-        public ActionResult<VisitPointVM> GetVisitPointById(int id)
+        public ActionResult<VisitStoreVM> GetVisitStoreById(int id)
         {
-            var visitPoint = _service.GetByIdAsync(_ => _.Id == id, _ => _.Location.Store.Building, _ => _.VisitRoute).Result;
+            var visitStore = _service.GetByIdAsync(_ => _.Id == id, _ => _.Store.Building).Result;
 
-            if (visitPoint is null)
+            if (visitStore is null)
             {
                 return NotFound();
             }
 
-            var rtnVisitPoint = _mapper.Map<VisitPointVM>(visitPoint);
+            var rtnVisitStore = _mapper.Map<VisitStoreVM>(visitStore);
 
-            return Ok(rtnVisitPoint);
+            return Ok(rtnVisitStore);
         }
 
         /// <summary>
@@ -78,37 +78,22 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<VisitPointVM>> GetAllVisitPoints([FromQuery] VisitPointSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
+        public ActionResult<IEnumerable<VisitStoreVM>> GetAllVisitStores([FromQuery] VisitStoreSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            IQueryable<VisitPoint> list = _service.GetAll(_ => _.Location.Store.Building, _ => _.VisitRoute);
+            IQueryable<VisitStore> list = _service.GetAll(_ => _.Store.Building);
             // IQueryable<VisitPoint> list = _service.GetAll(_ => _.VisitRoute)
             //                                         .Include(_ => _.Location)
             //                                         .ThenInclude(_ => _.Store)
             //                                         .ThenInclude(_ => _.Building);
 
-            if (model.LocationTypeId != 0)
-            {
-                list = list.Where(_ => _.Location.LocationTypeId == model.LocationTypeId);
-            }
-            
             if (model.StoreId != 0)
             {
-                list = list.Where(_ => _.Location.Store.Id == model.StoreId);
+                list = list.Where(_ =>_.StoreId == model.StoreId);
             }
             
             if (model.BuildingId != 0)
             {
-                list = list.Where(_ => _.Location.Store.BuildingId == model.BuildingId);
-            }
-
-            if (model.LocationId != 0)
-            {
-                list = list.Where(_ => _.LocationId == model.LocationId);
-            }
-
-            if (model.VisitRouteId != 0)
-            {
-                list = list.Where(_ => _.VisitRouteId == model.VisitRouteId);
+                list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
             }
 
             if (model.LowerRecordTime.HasValue)
@@ -123,43 +108,42 @@ namespace IPSB.Controllers
 
             var pagedModel = _pagingSupport.From(list)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
-                .Paginate<VisitPointVM>();
+                .Paginate<VisitStoreVM>();
 
             return Ok(pagedModel);
         }
 
         /// <summary>
-        /// Create a new visit point
+        /// Create a new visit store
         /// </summary>
         /// <remarks>
         /// Sample request:
         ///
         ///     POST 
         ///     {
-        ///         "LocationId": "Id of the location",   
-        ///         "VisitRouteId": "Id of the visit route",   
+        ///         "StoreId": "Id of store",   
         ///     }
         ///
         /// </remarks>
-        /// <response code="201">Created a new visit point</response>
+        /// <response code="201">Successfully created a new visit store</response>
         /// <response code="500">Failed to save request</response>
         [HttpPost]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<VisitPointCM>> CreateVisitPoint([FromBody] VisitPointCM model)
+        public async Task<ActionResult<VisitStoreCM>> CreateVisitStore([FromBody] VisitStoreCM model)
         {
             var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             DateTimeOffset localServerTime = DateTimeOffset.Now;
             DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
 
-            VisitPoint crtVisitPoint = _mapper.Map<VisitPoint>(model);
+            VisitStore crtVisitStore = _mapper.Map<VisitStore>(model);
             DateTime currentDateTime = localTime.DateTime;
-            crtVisitPoint.RecordTime = currentDateTime;
+            crtVisitStore.RecordTime = currentDateTime;
 
             try
             {
-                await _service.AddAsync(crtVisitPoint);
+                await _service.AddAsync(crtVisitStore);
                 await _service.Save();
             }
             catch (Exception)
@@ -167,16 +151,16 @@ namespace IPSB.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
-            return CreatedAtAction("GetVisitPointById", new { id = crtVisitPoint.Id }, crtVisitPoint);
+            return CreatedAtAction("GetVisitStoreById", new { id = crtVisitStore.Id }, crtVisitStore);
         }
 
         /// <summary>
-        /// Update visit point with specified id
+        /// Update visit store with specified id
         /// </summary>
-        /// <param name="id">Visit point's id</param>
-        /// <param name="model">Information applied to updated visit point</param>
-        /// <response code="204">Update visit point successfully</response>
-        /// <response code="400">Visit point's id does not exist or does not match with the id in parameter</response>
+        /// <param name="id">Visit store's id</param>
+        /// <param name="model">Information applied to updated visit store</param>
+        /// <response code="204">Update visit store successfully</response>
+        /// <response code="400">Visit store's id does not exist or does not match with the id in parameter</response>
         /// <response code="500">Failed to update</response>
         [HttpPut]
         [Route("{id}")]
@@ -184,24 +168,23 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> PutVisitPoint(int id, [FromBody] VisitPointUM model)
+        public async Task<ActionResult> PutVisitPoint(int id, [FromBody] VisitStoreUM model)
         {
 
-            VisitPoint updVisitPoint = await _service.GetByIdAsync(_ => _.Id == id);
+            VisitStore updVisitStore = await _service.GetByIdAsync(_ => _.Id == id);
 
-            if (updVisitPoint == null || id != model.Id)
+            if (updVisitStore == null || id != model.Id)
             {
                 return BadRequest();
             }
 
             try
             {
-                updVisitPoint.Id = model.Id;
-                updVisitPoint.LocationId = model.LocationId;
-                updVisitPoint.VisitRouteId = model.VisitRouteId;
-                updVisitPoint.RecordTime = model.RecordTime.Value;
+                updVisitStore.Id = model.Id;
+                updVisitStore.StoreId = model.StoreId;
+                updVisitStore.RecordTime = model.RecordTime.Value;
 
-                _service.Update(updVisitPoint);
+                _service.Update(updVisitStore);
                 await _service.Save();
             }
             catch (Exception e)
@@ -212,12 +195,35 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        // DELETE api/<ProductCategoryController>/5
-        // Change Status to Inactive
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        /// <summary>
+        /// Delete visit store with specified id
+        /// </summary>
+        /// <param name="id">Visit store's id</param>
+        /// <response code="204">Delete visit store successfully</response>
+        /// <response code="404">Visit store's id does not exist</response>
+        /// <response code="500">Failed to delete</response>
+        [HttpDelete]
+        [Route("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> Delete(int id)
         {
-
+            var dataToDelete = await _service.GetByIdAsync(_ => _.Id == id);
+            if (dataToDelete == null)
+            {
+                return NotFound();
+            }
+            try
+            {
+                _service.Delete(dataToDelete);
+                await _service.Save();
+            }
+            catch (Exception)
+            {
+                StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            return NoContent();
         }
     }
 }

@@ -69,8 +69,7 @@ namespace IPSB.Controllers
                         _ => _.Store.Products,
                         _ => _.EdgeFromLocations,
                         _ => _.EdgeToLocations,
-                        _ => _.LocatorTag,
-                        _ => _.VisitPoints).Result;
+                        _ => _.LocatorTag).Result;
 
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
 
@@ -308,10 +307,17 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-
-        // DELETE api/<LocationController>?id=1&id=3
-        // Change Status to Inactive
+        /// <summary>
+        /// Change status of locations based on a specified list of ids to Inactive
+        /// </summary>
+        /// <param name="model">List of locations's id used to delete</param>
+        /// <response code="204">Delete locations status successfully</response>
+        /// <response code="500">Failed to delete</response>
         [HttpDelete]
+        [Authorize(Roles = "Building Manager")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> DeleteRange([FromBody] LocationDM model)
         {
             try

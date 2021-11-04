@@ -17,7 +17,6 @@ namespace IPSB.ViewModels
         public AccountRefModel Manager { get; set; }
         public ICollection<FloorPlanRefModel> FloorPlans { get; set; }
         public ICollection<StoreRefModel> Stores { get; set; }
-        public ICollection<VisitRouteRefModel> VisitRoutes { get; set; }
     }
 
     public class BuildingRefModelForAccount

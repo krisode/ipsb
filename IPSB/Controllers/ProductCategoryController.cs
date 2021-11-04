@@ -242,12 +242,12 @@ namespace IPSB.Controllers
         /// <response code="204">Change product category's status successfully</response>
         /// <response code="400">Product category's id does not exist</response>
         /// <response code="500">Failed to delete</response>
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete]
         [Route("{id}")]
         [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
             ProductCategory proCate = await _service.GetByIdAsync(_ => _.Id == id);

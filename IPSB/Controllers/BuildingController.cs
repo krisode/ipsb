@@ -336,9 +336,9 @@ namespace IPSB.Controllers
         /// Change the status of building to inactive
         /// </summary>
         /// <param name="id">Coupon's id</param>
-        /// <response code="204">Update building's status successfully</response>
+        /// <response code="204">Delete building's status successfully</response>
         /// <response code="400">Building's id does not exist</response>
-        /// <response code="500">Failed to update</response>
+        /// <response code="500">Failed to delete</response>
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

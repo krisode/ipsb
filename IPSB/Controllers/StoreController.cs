@@ -327,15 +327,15 @@ namespace IPSB.Controllers
         /// Change the status of store to inactive
         /// </summary>
         /// <param name="id">Store's id</param>
-        /// <response code="204">Update store's status successfully</response>
+        /// <response code="204">Delete store successfully</response>
         /// <response code="400">Store's id does not exist</response>
-        /// <response code="500">Failed to update</response>
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        /// <response code="500">Failed to delete</response>
         [HttpDelete]
         [Route("{id}")]
         [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
             var store = await _service.GetByIdAsync(_ => _.Id == id);
@@ -356,7 +356,7 @@ namespace IPSB.Controllers
                 return BadRequest();
             }
 
-            store.Status = Constants.Status.INACTIVE;
+            store.Status = Status.INACTIVE;
             store.AccountId = null;      
             try
             {

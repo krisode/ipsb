@@ -175,8 +175,14 @@ namespace IPSB.Controllers
             return NoContent();
         }
 
-        // DELETE api/<ShoppingItem>/5
-        // Change Status to Inactive
+
+        /// <summary>
+        /// Delete shopping item with specified id
+        /// </summary>
+        /// <param name="id">Shopping item's id</param>
+        /// <response code="204">Delete shopping item successfully</response>
+        /// <response code="404">Shopping item's id does not exist</response>
+        /// <response code="500">Failed to delete</response>
         [HttpDelete]
         [Route("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
