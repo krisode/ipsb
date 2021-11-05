@@ -579,7 +579,7 @@ namespace IPSB.Controllers
                             DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
                             var notification = new Notification();
                             notification.Title = "Coupon is no longer available";
-                            notification.Body = "Coupon " + coupon.Name + " that you saved on " + item.RedeemDate + " is no longer available";
+                            notification.Body = "Coupon " + coupon.Name + " that you saved on " + item.RedeemDate.ToString("dddd, dd MMMM yyyy, hh:mm tt") + " is no longer available";
                             notification.ImageUrl = coupon.ImageUrl;
                             notification.Screen = Constants.Route.COUPON_DETAIL;
                             notification.Parameter = "couponId:" + coupon.Id;
@@ -592,10 +592,11 @@ namespace IPSB.Controllers
                                 var data = new Dictionary<string, string>();
                                 data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
                                 data.Add("notificationType", "coupon_changed");
+                                data.Add("couponId", item.CouponId.ToString());
                                 data.Add("couponInUseId", item.Id.ToString());
                                 _ = _pushNotificationService.SendMessage(
                                     "Coupon is no longer available",
-                                    "Coupon " + coupon.Name + " that you saved on " + item.RedeemDate + " is no longer available",
+                                    "Coupon " + coupon.Name + " that you saved on " + item.RedeemDate.ToString("dddd, dd MMMM yyyy, hh:mm tt") + " is no longer available",
                                     "coupon_in_use_id_" + item.Id.ToString(),
                                     data
                                     );

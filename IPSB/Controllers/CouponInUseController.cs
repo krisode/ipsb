@@ -437,6 +437,7 @@ namespace IPSB.Controllers
                                 data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
                                 data.Add("notificationType", "coupon_in_use_changed");
                                 data.Add("notificationId", crtNotification.Id.ToString());
+                                data.Add("couponInUseId", updCouponInUse.Id.ToString());
                                 _ = _pushNotificationService.SendMessage(
                                     "Apply coupon successfully",
                                     "You have successfully applied the coupon " + updCouponInUse.Coupon.Name,
