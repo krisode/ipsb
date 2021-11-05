@@ -10,13 +10,11 @@ namespace IPSB.ViewModels
         public int ManagerId { get; set; }
         public string Name { get; set; }
         public string ImageUrl { get; set; }
-        public double? EnvironmentFactor { get; set; }
         public string Address { get; set; }
+        public double? Lat { get; set; }
+        public double? Lng { get; set; }
         public string Status { get; set; }
-
         public AccountRefModel Manager { get; set; }
-        public ICollection<FloorPlanRefModel> FloorPlans { get; set; }
-        public ICollection<StoreRefModel> Stores { get; set; }
     }
 
     public class BuildingRefModelForAccount
@@ -30,8 +28,9 @@ namespace IPSB.ViewModels
         public int ManagerId { get; set; }
         public string Name { get; set; }
         public string ImageUrl { get; set; }
-        public double? EnvironmentFactor { get; set; }
         public string Address { get; set; }
+        public double? Lat { get; set; }
+        public double? Lng { get; set; }
         public string Status { get; set; }
     }
     public class BuildingRefModelForStore
@@ -65,15 +64,20 @@ namespace IPSB.ViewModels
         [Required]
         public IFormFile ImageUrl { get; set; }
         [Required]
-        public string Address { get; set; }
-        public double? EnvironmentFactor { get; set; }
+        public string AddressJson { get; set; }
     }
     public class BuildingUM
     {
         public int ManagerId { get; set; }
         public string Name { get; set; }
         public IFormFile ImageUrl { get; set; }
-        public double? EnvironmentFactor { get; set; }
+        public string AddressJson { get; set; }
+    }
+
+    public class AddressJson
+    {
+        public double? Lat { get; set; }
+        public double? Lng { get; set; }
         public string Address { get; set; }
     }
 }
