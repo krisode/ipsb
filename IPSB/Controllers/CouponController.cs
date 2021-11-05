@@ -21,14 +21,19 @@ namespace IPSB.Controllers
     public class CouponController : ControllerBase
     {
         private readonly ICouponService _service;
+        private readonly INotificationService _notificationService;
+        private readonly IPushNotificationService _pushNotificationService;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<Coupon> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
         private readonly IAuthorizationService _authorizationService;
 
-        public CouponController(ICouponService service, IMapper mapper, IPagingSupport<Coupon> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService)
+        public CouponController(ICouponService service, INotificationService notificationService, IPushNotificationService pushNotificationService,
+            IMapper mapper, IPagingSupport<Coupon> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService)
         {
             _service = service;
+            _notificationService = notificationService;
+            _pushNotificationService = pushNotificationService;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
@@ -419,48 +424,13 @@ namespace IPSB.Controllers
             }
 
 
-            // Get list coupon with the same code
-            var listCoupon = _service.GetAll().Where(_ => _.Code == model.Code).Where(_ => _.Status == Constants.Status.ACTIVE).ToList();
+            // Get coupon with the same code at the same store
+            var coupon = _service.GetAll().Where(_ => _.Code == model.Code).Where(_ => _.StoreId == model.StoreId).FirstOrDefault();
 
-
-
-            // CASE: Coupon with the same code do exist
-            if (listCoupon.Count > 0)
+            // CASE: Coupon with the same code at the same store do exist
+            if (coupon is not null)
             {
-                foreach (var coupon in listCoupon)
-                {
-                    // CASE-1: Coupon has status as ACTIVE
-                    if (coupon.Status.Equals(Constants.Status.ACTIVE))
-                    {
-                        // CASE-1-1: Created coupon has publish date between the publish date and the expired date of the coupon with the same code
-                        if (model.PublishDate >= coupon.PublishDate && model.PublishDate <= coupon.ExpireDate)
-                        {
-                            return BadRequest();
-                        }
-
-                        // CASE-1-2: Created coupon has expired date between the publish date and the expired date of the coupon with the same code
-                        if (model.ExpireDate >= coupon.PublishDate && model.ExpireDate <= coupon.ExpireDate)
-                        {
-                            return BadRequest();
-                        }
-                    }
-                }
-
-                /*// CASE-2: Coupon has status as INACTIVE
-                else if (coupon.Status.Equals(Constants.Status.INACTIVE))
-                {
-                    // CASE-2-1: Created coupon has publish date less than current date
-                    if (model.PublishDate < localTime.DateTime)
-                    {
-                        return BadRequest();
-                    }
-                    // CASE-2-1: Created coupon has publish date less than expired date of the coupon with the same code
-                    if (model.PublishDate < coupon.ExpireDate)
-                    {
-                        return BadRequest();
-                    }
-                }*/
-
+                return Conflict();
             }
 
             Coupon crtCoupon = _mapper.Map<Coupon>(model);
@@ -575,7 +545,7 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         public async Task<ActionResult> DeleteCoupon(int id)
         {
-            Coupon coupon = await _service.GetByIdAsync(_ => _.Id == id);
+            Coupon coupon = await _service.GetByIdAsync(_ => _.Id == id, _ => _.CouponInUses);
 
             // var authorizedResult = await _authorizationService.AuthorizeAsync(User, coupon, Operations.Delete);
             // if (!authorizedResult.Succeeded)
@@ -598,7 +568,41 @@ namespace IPSB.Controllers
             try
             {
                 _service.Update(coupon);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    if (coupon.CouponInUses.Count > 0)
+                    {
+                        foreach (var item in coupon.CouponInUses)
+                        {
+                            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                            DateTimeOffset localServerTime = DateTimeOffset.Now;
+                            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
+                            var notification = new Notification();
+                            notification.Title = "Coupon is no longer available";
+                            notification.Body = "Coupon " + coupon.Name + " that you saved on " + item.RedeemDate + " is no longer available";
+                            notification.ImageUrl = coupon.ImageUrl;
+                            notification.Screen = Constants.Route.COUPON_DETAIL;
+                            notification.Parameter = "couponId:" + coupon.Id;
+                            notification.AccountId = item.VisitorId;
+                            notification.Status = Constants.Status.UNREAD;
+                            notification.Date = localTime.DateTime;
+                            var crtNotification = await _notificationService.AddAsync(notification);
+                            if (await _notificationService.Save() > 0)
+                            {
+                                var data = new Dictionary<string, string>();
+                                data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
+                                data.Add("notificationType", "coupon_changed");
+                                data.Add("couponId", coupon.Id.ToString());
+                                _ = _pushNotificationService.SendMessage(
+                                    "Coupon is no longer available",
+                                    "Coupon " + coupon.Name + " that you saved on " + item.RedeemDate + " is no longer available",
+                                    "coupon_id_" + coupon.Id.ToString(),
+                                    data
+                                    );
+                            }
+                        }
+                    }
+                }
             }
             catch (Exception)
             {
