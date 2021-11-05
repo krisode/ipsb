@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace IPSB.Controllers
 {
@@ -332,12 +333,16 @@ namespace IPSB.Controllers
 
 
             Building crtBuilding = _mapper.Map<Building>(model);
+            var addressJson = JsonConvert.DeserializeObject<AddressJson>(model.AddressJson);
+            crtBuilding.Address = addressJson.Address;
+            crtBuilding.Lat = addressJson.Lat;
+            crtBuilding.Lng = addressJson.Lng;
+
             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "building", "building-detail");
             crtBuilding.ImageUrl = imageURL;
 
             // Default POST Status = "Active"
             crtBuilding.Status = Constants.Status.ACTIVE;
-
             try
             {
                 await _service.AddAsync(crtBuilding);
@@ -395,11 +400,14 @@ namespace IPSB.Controllers
             #region Updating building
             try
             {
+
                 updBuilding.ManagerId = model.ManagerId;
                 updBuilding.Name = model.Name;
                 updBuilding.ImageUrl = imageURL;
-                updBuilding.Address = model.Address;
-                updBuilding.EnvironmentFactor = model.EnvironmentFactor;
+                var addressJson = JsonConvert.DeserializeObject<AddressJson>(model.AddressJson);
+                updBuilding.Address = addressJson.Address;
+                updBuilding.Lat = addressJson.Lat;
+                updBuilding.Lng = addressJson.Lng;
 
                 _service.Update(updBuilding);
                 if (await _service.Save() > 0)
