@@ -592,11 +592,11 @@ namespace IPSB.Controllers
                                 var data = new Dictionary<string, string>();
                                 data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
                                 data.Add("notificationType", "coupon_changed");
-                                data.Add("couponId", coupon.Id.ToString());
+                                data.Add("couponInUseId", coupon.Id.ToString());
                                 _ = _pushNotificationService.SendMessage(
                                     "Coupon is no longer available",
                                     "Coupon " + coupon.Name + " that you saved on " + item.RedeemDate + " is no longer available",
-                                    "coupon_id_" + coupon.Id.ToString(),
+                                    "coupon_in_use_id_" + coupon.Id.ToString(),
                                     data
                                     );
                             }
