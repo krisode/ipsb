@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using FirebaseAdmin.Auth;
 using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
@@ -279,8 +279,12 @@ namespace IPSB.Controllers
         [HttpPut("change-password")]
         public async Task<ActionResult> ChangePassword(AuthWebChangePassword authAccount)
         {
-            var updAccount = await _accountService.GetByIdAsync(_ => _.Id == authAccount.AccountId);
+            if (!authAccount.AccountId.ToString().Equals(User.Identity.Name))
+            {
+                return Forbid();
+            }
 
+            var updAccount = await _accountService.GetByIdAsync(_ => _.Id == authAccount.AccountId);
             if (updAccount == null)
             {
                 return BadRequest();
@@ -293,7 +297,7 @@ namespace IPSB.Controllers
 
             try
             {
-                updAccount.Id = authAccount.AccountId;
+                updAccount.Id = (int) authAccount.AccountId;
                 updAccount.Password = authAccount.Password;
                 updAccount.Status = Constants.Status.ACTIVE;
 
