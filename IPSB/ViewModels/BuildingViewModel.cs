@@ -54,6 +54,7 @@ namespace IPSB.ViewModels
         public int ManagerId { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
+        public bool FindCurrentBuilding { get; set; }
         public double Lat { get; set; }
         public double Lng { get; set; }
         public string Status { get; set; }

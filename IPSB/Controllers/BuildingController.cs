@@ -220,6 +220,14 @@ namespace IPSB.Controllers
                 {
                     list = list.Where(_ => _.Address.Contains(model.Address));
                 }
+
+                if (model.FindCurrentBuilding)
+                {
+                    list = list.Where(_ => 12742.02 * Math.Asin(Math.Sqrt(Math.Sin(((Math.PI / 180) * (_.Lat - model.Lat)) / 2) * Math.Sin(((Math.PI / 180) * (_.Lat - model.Lat)) / 2) +
+                                    Math.Cos((Math.PI / 180) * model.Lat) * Math.Cos((Math.PI / 180) * (_.Lat)) *
+                                    Math.Sin(((Math.PI / 180) * (_.Lng - model.Lng)) / 2) * Math.Sin(((Math.PI / 180) * (_.Lng - model.Lng)) / 2))) < 0.1);
+                }
+
                 Expression<Func<Building, object>> sorter = _ => _.Id;
                 if (model.Lat != 0 && model.Lng != 0)
                 {
