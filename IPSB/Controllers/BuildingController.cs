@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Linq.Expressions;
 
 namespace IPSB.Controllers
 {
@@ -23,15 +24,17 @@ namespace IPSB.Controllers
     public class BuildingController : ControllerBase
     {
         private readonly IBuildingService _service;
+        private readonly ILocatorTagService _locatorTagService;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<Building> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
         private readonly IAuthorizationService _authorizationService;
         private readonly ICacheStore _cacheStore;
-        public BuildingController(IBuildingService service, IMapper mapper, IPagingSupport<Building> pagingSupport,
+        public BuildingController(IBuildingService service, ILocatorTagService locatorTagService, IMapper mapper, IPagingSupport<Building> pagingSupport,
             IUploadFileService uploadFileService, IAuthorizationService authorizationService, ICacheStore cacheStore)
         {
             _service = service;
+            _locatorTagService = locatorTagService;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
@@ -102,6 +105,46 @@ namespace IPSB.Controllers
         }
 
         /// <summary>
+        /// Get a specific building by locator tag uuid
+        /// </summary>
+        /// <remarks>
+        /// Sample Request:
+        /// 
+        ///     GET {
+        ///         "locatorTagUuid" : "32938293-343434-dsdsdsdd",
+        ///     }
+        /// </remarks>
+        /// <returns>Return the building with the corresponding locator tag uuid</returns>
+        /// <response code="200">Returns the building with the specified locator tag uuid</response>
+        /// <response code="404">No buildings found with the specified locator tag uuid</response>
+        [Produces("application/json")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpGet("{locatorTagUuid}")]
+        public async Task<ActionResult<BuildingVM>> GetBuildingByLocatorTagUUID(string locatorTagUuid)
+        {
+            try
+            {
+                var locatorTag = _locatorTagService.GetAll().Where(_ => _.Uuid == locatorTagUuid).FirstOrDefault();
+                if (locatorTag == null)
+                {
+                    return NotFound();
+                }
+                var buildingToFind = await _service.GetByIdAsync(_ => _.Id == locatorTag.BuildingId);
+                if (buildingToFind == null)
+                {
+                    return NotFound();
+                }
+                return Ok(_mapper.Map<BuildingVM>(buildingToFind));
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        /// <summary>
         /// Get all buildings
         /// </summary>
         /// <remarks>
@@ -162,7 +205,6 @@ namespace IPSB.Controllers
                         }
                     }
                 }
-
                 if (model.ManagerId != 0)
                 {
                     list = list.Where(_ => _.ManagerId == model.ManagerId);
@@ -178,10 +220,28 @@ namespace IPSB.Controllers
                 {
                     list = list.Where(_ => _.Address.Contains(model.Address));
                 }
+                Expression<Func<Building, object>> sorter = _ => _.Id;
+                if (model.Lat != 0 && model.Lng != 0)
+                {
+                    sorter = _ => 12742.02 * Math.Asin(Math.Sqrt(Math.Sin(((Math.PI / 180) * (_.Lat - model.Lat)) / 2) * Math.Sin(((Math.PI / 180) * (_.Lat - model.Lat)) / 2) +
+                                    Math.Cos((Math.PI / 180) * model.Lat) * Math.Cos((Math.PI / 180) * (_.Lat)) *
+                                    Math.Sin(((Math.PI / 180) * (_.Lng - model.Lng)) / 2) * Math.Sin(((Math.PI / 180) * (_.Lng - model.Lng)) / 2)));
+                }
 
                 var pagedModel = _pagingSupport.From(list)
-                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
+                    .GetRange(pageIndex, pageSize, sorter, isAll, isAscending)
                     .Paginate<BuildingVM>();
+
+                if (model.Lat != 0 && model.Lng != 0)
+                {
+                    pagedModel.Content = pagedModel.Content.ToList().Select(_ =>
+                    {
+                        _.DistanceTo = 12742.02 * Math.Asin(Math.Sqrt(Math.Sin(((Math.PI / 180) * (_.Lat - model.Lat)) / 2) * Math.Sin(((Math.PI / 180) * (_.Lat - model.Lat)) / 2) +
+                                    Math.Cos((Math.PI / 180) * model.Lat) * Math.Cos((Math.PI / 180) * (_.Lat)) *
+                                    Math.Sin(((Math.PI / 180) * (_.Lng - model.Lng)) / 2) * Math.Sin(((Math.PI / 180) * (_.Lng - model.Lng)) / 2)));
+                        return _;
+                    }).AsQueryable();
+                }
 
                 return Ok(pagedModel);
             }
