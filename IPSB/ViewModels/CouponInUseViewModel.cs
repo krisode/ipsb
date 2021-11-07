@@ -15,7 +15,6 @@ namespace IPSB.ViewModels
         public string FeedbackContent { get; set; }
         public string FeedbackReply { get; set; }
         public string FeedbackImage { get; set; }
-        public bool OverLimit { get; set; }
         public DateTime? FeedbackDate { get; set; }
         public double? RateScore { get; set; }
         public CouponVM Coupon { get; set; }
@@ -36,7 +35,6 @@ namespace IPSB.ViewModels
         public int StoreId { get; set; }
         public bool FeedbackExist { get; set; }
         public int VisitorId { get; set; }
-        public bool CheckLimit { get; set; }
         public DateTime? LowerRedeemDate { get; set; }
         public DateTime? UpperRedeemDate { get; set; }
         public DateTime? LowerApplyDate { get; set; }
