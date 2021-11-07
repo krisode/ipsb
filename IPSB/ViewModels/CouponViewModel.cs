@@ -62,7 +62,7 @@ namespace IPSB.ViewModels
         public double MaxDiscount { get; set; }
         public double MinSpend { get; set; }
         [DefaultValue(true)]
-        public bool CheckLimit { get; set; }
+        public bool? CheckLimit { get; set; }
         public int BuildingId { get; set; }
         public int LowerLimit { get; set; }
         public int UpperLimit { get; set; }

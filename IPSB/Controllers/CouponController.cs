@@ -220,7 +220,7 @@ namespace IPSB.Controllers
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
                 .Paginate<CouponVM>();
 
-            if (model.CheckLimit)
+            if (model.CheckLimit != null && (bool) model.CheckLimit)
             {
                 pagedModel.Content = pagedModel.Content.ToList().Select(coupon =>
                 {
