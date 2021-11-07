@@ -60,6 +60,8 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<FloorPlanVM>> GetFloorPlanById(int id)
         {
+            ResponseModel responseModel = new();
+
             var cacheId = new CacheKey<FloorPlan>(id);
             var cacheObjectType = new FloorPlan();
             var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
@@ -79,7 +81,10 @@ namespace IPSB.Controllers
 
                 if (floorPlan == null)
                 {
-                    return NotFound();
+                    responseModel.Code = StatusCodes.Status404NotFound;
+                    responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(FloorPlan));
+                    responseModel.Type = ResponseType.NOT_FOUND;
+                    return NotFound(responseModel);
                 }
 
                 /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, floorPlan, Operations.Read);
@@ -96,9 +101,16 @@ namespace IPSB.Controllers
             {
                 if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
                 {
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
                 }
-                return StatusCode(StatusCodes.Status500InternalServerError);
+
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
         }
@@ -123,12 +135,9 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<FloorPlanVM>>> GetAllFloorPlans([FromQuery] FloorPlanSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            if (model.FloorNumber < 0)
-            {
-                return BadRequest();
-            }
+            ResponseModel responseModel = new();
 
-            var cacheId = new CacheKey<FloorPlan>(Utils.Constants.DefaultValue.INTEGER);
+            var cacheId = new CacheKey<FloorPlan>(DefaultValue.INTEGER);
             var cacheObjectType = new FloorPlan();
             var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
 
@@ -178,9 +187,16 @@ namespace IPSB.Controllers
             {
                 if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
                 {
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
                 }
-                return StatusCode(StatusCodes.Status500InternalServerError);
+
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
         }
@@ -206,10 +222,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<FloorPlanVM>>> CountFloorPlans([FromQuery] FloorPlanSM model)
         {
-            if (model.FloorNumber < 0)
-            {
-                return BadRequest();
-            }
+            ResponseModel responseModel = new();
 
             var cacheId = new CacheKey<FloorPlan>(Utils.Constants.DefaultValue.INTEGER);
             var cacheObjectType = new FloorPlan();
@@ -255,11 +268,18 @@ namespace IPSB.Controllers
             }
             catch (Exception e)
             {
-                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                if (e.Message.Equals(ExceptionMessage.NOT_MODIFIED))
                 {
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
                 }
-                return StatusCode(StatusCodes.Status500InternalServerError);
+
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
         }
@@ -288,6 +308,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<FloorPlanCM>> CreateFloorPlan([FromForm] FloorPlanCM model)
         {
+            ResponseModel responseModel = new();
 
             int existed = _service.GetAll().Where(
                 _ => _.FloorCode.ToUpper() == model.FloorCode.ToUpper()
@@ -295,7 +316,10 @@ namespace IPSB.Controllers
                 ).Count();
             if (existed >= 1)
             {
-                return Conflict();
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.FloorCode);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel.ToString());
             }
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, floorPlan, Operations.Create);
@@ -315,7 +339,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return CreatedAtAction("GetFloorPlanById", new { id = crtFloorPlan.Id }, crtFloorPlan);
@@ -339,6 +366,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutFloorPlan(int id, [FromForm] FloorPlanUM model)
         {
+            ResponseModel responseModel = new();
 
             int existed = _service.GetAll().Where(
                             _ => _.FloorCode.ToUpper() == model.FloorCode.ToUpper()
@@ -346,7 +374,10 @@ namespace IPSB.Controllers
                             ).Count();
             if (existed >= 1)
             {
-                return Conflict();
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.FloorCode);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel.ToString());
             }
 
             FloorPlan updLocationType = await _service.GetByIdAsync(_ => _.Id == id);
@@ -384,7 +415,10 @@ namespace IPSB.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
@@ -405,6 +439,8 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         public async Task<ActionResult> Delete(int id)
         {
+            ResponseModel responseModel = new();
+
             FloorPlan floorPlan = await _service.GetByIdAsync(_ => _.Id == id);
 
             // var authorizedResult = await _authorizationService.AuthorizeAsync(User, floorPlan, Operations.Delete);
@@ -415,15 +451,22 @@ namespace IPSB.Controllers
 
             if (floorPlan is not null)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(FloorPlan));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
 
-            if (floorPlan.Status.Equals(Constants.Status.INACTIVE))
+            if (floorPlan.Status.Equals(Status.INACTIVE))
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.DELETED.Replace("Object", nameof(FloorPlan));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
             }
 
-            floorPlan.Status = Constants.Status.INACTIVE;
+            floorPlan.Status = Status.INACTIVE;
+
             try
             {
                 _service.Update(floorPlan);
@@ -431,7 +474,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();

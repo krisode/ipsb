@@ -382,13 +382,22 @@ namespace IPSB.Controllers
         /// <returns>Return the account with the corresponding id</returns>
         /// <response code="200">Account exists in the system</response>
         /// <response code="401">No accounts found with the given username and password</response>
+        [HttpPut("change-password-mobile/{id}")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [HttpPut("change-password-mobile")]
+
         public async Task<ActionResult> ChangePasswordMobile(int id, AuthMobileChangePassword authAccount)
         {
             ResponseModel responseModel = new();
+
+            if (id != authAccount.AccountId)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(authAccount.AccountId));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
+            }
 
             var updAccount = await _accountService.GetByIdAsync(_ => _.Id == id);
 

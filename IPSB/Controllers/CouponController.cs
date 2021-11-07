@@ -518,6 +518,174 @@ namespace IPSB.Controllers
             return CreatedAtAction("GetCouponById", new { id = crtCoupon.Id }, crtCoupon);
         }
 
+        ///<summary>
+        /// Create a new coupon
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     POST 
+        ///     {            
+        ///         "ImageUrl": "List of image of the coupon", 
+        ///         "Name": "Name of the coupon",     
+        ///         "Description": "General description of the coupon",    
+        ///         "StoreId": "Id of the store which the coupon belongs to",
+        ///         "Code": "Code of the coupon",
+        ///         "DiscountType":"Type of the coupon is used for",
+        ///         "PublishDate": "The date time that the coupon is valid",
+        ///         "ExpireDate": "The date time that the coupon expires",
+        ///         "Amount": "A specific rate or amount is reduced when a customer uses the coupon",
+        ///         "MaxDiscount": "The maximum amount that customers can reduce when using coupon",
+        ///         "MinSpend": "The minimum amount that customers have to spend to use the coupon",
+        ///         "ProductInclude": "The date time that the coupon expires",
+        ///         "ProductExclude": "The date time that the coupon expires",
+        ///         "Limit": "Number of customers who can use the coupon",
+        ///     }
+        ///
+        /// </remarks>
+        /// <response code="201">Created a new coupon</response>
+        /// <response code="409">Coupon already exists</response>
+        /// <response code="500">Failed to save request</response>
+        [HttpPost]
+        [Route("test")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<CouponCM>> TestCreateCoupon([FromForm] CouponCM model)
+        {
+            ResponseModel responseModel = new();
+
+            var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTimeOffset localServerTime = DateTimeOffset.Now;
+            DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
+
+            // Created coupon has publish date less than current date
+            if (model.PublishDate < localTime.DateTime)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.PublishDate));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
+            }
+
+            // Created coupon has expired date less than current date
+            if (model.ExpireDate < localTime.DateTime)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.ExpireDate));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
+            }
+
+            // Created coupon has publish date less than expired date
+            if (model.PublishDate.Value.AddHours(2) > model.ExpireDate)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.PublishDate) + " must be larger 2 hours than " + nameof(model.ExpireDate));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
+            }
+
+            // CASE: Created coupon has coupon type as FIXED
+            if (model.CouponTypeId == Constants.CouponType.FIXED)
+            {
+                // CASE-1: Created coupon does not has value for amount field 
+                if (!model.Amount.HasValue)
+                {
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Amount));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
+                }
+                // CASE-2: Created coupon has value for max discount field 
+                if (model.MaxDiscount.HasValue)
+                {
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.MaxDiscount));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
+                }
+            }
+
+            // CASE: Coupon has coupon type as PERCENTAGE
+            if (model.CouponTypeId == Constants.CouponType.PERCENTAGE)
+            {
+                // CASE-1: Created coupon does not has value for max discount field 
+                if (!model.MaxDiscount.HasValue)
+                {
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.MaxDiscount));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
+                }
+
+                // CASE-2: Created coupon has value for amount field 
+                if (!model.Amount.HasValue)
+                {
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Amount));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
+                }
+            }
+
+
+            // Get coupon with the same code at the same store
+            var coupon = _service.GetAll().Where(_ => _.Code == model.Code).Where(_ => _.StoreId == model.StoreId).FirstOrDefault();
+
+            // CASE: Coupon with the same code at the same store do exist
+            if (coupon is not null)
+            {
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Code);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel.ToString());
+            }
+
+            Coupon crtCoupon = _mapper.Map<Coupon>(model);
+
+            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, crtCoupon, Operations.Create);
+            if (!authorizedResult.Succeeded)
+            {
+                return new ObjectResult($"Not authorize to create coupon") { StatusCode = 403 };
+            }*/
+
+            // Default POST Status = "ACTIVE"
+            crtCoupon.Status = Constants.Status.ACTIVE;
+
+            string imageUrl = "";
+
+            if (model.ImageUrl is not null && model.ImageUrl.Count > 0)
+            {
+                List<string> imageUrls = new List<string>();
+                foreach (var url in model.ImageUrl)
+                {
+                    imageUrl = await _uploadFileService.UploadFile("123456798", url, "coupon", "coupon-detail");
+                    imageUrls.Add(imageUrl);
+                }
+                imageUrl = string.Join(",", imageUrls);
+            }
+
+            crtCoupon.ImageUrl = imageUrl;
+
+            try
+            {
+                await _service.AddAsync(crtCoupon);
+                await _service.Save();
+            }
+            catch (Exception)
+            {
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
+
+            }
+
+            return CreatedAtAction("GetCouponById", new { id = crtCoupon.Id }, crtCoupon);
+        }
+
         /// <summary>
         /// Update coupon with specified id
         /// </summary>

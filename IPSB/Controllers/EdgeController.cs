@@ -393,9 +393,17 @@ namespace IPSB.Controllers
         {
             ResponseModel responseModel = new();
 
+            if (id != model.Id)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Id));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
+            }
+
             Edge updEdge = await _service.GetByIdAsync(_ => _.Id == id);
 
-            if (updEdge == null || id != model.Id)
+            if (updEdge == null)
             {
                 responseModel.Code = StatusCodes.Status400BadRequest;
                 responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Edge));

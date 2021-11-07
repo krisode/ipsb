@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using static IPSB.Utils.Constants;
 
 namespace IPSB.Controllers
 {
@@ -62,11 +63,16 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<ProductVM> GetProductById(int id)
         {
+            ResponseModel responseModel = new();
+
             var product = _service.GetByIdAsync(_ => _.Id == id, _ => _.ProductCategory, _ => _.Store).Result;
 
             if (product == null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status404NotFound;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Product));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return NotFound(responseModel);
             }
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, product, Operations.Read);
@@ -100,6 +106,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ProductVM>> GetAllProducts([FromQuery] ProductSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
+            ResponseModel responseModel = new();
+
             IQueryable<Product> list = _service.GetAll(_ => _.ProductCategory, _ => _.Store);
 
             if (model.StoreId > 0)
@@ -137,21 +145,24 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
 
                 else
                 {
-                    if (model.Status == Constants.Status.ACTIVE)
+                    if (model.Status == Status.ACTIVE)
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
+                        list = list.Where(_ => _.Status == Status.ACTIVE);
                     }
 
-                    if (model.Status == Constants.Status.INACTIVE)
+                    if (model.Status == Status.INACTIVE)
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
+                        list = list.Where(_ => _.Status == Status.INACTIVE);
                     }
                 }
             }
@@ -184,6 +195,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ProductVM>> CountProducts([FromQuery] ProductSM model)
         {
+            ResponseModel responseModel = new();
+
             IQueryable<Product> list = _service.GetAll(_ => _.ProductCategory, _ => _.Store);
 
             if (model.StoreId > 0)
@@ -221,21 +234,24 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
 
                 else
                 {
-                    if (model.Status == Constants.Status.ACTIVE)
+                    if (model.Status == Status.ACTIVE)
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
+                        list = list.Where(_ => _.Status == Status.ACTIVE);
                     }
 
-                    if (model.Status == Constants.Status.INACTIVE)
+                    if (model.Status == Status.INACTIVE)
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
+                        list = list.Where(_ => _.Status == Status.INACTIVE);
                     }
                 }
             }
@@ -271,6 +287,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ProductCM>> CreateProduct([FromForm] ProductCM model)
         {
+            ResponseModel responseModel = new();
 
             // Product existed if the name is non-duplicate within the store that this user owned
             bool isExisted = _service.GetAll()
@@ -281,7 +298,10 @@ namespace IPSB.Controllers
                                     .Count() == 1;
             if (isExisted)
             {
-                return Conflict();
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Name);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel.ToString());
             }
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, product, Operations.Create);
@@ -295,7 +315,7 @@ namespace IPSB.Controllers
             crtProduct.ImageUrl = imageURL;
 
             // Default POST Status = "New"
-            crtProduct.Status = Constants.Status.ACTIVE;
+            crtProduct.Status = Status.ACTIVE;
 
             try
             {
@@ -304,7 +324,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return CreatedAtAction("GetProductById", new { id = crtProduct.Id }, crtProduct);
@@ -330,6 +353,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutProduct(int id, [FromForm] ProductUM model)
         {
+            ResponseModel responseModel = new();
+
             // Product existed if the name is non-duplicate within the store that this user owned
             bool isExisted = _service.GetAll()
                                     .Where(
@@ -340,7 +365,10 @@ namespace IPSB.Controllers
                                     .Count() == 1;
             if (isExisted)
             {
-                return Conflict();
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Name);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel.ToString());
             }
 
             Product updProduct = await _service.GetByIdAsync(_ => _.Id == id);
@@ -353,13 +381,19 @@ namespace IPSB.Controllers
 
             if (updProduct == null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Product));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
 
-            if (updProduct.Status.Equals(Constants.Status.INACTIVE))
+            /*if (updProduct.Status.Equals(Status.INACTIVE))
             {
-                return BadRequest();
-            }
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.DELETED.Replace("Object", nameof(Product));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
+            }*/
 
 
             string imageUrl = updProduct.ImageUrl;
@@ -387,7 +421,10 @@ namespace IPSB.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
@@ -409,6 +446,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
+            ResponseModel responseModel = new();
+
             Product product = _service.GetAll().Include(_ => _.ShoppingItems).ThenInclude(_ => _.ShoppingList).FirstOrDefault(_ => _.Id == id);
 
 
@@ -420,17 +459,23 @@ namespace IPSB.Controllers
 
             if (product is null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Product));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
 
-            if (product.Status.Equals(Constants.Status.INACTIVE))
+            if (product.Status.Equals(Status.INACTIVE))
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.DELETED.Replace("Object", nameof(Product));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
             }
 
             try
             {
-                product.Status = Constants.Status.INACTIVE;
+                product.Status = Status.INACTIVE;
                 _service.Update(product);
                 if (_service.Save().Result > 0)
                 {
@@ -445,10 +490,10 @@ namespace IPSB.Controllers
                             notification.Title = "Product is no longer available";
                             notification.Body = "Product " + product.Name + " in your shopping list " + item.ShoppingList.Name + " is no longer available";
                             notification.ImageUrl = product.ImageUrl;
-                            notification.Screen = Constants.Route.SHOPPING_LIST_DETAIL;
+                            notification.Screen = Route.SHOPPING_LIST_DETAIL;
                             notification.Parameter = "shoppingListId:" + item.ShoppingListId;
                             notification.AccountId = item.ShoppingList.AccountId;
-                            notification.Status = Constants.Status.UNREAD;
+                            notification.Status = Status.UNREAD;
                             notification.Date = localTime.DateTime;
                             var crtNotification = await _notificationService.AddAsync(notification);
                             if (await _notificationService.Save() > 0)
@@ -470,7 +515,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();

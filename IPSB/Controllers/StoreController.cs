@@ -62,11 +62,16 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<StoreVM>> GetStoreById(int id)
         {
+            ResponseModel responseModel = new();
+
             var store = await _service.GetByIdAsync(_ => _.Id == id, _ => _.Account, _ => _.Building, _ => _.FloorPlan);
 
             if (store == null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status404NotFound;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Store));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return NotFound(responseModel);
             }
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, store, Operations.Read);
@@ -100,6 +105,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<StoreVM>> GetAllStores([FromQuery] StoreSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
+            ResponseModel responseModel = new();
+
             IQueryable<Store> list = _service.GetAll(_ => _.Account, _ => _.Building, _ => _.FloorPlan, _ => _.Location);
 
             if (model.AccountId != 0)
@@ -143,9 +150,12 @@ namespace IPSB.Controllers
             
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
                 else
                 {
@@ -182,6 +192,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<StoreVM>> CountStores([FromQuery] StoreSM model)
         {
+            ResponseModel responseModel = new();
+
             IQueryable<Store> list = _service.GetAll(_ => _.Account, _ => _.Building, _ => _.FloorPlan, _ => _.Location);
 
             if (model.AccountId != 0)
@@ -224,9 +236,12 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
                 else
                 {
@@ -266,12 +281,15 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<StoreCM>> CreateStore([FromForm] StoreCM model)
         {
-
+            ResponseModel responseModel = new();
 
             bool isExisted = _service.IsExisted(_ => _.Name.ToLower().Equals(model.Name.ToLower()));
             if (isExisted)
             {
-                return Conflict();
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Name);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel.ToString());
             }
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, store, Operations.Create);
@@ -284,7 +302,7 @@ namespace IPSB.Controllers
             Store crtStore = _mapper.Map<Store>(model);
             
             // Default POST Status = "Active"
-            crtStore.Status = Constants.Status.ACTIVE;
+            crtStore.Status = Status.ACTIVE;
             crtStore.LocationId = await _locationService.CreateLocationJson(model.LocationJson);
 
 
@@ -301,7 +319,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return CreatedAtAction("GetStoreById", new { id = crtStore.Id }, crtStore);
@@ -325,9 +346,14 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutStore(int id, [FromForm] StoreUM model)
         {
+            ResponseModel responseModel = new();
+
             if (_service.IsExisted(_ => _.Id != id && _.Name.ToLower().Equals(model.Name.ToLower())))
             {
-                return Conflict();
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Name);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel.ToString());
             }
 
             Store updStore = await _service.GetByIdAsync(_ => _.Id == id);
@@ -335,10 +361,11 @@ namespace IPSB.Controllers
             var authorizedResult = await _authorizationService.AuthorizeAsync(User, updStore, Operations.Update);
             if (!authorizedResult.Succeeded)
             {
-                return new ObjectResult($"Not authorize to update store with id: {id}") { StatusCode = 403 };
+                responseModel.Code = StatusCodes.Status403Forbidden;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE_UPDATE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Forbid(responseModel.ToString());
             }
-
-
 
             if (model.ImageUrl != null)
             {
@@ -359,8 +386,10 @@ namespace IPSB.Controllers
             }
             catch (Exception e)
             {
-
-                return BadRequest(e);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
@@ -381,6 +410,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
+            ResponseModel responseModel = new();
+
             var store = await _service.GetByIdAsync(_ => _.Id == id);
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Delete);
@@ -391,12 +422,18 @@ namespace IPSB.Controllers
 
             if (store is null)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Store));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
 
-            if (store.Status.Equals(Constants.Status.INACTIVE))
+            if (store.Status.Equals(Status.INACTIVE))
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.DELETED.Replace("Object", nameof(Store));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
             }
 
             store.Status = Status.INACTIVE;
@@ -408,7 +445,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
