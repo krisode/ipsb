@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static IPSB.Utils.Constants;
 
 namespace IPSB.Controllers
 {
@@ -53,6 +54,8 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult GetShoppingListById(int id)
         {
+            ResponseModel responseModel = new();
+
             var result = _service.GetAll(_ => _.Building)
                                 .Include(_ => _.ShoppingItems)
                                 .ThenInclude(_ => _.Product)
@@ -62,7 +65,10 @@ namespace IPSB.Controllers
                                 .FirstOrDefault(_ => _.Id == id);
             if (result == null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status404NotFound;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(ShoppingList));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return NotFound(responseModel);
             }
 
             var rtnShoppingList = _mapper.Map<ShoppingListVM>(result);
@@ -177,16 +183,21 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> CreateShoppingList([FromBody] ShoppingListCM model)
         {
+            ResponseModel responseModel = new();
+
             var dataToInsert = _mapper.Map<ShoppingList>(model);
             try
             {
-                dataToInsert.Status = Constants.Status.ACTIVE;
+                dataToInsert.Status = Status.ACTIVE;
                 await _service.AddAsync(dataToInsert);
                 await _service.Save();
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
             return CreatedAtAction("CreateShoppingList", new { id = dataToInsert.Id }, dataToInsert);
         }
@@ -217,10 +228,15 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutShoppingList(int id, [FromBody] ShoppingListUM model)
         {
+            ResponseModel responseModel = new();
+
             var dataToUpdate = await _service.GetByIdAsync(_ => _.Id == id);
             if (dataToUpdate == null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(ShoppingList));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
             try
             {
@@ -232,7 +248,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
@@ -254,10 +273,15 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
+            ResponseModel responseModel = new();
+
             var dataToDelete = await _service.GetByIdAsync(_ => _.Id == id, _ => _.ShoppingItems);
             if (dataToDelete == null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(ShoppingList));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
             try
             {
@@ -270,7 +294,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
             return NoContent();
         }

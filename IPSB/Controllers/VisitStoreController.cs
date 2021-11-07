@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static IPSB.Utils.Constants;
+
 
 namespace IPSB.Controllers
 {
@@ -47,11 +49,16 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<VisitStoreVM> GetVisitStoreById(int id)
         {
+            ResponseModel responseModel = new();
+
             var visitStore = _service.GetByIdAsync(_ => _.Id == id, _ => _.Store.Building).Result;
 
             if (visitStore is null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status404NotFound;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(VisitStore));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return NotFound(responseModel);
             }
 
             var rtnVisitStore = _mapper.Map<VisitStoreVM>(visitStore);
@@ -176,6 +183,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<VisitStoreCM>> CreateVisitStore([FromBody] VisitStoreCM model)
         {
+            ResponseModel responseModel = new();
+
             var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             DateTimeOffset localServerTime = DateTimeOffset.Now;
             DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
@@ -191,7 +200,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return CreatedAtAction("GetVisitStoreById", new { id = crtVisitStore.Id }, crtVisitStore);
@@ -211,14 +223,26 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> PutVisitPoint(int id, [FromBody] VisitStoreUM model)
+        public async Task<ActionResult> PutVisitStore(int id, [FromBody] VisitStoreUM model)
         {
+            ResponseModel responseModel = new();
+
+            if (id != model.Id)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Id));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
+            }
 
             VisitStore updVisitStore = await _service.GetByIdAsync(_ => _.Id == id);
 
-            if (updVisitStore == null || id != model.Id)
+            if (updVisitStore == null)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(VisitStore));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
 
             try
@@ -232,7 +256,10 @@ namespace IPSB.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
@@ -252,10 +279,15 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
+            ResponseModel responseModel = new();
+
             var dataToDelete = await _service.GetByIdAsync(_ => _.Id == id);
             if (dataToDelete == null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(VisitStore));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
             try
             {
@@ -264,7 +296,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
             return NoContent();
         }

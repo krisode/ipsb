@@ -13,8 +13,8 @@ using System.Collections.Generic;
 using System.Linq;
 //using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using static IPSB.Utils.Constants;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace IPSB.Controllers
 {
@@ -57,14 +57,16 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<ProductCategoryRefModel> GetProductCategoryById(int id)
         {
-            //IQueryable<ProductCategory> proList = _service.GetAll(_ => _.Products);
-            //var proCate = proList.FirstOrDefault(_ => _.Id == id);
+            ResponseModel responseModel = new();
 
             var proCate = _service.GetByIdAsync(_ => _.Id == id).Result;
 
             if (proCate == null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status404NotFound;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(ProductCategory));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return NotFound(responseModel);
             }
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, proCate, Operations.Read);
@@ -98,6 +100,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ProductCategoryRefModel>> GetAllProductCategories([FromQuery] ProductCategorySM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
+            ResponseModel responseModel = new();
+
             var list = _service.GetAll();
 
             if (!string.IsNullOrEmpty(model.Name))
@@ -107,21 +111,24 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
 
                 else
                 {
-                    if (model.Status == Constants.Status.ACTIVE)
+                    if (model.Status == Status.ACTIVE)
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
+                        list = list.Where(_ => _.Status == Status.ACTIVE);
                     }
 
-                    if (model.Status == Constants.Status.INACTIVE)
+                    if (model.Status == Status.INACTIVE)
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
+                        list = list.Where(_ => _.Status == Status.INACTIVE);
                     }
                 }
             }
@@ -154,6 +161,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ProductCategoryRefModel>> CountProductCategories([FromQuery] ProductCategorySM model)
         {
+            ResponseModel responseModel = new();
+
             var list = _service.GetAll();
 
             if (!string.IsNullOrEmpty(model.Name))
@@ -163,21 +172,24 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
 
                 else
                 {
-                    if (model.Status == Constants.Status.ACTIVE)
+                    if (model.Status == Status.ACTIVE)
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
+                        list = list.Where(_ => _.Status == Status.ACTIVE);
                     }
 
-                    if (model.Status == Constants.Status.INACTIVE)
+                    if (model.Status == Status.INACTIVE)
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
+                        list = list.Where(_ => _.Status == Status.INACTIVE);
                     }
                 }
             }
@@ -205,6 +217,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ProductCategoryCM>> CreateProductCategory([FromBody] ProductCategoryCM proCateModel)
         {
+            ResponseModel responseModel = new();
 
             ProductCategory crtProCate = _mapper.Map<ProductCategory>(proCateModel);
 
@@ -218,7 +231,7 @@ namespace IPSB.Controllers
             crtProCate.ImageUrl = imageURL;
 
             // Default status when creating is ACTIVE
-            crtProCate.Status = Constants.Status.ACTIVE;
+            crtProCate.Status = Status.ACTIVE;
 
             try
             {
@@ -227,7 +240,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return CreatedAtAction("GetProductCategoryById", new { id = crtProCate.Id }, crtProCate);
@@ -249,11 +265,22 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutProductCategory(int id, [FromBody] ProductCategoryUM model)
         {
+            ResponseModel responseModel = new();
+            if (id != model.Id)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Id));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
+            }
             ProductCategory updProCate = await _service.GetByIdAsync(_ => _.Id == id);
 
-            if (updProCate == null || id != model.Id)
+            if (updProCate == null)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(ProductCategory));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
 
             // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updProCate, Operations.Create);
@@ -279,7 +306,10 @@ namespace IPSB.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
@@ -300,6 +330,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
+            ResponseModel responseModel = new();
+
             ProductCategory proCate = await _service.GetByIdAsync(_ => _.Id == id);
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Delete);
@@ -310,15 +342,21 @@ namespace IPSB.Controllers
 
             if (proCate is null)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(ProductCategory));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
 
-            if (proCate.Status.Equals(Constants.Status.INACTIVE))
+            if (proCate.Status.Equals(Status.INACTIVE))
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.DELETED.Replace("Object", nameof(ProductCategory));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
             }
 
-            proCate.Status = Constants.Status.INACTIVE;
+            proCate.Status = Status.INACTIVE;
 
             try
             {
@@ -327,7 +365,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();

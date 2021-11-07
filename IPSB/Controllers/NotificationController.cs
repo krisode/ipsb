@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static IPSB.Utils.Constants;
 
 namespace IPSB.Controllers
 {
@@ -56,6 +57,7 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<NotificationVM>> GetNotificationById(int id)
         {
+            ResponseModel responseModel = new();
             var cacheId = new CacheKey<Notification>(id);
             var cacheObjectType = new Notification();
             var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
@@ -75,7 +77,10 @@ namespace IPSB.Controllers
 
                 if (notification == null)
                 {
-                    return NotFound();
+                    responseModel.Code = StatusCodes.Status404NotFound;
+                    responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Notification));
+                    responseModel.Type = ResponseType.NOT_FOUND;
+                    return NotFound(responseModel);
                 }
 
                 /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Read);
@@ -92,9 +97,15 @@ namespace IPSB.Controllers
             {
                 if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
                 {
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
                 }
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
         }
 
@@ -118,6 +129,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<NotificationVM>>> GetAllNotifications([FromQuery] NotificationSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
+            ResponseModel responseModel = new();
+
             var cacheId = new CacheKey<Notification>(Constants.DefaultValue.INTEGER);
             var cacheObjectType = new Notification();
             string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
@@ -141,21 +154,24 @@ namespace IPSB.Controllers
 
                 if (!string.IsNullOrEmpty(model.Status))
                 {
-                    if (model.Status != Constants.Status.READ && model.Status != Constants.Status.UNREAD)
+                    if (model.Status != Status.READ && model.Status != Status.UNREAD)
                     {
-                        return BadRequest();
+                        responseModel.Code = StatusCodes.Status400BadRequest;
+                        responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                        responseModel.Type = ResponseType.INVALID_REQUEST;
+                        return BadRequest(responseModel);
                     }
 
                     else
                     {
-                        if (model.Status == Constants.Status.READ)
+                        if (model.Status == Status.READ)
                         {
-                            list = list.Where(_ => _.Status == Constants.Status.READ);
+                            list = list.Where(_ => _.Status == Status.READ);
                         }
 
-                        if (model.Status == Constants.Status.UNREAD)
+                        if (model.Status == Status.UNREAD)
                         {
-                            list = list.Where(_ => _.Status == Constants.Status.UNREAD);
+                            list = list.Where(_ => _.Status == Status.UNREAD);
                         }
                     }
                 }
@@ -210,9 +226,15 @@ namespace IPSB.Controllers
             {
                 if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
                 {
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
                 }
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
         }
@@ -238,7 +260,9 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<int>>> CountNotification([FromQuery] NotificationSM model)
         {
-            var cacheId = new CacheKey<Notification>(Constants.DefaultValue.INTEGER);
+            ResponseModel responseModel = new();
+
+            var cacheId = new CacheKey<Notification>(DefaultValue.INTEGER);
             var cacheObjectType = new Notification();
             string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
 
@@ -261,21 +285,24 @@ namespace IPSB.Controllers
 
                 if (!string.IsNullOrEmpty(model.Status))
                 {
-                    if (model.Status != Constants.Status.READ && model.Status != Constants.Status.UNREAD)
+                    if (model.Status != Status.READ && model.Status != Status.UNREAD)
                     {
-                        return BadRequest();
+                        responseModel.Code = StatusCodes.Status400BadRequest;
+                        responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                        responseModel.Type = ResponseType.INVALID_REQUEST;
+                        return BadRequest(responseModel);
                     }
 
                     else
                     {
-                        if (model.Status == Constants.Status.READ)
+                        if (model.Status == Status.READ)
                         {
-                            list = list.Where(_ => _.Status == Constants.Status.READ);
+                            list = list.Where(_ => _.Status == Status.READ);
                         }
 
-                        if (model.Status == Constants.Status.UNREAD)
+                        if (model.Status == Status.UNREAD)
                         {
-                            list = list.Where(_ => _.Status == Constants.Status.UNREAD);
+                            list = list.Where(_ => _.Status == Status.UNREAD);
                         }
                     }
                 }
@@ -326,9 +353,15 @@ namespace IPSB.Controllers
             {
                 if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
                 {
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
                 }
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
         }
@@ -358,7 +391,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<NotificationCM>> CreateNotification(NotificationCM model)
         {
-            
+            ResponseModel responseModel = new();
+
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Create);
             if (!authorizedResult.Succeeded)
             {
@@ -367,8 +401,8 @@ namespace IPSB.Controllers
 
             Notification crtNotification = _mapper.Map<Notification>(model);
 
-            // Default POST Status = "Active"
-            crtNotification.Status = Constants.Status.UNREAD;
+            // Default POST Status = "Unread"
+            crtNotification.Status = Status.UNREAD;
 
             try
             {
@@ -377,7 +411,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return CreatedAtAction("GetNotificationById", new { id = crtNotification.Id }, crtNotification);
@@ -399,6 +436,16 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutNotification(int id, NotificationUM model)
         {
+            ResponseModel responseModel = new();
+
+            if (id != model.Id)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Id));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
+            }
+
             #region Get notification by ID
             Notification updNotification = await _service.GetByIdAsync(_ => _.Id == id);
             #endregion
@@ -413,16 +460,22 @@ namespace IPSB.Controllers
             #endregion*/
 
             #region Checking whether request is valid
-            if (updNotification == null || id != model.Id)
+            if (updNotification == null)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Notification));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.READ && model.Status != Constants.Status.UNREAD)
+                if (model.Status != Status.READ && model.Status != Status.UNREAD)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
             }
             #endregion
@@ -492,7 +545,10 @@ namespace IPSB.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
             #endregion
 
@@ -515,6 +571,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
+            ResponseModel responseModel = new();
+
             Notification notification = await _service.GetByIdAsync(_ => _.Id == id);
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Delete);
@@ -525,7 +583,10 @@ namespace IPSB.Controllers
 
             if (notification is not null)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Notification));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
 
             try
@@ -535,7 +596,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();

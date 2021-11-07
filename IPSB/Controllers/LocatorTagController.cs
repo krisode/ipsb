@@ -56,11 +56,16 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<LocatorTagVM> GetLocatorTagById(int id)
         {
+            ResponseModel responseModel = new();
+
             var locatorTag = _service.GetByIdAsync(_ => _.Id == id, _ => _.FloorPlan, _ => _.Location).Result;
 
             if (locatorTag == null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status404NotFound;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(LocatorTag));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return NotFound(responseModel);
             }
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, locatorTag, Operations.Read);
@@ -94,6 +99,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<LocatorTagVM>> GetAllLocatorTags([FromQuery] LocatorTagSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
+            ResponseModel responseModel = new();
+
             IQueryable<LocatorTag> list = _service.GetAll(_ => _.FloorPlan, _ => _.Location, _ => _.LocatorTagGroup);
 
             if (model.Id != null)
@@ -134,9 +141,12 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE && model.Status != Constants.Status.NEW)
+                if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE && model.Status != Status.NEW)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
 
                 else
@@ -174,6 +184,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<LocatorTagVM>> CountLocatorTags([FromQuery] LocatorTagSM model)
         {
+            ResponseModel responseModel = new();
+
             IQueryable<LocatorTag> list = _service.GetAll(_ => _.FloorPlan, _ => _.Location, _ => _.LocatorTagGroup);
 
             if (model.Id != null)
@@ -214,9 +226,12 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE && model.Status != Constants.Status.NEW)
+                if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE && model.Status != Status.NEW)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
 
                 else
@@ -256,11 +271,16 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<LocatorTagCM>> CreateLocatorTag([FromBody] LocatorTagCM model)
         {
+            ResponseModel responseModel = new();
+
             LocatorTag locatorTag = _service.GetAllWhere(_ => _.Uuid == model.Uuid).FirstOrDefault();
 
             if (locatorTag is not null)
             {
-                return Conflict();
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Uuid);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel.ToString());
             }
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, locatorTag, Operations.Create);
@@ -268,7 +288,7 @@ namespace IPSB.Controllers
             {
                 return new ObjectResult($"Not authorize to create locator tag") { StatusCode = 403 };
             }*/
-            
+
 
             LocatorTag crtLocatorTag = _mapper.Map<LocatorTag>(model);
             var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
@@ -277,7 +297,7 @@ namespace IPSB.Controllers
             crtLocatorTag.UpdateTime = localTime.DateTime;
 
             // Default POST Status = "New"
-            crtLocatorTag.Status = Constants.Status.NEW;
+            crtLocatorTag.Status = Status.NEW;
 
             try
             {
@@ -286,7 +306,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return CreatedAtAction("GetLocatorTagById", new { id = crtLocatorTag.Id }, crtLocatorTag);
@@ -308,7 +331,17 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutLocatorTag(int id, [FromBody] LocatorTagUM model)
         {
+            ResponseModel responseModel = new();
+
             LocatorTag updLocatorTag = await _service.GetByIdAsync(_ => _.Id == id);
+
+            if (updLocatorTag is null)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(LocatorTag));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
+            }
 
             // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updLocatorTag, Operations.Read);
             // if (!authorizedResult.Succeeded)
@@ -335,7 +368,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
@@ -355,13 +391,18 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> PutLocatorTag(string uuid, [FromBody] LocatorTagTxPowerUM model)
+        public async Task<ActionResult> PutLocatorTagTxPower(string uuid, [FromBody] LocatorTagTxPowerUM model)
         {
+            ResponseModel responseModel = new();
+
             LocatorTag updLocatorTag = await _service.GetByIdAsync(_ => _.Uuid == uuid);
 
             if (updLocatorTag is null)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(LocatorTag));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
 
             // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updLocatorTag, Operations.Read);
@@ -386,7 +427,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
@@ -407,6 +451,8 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         public async Task<ActionResult> Delete(int id)
         {
+            ResponseModel responseModel = new();
+
             var locatorTag = await _service.GetByIdAsync(_ => _.Id == id);
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Delete);
@@ -417,12 +463,18 @@ namespace IPSB.Controllers
 
             if (locatorTag is null)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(LocatorTag));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
 
-            if (locatorTag.Status.Equals(Constants.Status.INACTIVE))
+            if (locatorTag.Status.Equals(Status.INACTIVE))
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.DELETED.Replace("Object", nameof(LocatorTag));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
             }
 
             locatorTag.Status = Status.INACTIVE;
@@ -433,7 +485,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();

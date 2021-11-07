@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static IPSB.Utils.Constants;
 
 namespace IPSB.Controllers
 {
@@ -51,11 +52,16 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<LocationTypeVM> GetLocationTypeById(int id)
         {
+            ResponseModel responseModel = new();
+
             var locationType = _service.GetByIdAsync(_ => _.Id == id, _ => _.Locations).Result;
 
             if (locationType == null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status404NotFound;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(LocationType));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return NotFound(responseModel);
             }
 
             var rtnLocationType = _mapper.Map<LocationTypeRefModel>(locationType);
@@ -181,10 +187,15 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<LocationTypeCM>> CreateLocationType([FromForm] LocationTypeCM model)
         {
+            ResponseModel responseModel = new();
+
             bool isExisted = _service.GetAll().Where(_ => _.Name.ToLower().Equals(model.Name)).Count() >= 1;
             if (isExisted)
             {
-                return Conflict();
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Name);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel.ToString());
             }
 
             LocationType crtLocationType = _mapper.Map<LocationType>(model);
@@ -192,13 +203,16 @@ namespace IPSB.Controllers
 
             try
             {
-                crtLocationType.Status = Constants.Status.ACTIVE;
+                crtLocationType.Status = Status.ACTIVE;
                 await _service.AddAsync(crtLocationType);
                 await _service.Save();
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return CreatedAtAction("GetLocationTypeById", new { id = crtLocationType.Id }, crtLocationType);
@@ -222,10 +236,15 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutLocationType(int id, [FromForm] LocationTypeUM model)
         {
+            ResponseModel responseModel = new();
+
             bool isExisted = _service.GetAll().Where(_ => _.Name.ToLower().Equals(model.Name) && _.Id != id).Count() >= 1;
             if (isExisted)
             {
-                return Conflict();
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Name);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel.ToString());
             }
             LocationType updLocationType = await _service.GetByIdAsync(_ => _.Id == id);
 
@@ -247,7 +266,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
@@ -267,17 +289,38 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
+            ResponseModel responseModel = new();
+
             LocationType updLocationType = await _service.GetByIdAsync(_ => _.Id == id);
+
+            if (updLocationType is null)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(LocationType));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
+            }
+
+            if (updLocationType.Status.Equals(Status.INACTIVE))
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.DELETED.Replace("Object", nameof(LocationType));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
+            }
 
             try
             {
-                updLocationType.Status = Constants.Status.INACTIVE;
+                updLocationType.Status = Status.INACTIVE;
                 _service.Update(updLocationType);
                 await _service.Save();
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();

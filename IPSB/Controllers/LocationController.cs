@@ -54,6 +54,8 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<LocationVM>> GetLocationById(int id)
         {
+            ResponseModel responseModel = new();
+
             var cacheId = new CacheKey<Location>(id);
             var cacheObjectType = new Location();
             var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
@@ -79,7 +81,10 @@ namespace IPSB.Controllers
 
                 if (location == null)
                 {
-                    return NotFound();
+                    responseModel.Code = StatusCodes.Status404NotFound;
+                    responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Location));
+                    responseModel.Type = ResponseType.NOT_FOUND;
+                    return NotFound(responseModel);
                 }
 
                 var rtnLocation = _mapper.Map<LocationVM>(location);
@@ -88,11 +93,17 @@ namespace IPSB.Controllers
             }
             catch (Exception e)
             {
-                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                if (e.Message.Equals(ExceptionMessage.NOT_MODIFIED))
                 {
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
                 }
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
         }
 
@@ -116,6 +127,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<LocationVM>>> GetAllLocations([FromQuery] LocationSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
+            ResponseModel responseModel = new();
+
             var cacheId = new CacheKey<Location>(Utils.Constants.DefaultValue.INTEGER);
             var cacheObjectType = new Location();
             var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
@@ -157,7 +170,10 @@ namespace IPSB.Controllers
                     }
                     else
                     {
-                        return BadRequest();
+                        responseModel.Code = StatusCodes.Status400BadRequest;
+                        responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                        responseModel.Type = ResponseType.INVALID_REQUEST;
+                        return BadRequest(responseModel);
                     }
                 }
 
@@ -212,9 +228,16 @@ namespace IPSB.Controllers
             {
                 if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
                 {
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
                 }
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
+
             }
 
         }
@@ -240,6 +263,7 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<LocationVM>>> CountLocations([FromQuery] LocationSM model)
         {
+            ResponseModel responseModel = new();
             var cacheId = new CacheKey<Location>(Utils.Constants.DefaultValue.INTEGER);
             var cacheObjectType = new Location();
             var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
@@ -281,7 +305,10 @@ namespace IPSB.Controllers
                     }
                     else
                     {
-                        return BadRequest();
+                        responseModel.Code = StatusCodes.Status400BadRequest;
+                        responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                        responseModel.Type = ResponseType.INVALID_REQUEST;
+                        return BadRequest(responseModel);
                     }
                 }
 
@@ -324,18 +351,22 @@ namespace IPSB.Controllers
 
                     list = list.Where(_ => _.Store.Products.Any(_ => _.Name.Contains(model.ProductName)));
                 }
-
                 
                 return Ok(list.Count());
-
             }
             catch (Exception e)
             {
                 if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
                 {
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
                 }
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
         }
@@ -364,6 +395,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> CreateLocation([FromBody] List<LocationCM> listModel)
         {
+            ResponseModel responseModel = new();
+
             List<Location> list = listModel.Select(model => _mapper.Map<Location>(model))
                 .Select(_ =>
                 {
@@ -377,7 +410,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             var listRefModel = list.Select(_ => _mapper.Map<LocationRefModel>(_));
@@ -400,6 +436,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutLocation(int id, [FromBody] LocationUM model)
         {
+            ResponseModel responseModel = new();
+
             Location updLocation = await _service.GetByIdAsync(_ => _.Id == id);
 
             try
@@ -420,7 +458,10 @@ namespace IPSB.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
@@ -439,6 +480,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> DeleteRange([FromBody] LocationDM model)
         {
+            ResponseModel responseModel = new();
+
             try
             {
                 if (model.Ids != null && model.Ids.Count > 0)
@@ -451,7 +494,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
             return NoContent();
         }

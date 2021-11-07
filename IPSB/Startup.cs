@@ -8,10 +8,13 @@ using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Infrastructure.Repositories;
 using IPSB.Utils;
+using IPSB.ViewModels;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
@@ -213,6 +216,24 @@ namespace IPSB
             });
             #endregion
 
+            #region Add SuppressModelStateInvalidFilter
+            services.AddControllers().ConfigureApiBehaviorOptions(options => {
+                options.InvalidModelStateResponseFactory = actionContext =>
+                {
+                    ResponseModel responseModel = new();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    foreach (var modelState in actionContext.ModelState)
+                    {
+                        if (modelState.Value.Errors.FirstOrDefault() != null)
+                        {
+                            responseModel.Message = modelState.Value.Errors.Select(_ => _.ErrorMessage).FirstOrDefault();
+                        }
+                    }
+                    responseModel.Type = Constants.ResponseType.INVALID_REQUEST;
+                    return new BadRequestObjectResult(responseModel);
+                };
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            #endregion
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
