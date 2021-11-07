@@ -9,6 +9,7 @@ using IPSB.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using static IPSB.Utils.Constants;
 
 namespace IPSB.Controllers
 {
@@ -28,8 +29,6 @@ namespace IPSB.Controllers
             _mapper = mapper;
             _pagingSupport = pagingSupport;
         }
-
-
 
         /// <summary>
         /// Get a specific facility by id
@@ -51,12 +50,17 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult GetFacilityById(int id)
         {
+            ResponseModel responseModel = new();
+
             var result = _service.GetAll(_ => _.Location)
                                 .FirstOrDefault(_ => _.Id == id);
 
             if (result == null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status404NotFound;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Facility));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return NotFound(responseModel);
             }
 
             var rtnFacility = _mapper.Map<FacilityVM>(result);
@@ -177,18 +181,23 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> CreateFacility([FromBody] FacilityCM model)
         {
+            ResponseModel responseModel = new();
+
             var createdFacility = _mapper.Map<Facility>(model);
 
             try
             {
-                createdFacility.Status = Constants.Status.ACTIVE;
+                createdFacility.Status = Status.ACTIVE;
                 createdFacility.LocationId = await _locationService.CreateLocationJson(model.LocationJson);
                 await _service.AddAsync(createdFacility);
                 await _service.Save();
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return CreatedAtAction("CreateFacility", new { id = createdFacility.Id }, createdFacility);
@@ -222,7 +231,17 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> UpdateFacility(int id, [FromBody] FacilityUM model)
         {
+            ResponseModel responseModel = new();
+
             var updateFacility = await _service.GetByIdAsync(_ => _.Id == id);
+
+            if (updateFacility is null)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Facility));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
+            }
             try
             {
                 updateFacility.LocationId =  await _locationService.UpdateLocationJson(updateFacility.LocationId, model.LocationJson);
@@ -234,7 +253,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
@@ -254,10 +276,21 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
+            ResponseModel responseModel = new();
+
             var deleteFacility = await _service.GetByIdAsync(_ => _.Id == id);
+
+            if (deleteFacility is null)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Facility));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
+            }
+
             try
             {
-                deleteFacility.Status = Constants.Status.INACTIVE;
+                deleteFacility.Status = Status.INACTIVE;
                 deleteFacility.LocationId = null;
                 await _locationService.DisableLocation(deleteFacility.LocationId);
                 _service.Update(deleteFacility);
@@ -265,7 +298,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
             return NoContent();
         }

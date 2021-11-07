@@ -51,15 +51,23 @@ namespace IPSB.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<AccountVM>> CheckLogin(AuthWebLogin authAccount)
         {
+            ResponseModel responseModel = new();
+
             var account = _accountService.CheckLogin(authAccount.Email, authAccount.Password, _ => _.Store, _ => _.Building);
             
             if (account == null)
             {
-                return Unauthorized();
+                responseModel.Code = StatusCodes.Status401Unauthorized;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Unauthorized(responseModel);
             }
 
             if(account.Role.Equals(Role.VISITOR)){
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(authAccount.Email) + " or " + nameof(authAccount.Password));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
             }
 
             var rtnAccount = await _jwtTokenProvider.GetUserAuth<AuthLoginSuccess>(account, Response);
@@ -86,14 +94,22 @@ namespace IPSB.Controllers
         [HttpPost("login-phone")]
         public async Task<ActionResult<AccountVM>> LoginPhone(AuthPhoneLogin authAccount)
         {
+            ResponseModel responseModel = new();
+
             var account = await _accountService.GetByIdAsync(_ => _.Phone == authAccount.Phone && _.Password == authAccount.Password);
             if (account == null)
             {
-                return Unauthorized();
+                responseModel.Code = StatusCodes.Status401Unauthorized;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Unauthorized(responseModel);
             }
 
             if(!account.Role.Equals(Role.VISITOR)){
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(authAccount.Phone) + " or " + nameof(authAccount.Password));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
             }
 
             var rtnAccount = await _jwtTokenProvider.GetUserAuth<AuthLoginSuccess>(account, Response);
@@ -142,6 +158,8 @@ namespace IPSB.Controllers
         [HttpPost("login-firebase")]
         public async Task<ActionResult<AccountVM>> CheckLoginFirebase(AuthFirebaseLogin authAccount)
         {
+            ResponseModel responseModel = new();
+
             var auth = FirebaseAuth.DefaultInstance;
 
             string phone = null;
@@ -157,7 +175,10 @@ namespace IPSB.Controllers
             } 
             catch (Exception)
             {
-                return Unauthorized("Invalid login, please try again!");
+                responseModel.Code = StatusCodes.Status401Unauthorized;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Unauthorized(responseModel);
             }
             Account accountCreate = null;
             if (phone != null)
@@ -197,12 +218,18 @@ namespace IPSB.Controllers
                 }
                 catch (Exception)
                 {
-                    return StatusCode(StatusCodes.Status500InternalServerError);
+                    responseModel.Code = StatusCodes.Status500InternalServerError;
+                    responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                    responseModel.Type = ResponseType.CAN_NOT_READ;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
                 }
             }
             else if (accountCreate.Status != Status.ACTIVE)
             {
-                return Unauthorized();
+                responseModel.Code = StatusCodes.Status401Unauthorized;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Unauthorized(responseModel);
             }
 
             var rtnAccount = await _jwtTokenProvider.GetUserAuth<AuthLoginSuccess>(accountCreate, Response);
@@ -228,15 +255,23 @@ namespace IPSB.Controllers
         [HttpPost("refresh-token")]
         public async Task<ActionResult> RefreshToken(AuthRefreshToken authAccount)
         {
+            ResponseModel responseModel = new();
+
             string tokenFromReqBody = authAccount.RefreshToken;
             string tokenFromCookie = Request.Cookies[CookieConfig.REFRESH_TOKEN];
             if (tokenFromReqBody != null && tokenFromCookie != null)
             {
-                return BadRequest("Refresh Token appeared in both cookie and request body!");
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.REFRESH_TOKEN;
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
             }
             if (tokenFromReqBody == null && tokenFromCookie == null)
             {
-                return BadRequest("Require Token in cookie or in request body!");
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.REQUIRE_TOKEN;
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
             }
             string refreshToken = tokenFromReqBody ?? tokenFromCookie;
             int accountId;
@@ -246,13 +281,19 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return Unauthorized();
+                responseModel.Code = StatusCodes.Status401Unauthorized;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Unauthorized(responseModel);
             }
 
             Account accountFound = await _accountService.GetByIdAsync(_ => _.Id == accountId, _ => _.Store);
             if (accountFound.Status.Equals(Status.INACTIVE))
             {
-                return Unauthorized();
+                responseModel.Code = StatusCodes.Status401Unauthorized;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Unauthorized(responseModel);
             }
 
             var rtnAccount = await _jwtTokenProvider.GetUserAuth<AuthLoginSuccess>(accountFound, Response);
@@ -260,7 +301,7 @@ namespace IPSB.Controllers
         }
 
         /// <summary>
-        /// Change password of an account
+        /// Change password of an account on web
         /// </summary>
         /// <remarks>
         /// Sample Request:
@@ -279,20 +320,32 @@ namespace IPSB.Controllers
         [HttpPut("change-password")]
         public async Task<ActionResult> ChangePassword(AuthWebChangePassword authAccount)
         {
-            if (!authAccount.AccountId.ToString().Equals(User.Identity.Name))
-            {
-                return Forbid();
-            }
-
+            ResponseModel responseModel = new();
+            
             var updAccount = await _accountService.GetByIdAsync(_ => _.Id == authAccount.AccountId);
+            
             if (updAccount == null)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Account));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
+            }
+            
+            if (!authAccount.AccountId.ToString().Equals(User.Identity.Name))
+            {
+                responseModel.Code = StatusCodes.Status403Forbidden;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE_UPDATE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Forbid(responseModel.ToString());
             }
 
             if (updAccount.Status.Equals(Status.INACTIVE))
             {
-                return Unauthorized();
+                responseModel.Code = StatusCodes.Status401Unauthorized;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Unauthorized(responseModel);
             }
 
             try
@@ -306,10 +359,81 @@ namespace IPSB.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
             return NoContent();
         }
+
+
+        /// <summary>
+        /// Change password of an account on mobile
+        /// </summary>
+        /// <remarks>
+        /// Sample Request:
+        /// 
+        ///     POST {
+        ///         "AccountId": "1"
+        ///         "Password" : "123456"
+        ///     }
+        /// </remarks>
+        /// <returns>Return the account with the corresponding id</returns>
+        /// <response code="200">Account exists in the system</response>
+        /// <response code="401">No accounts found with the given username and password</response>
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [HttpPut("change-password-mobile")]
+        public async Task<ActionResult> ChangePasswordMobile(int id, AuthMobileChangePassword authAccount)
+        {
+            ResponseModel responseModel = new();
+
+            var updAccount = await _accountService.GetByIdAsync(_ => _.Id == id);
+
+            if (updAccount == null)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Account));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
+            }
+
+            if (updAccount.Status.Equals(Status.INACTIVE))
+            {
+                responseModel.Code = StatusCodes.Status401Unauthorized;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Unauthorized(responseModel);
+            }
+
+            if (!updAccount.Password.Equals(authAccount.OldPassword))
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(authAccount.OldPassword));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
+            }
+
+            try
+            {
+                updAccount.Id = authAccount.AccountId;
+                updAccount.Password = authAccount.NewPassword;
+
+                _accountService.Update(updAccount);
+                await _accountService.Save();
+            }
+            catch (Exception e)
+            {
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
+            }
+            return NoContent();
+        }
+
 
         /// <summary>
         /// Authorize token sent from request
@@ -331,6 +455,8 @@ namespace IPSB.Controllers
         [HttpGet("authorize-token")]
         public async Task<ActionResult> AuthorizeToken(string token)
         {
+            ResponseModel responseModel = new();
+
             int accountId;
             try
             {
@@ -338,18 +464,28 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return Unauthorized();
+                responseModel.Code = StatusCodes.Status401Unauthorized;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Unauthorized(responseModel);
             }
 
             Account updAccount = await _accountService.GetByIdAsync(_ => _.Id == accountId);
-            if (updAccount.Status.Equals(Status.INACTIVE))
-            {
-                return Unauthorized();
-            }
 
             if (updAccount == null)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Account));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
+            }
+
+            if (updAccount.Status.Equals(Status.INACTIVE))
+            {
+                responseModel.Code = StatusCodes.Status401Unauthorized;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Unauthorized(responseModel);
             }
 
             return Ok(updAccount);
@@ -372,11 +508,16 @@ namespace IPSB.Controllers
         [HttpPost("forgot-password")]
         public async Task<ActionResult> ForgotPassword(AuthWebForgotPassword authAccount)
         {
+            ResponseModel responseModel = new();
+
             var account = _accountService.CheckEmail(authAccount.Email);
 
             if (account == null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(authAccount.Email));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
 
             var additionalClaims = _jwtTokenProvider.GetAdditionalClaims(account);
@@ -411,8 +552,5 @@ namespace IPSB.Controllers
 
             return Ok(accessToken);
         }
-
-
-
     }
 }

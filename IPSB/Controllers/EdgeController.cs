@@ -56,6 +56,8 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<EdgeVM>> GetEdgeById(int id)
         {
+            ResponseModel responseModel = new();
+
             var cacheId = new CacheKey<Edge>(id);
             var cacheObjectType = new Edge();
             var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
@@ -80,7 +82,10 @@ namespace IPSB.Controllers
 
                 if (edge == null)
                 {
-                    return NotFound();
+                    responseModel.Code = StatusCodes.Status404NotFound;
+                    responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Edge));
+                    responseModel.Type = ResponseType.NOT_FOUND;
+                    return NotFound(responseModel);
                 }
 
                 /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Read);
@@ -97,9 +102,16 @@ namespace IPSB.Controllers
             {
                 if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
                 {
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
                 }
-                return StatusCode(StatusCodes.Status500InternalServerError);
+
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
         }
@@ -124,6 +136,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<EdgeVM>>> GetAllEdges([FromQuery] EdgeSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
+            ResponseModel responseModel = new();
+
             var cacheId = new CacheKey<Edge>(Utils.Constants.DefaultValue.INTEGER);
             var cacheObjectType = new Edge();
             var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
@@ -176,7 +190,16 @@ namespace IPSB.Controllers
                     list = list.Where(_ => _.FromLocation.FloorPlan.BuildingId == model.BuildingId);
                 }
 
-                if (!string.IsNullOrEmpty(model.Status)){
+                if (!string.IsNullOrEmpty(model.Status)) {
+
+                    if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
+                    {
+                        responseModel.Code = StatusCodes.Status400BadRequest;
+                        responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                        responseModel.Type = ResponseType.INVALID_REQUEST;
+                        return BadRequest(responseModel);
+                    }
+
                     list = list.Where(_ => Status.ACTIVE.Equals(_.ToLocation.Status) && Status.ACTIVE.Equals(_.FromLocation.Status));
                 }
 
@@ -190,9 +213,16 @@ namespace IPSB.Controllers
             {
                 if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
                 {
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
                 }
-                return StatusCode(StatusCodes.Status500InternalServerError);
+
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
         }
         
@@ -217,7 +247,9 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<EdgeVM>>> CountEdges([FromQuery] EdgeSM model)
         {
-            var cacheId = new CacheKey<Edge>(Utils.Constants.DefaultValue.INTEGER);
+            ResponseModel responseModel = new();
+
+            var cacheId = new CacheKey<Edge>(DefaultValue.INTEGER);
             var cacheObjectType = new Edge();
             var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
             try
@@ -269,7 +301,16 @@ namespace IPSB.Controllers
                     list = list.Where(_ => _.FromLocation.FloorPlan.BuildingId == model.BuildingId);
                 }
 
-                if (!string.IsNullOrEmpty(model.Status)){
+                if (!string.IsNullOrEmpty(model.Status)) {
+
+                    if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
+                    {
+                        responseModel.Code = StatusCodes.Status400BadRequest;
+                        responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                        responseModel.Type = ResponseType.INVALID_REQUEST;
+                        return BadRequest(responseModel);
+                    }
+
                     list = list.Where(_ => Status.ACTIVE.Equals(_.ToLocation.Status) && Status.ACTIVE.Equals(_.FromLocation.Status));
                 }
 
@@ -277,11 +318,19 @@ namespace IPSB.Controllers
             }
             catch (Exception e)
             {
-                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                if (e.Message.Equals(ExceptionMessage.NOT_MODIFIED))
                 {
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
+
                 }
-                return StatusCode(StatusCodes.Status500InternalServerError);
+
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
         }
 
@@ -307,6 +356,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> CreateEdge([FromBody] List<EdgeCM> listModel)
         {
+            ResponseModel responseModel = new();
+
             List<Edge> list = listModel.Select(model => _mapper.Map<Edge>(model)).ToList();
             try
             {
@@ -315,7 +366,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
             var rtnEdgeIds = list.Select(_ => _.Id);
             return CreatedAtAction("CreateEdge", rtnEdgeIds);
@@ -337,17 +391,25 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutEdge(int id, [FromBody] EdgeUM model)
         {
+            ResponseModel responseModel = new();
+
             Edge updEdge = await _service.GetByIdAsync(_ => _.Id == id);
 
             if (updEdge == null || id != model.Id)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Edge));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
 
             var authorizedResult = await _authorizationService.AuthorizeAsync(User, updEdge, Operations.Update);
             if (!authorizedResult.Succeeded)
             {
-                return new ObjectResult($"Not authorize to update edge with id: {id}") { StatusCode = 403 };
+                responseModel.Code = StatusCodes.Status403Forbidden;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE_UPDATE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Forbid(responseModel.ToString());
             }
 
             try
@@ -368,7 +430,10 @@ namespace IPSB.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
@@ -388,6 +453,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> DeleteRange([FromBody] EdgeDM model)
         {
+            ResponseModel responseModel = new();
+
             try
             {
                 _service.DeleteRange(model.Ids);
@@ -395,7 +462,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
             return NoContent();
         }

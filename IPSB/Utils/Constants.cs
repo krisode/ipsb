@@ -146,6 +146,7 @@ namespace IPSB.Utils
             public const string STRING = default;
             public const float FLOAT = default;
             public const bool BOOLEAN = default;
+            public const string PASSWORD = "password123";
         }
 
         public static class Request
@@ -176,6 +177,70 @@ namespace IPSB.Utils
 
             public const string FROM = "IPSB Team <noreply@notifications.getipsb.com";
 
+        }
+
+        public static class ResponseMessage
+        {
+            public const string SUCCESS = "Success";
+
+            public const string FAIL = "Fail";
+
+            public const string NOT_FOUND = "Object does not exist."; // 404
+
+            public const string DUPLICATED = "Object already exists."; // 409
+
+            public const string DELETED = "Object has already deleted."; // 400
+
+            public const string UNAUTHORIZE = "Authorization failed."; // 401
+
+            public const string UNAUTHORIZE_READ = "Not authorize to get."; // 403
+
+            public const string UNAUTHORIZE_CREATE = "Not authorize to create."; // 403
+
+            public const string UNAUTHORIZE_UPDATE = "Not authorize to update."; // 403
+
+            public const string UNAUTHORIZE_DELETE = "Not authorize to delete."; // 403
+
+            
+            public const string INVALID_PARAMETER = "Invalid parameter: Object"; // 400
+
+            public const string NOT_MODIFIED = "Not modified";
+
+            public const string CAN_NOT_READ = "Can not get due to error."; // 500 or 400
+
+            public const string CAN_NOT_CREATE = "Can not create due to error."; // 500 or 400
+
+            public const string CAN_NOT_UPDATE = "Can not save due to error."; // 500 or 400
+
+            public const string CAN_NOT_DELETE = "Can not delete due to error."; // 500 or 400
+
+            public const string REFRESH_TOKEN = "Refresh Token appeared in both cookie and request body!.";
+
+            public const string REQUIRE_TOKEN = "Require Token in cookie or in request body!.";
+
+        }
+
+        public static class ResponseType
+        {
+            public const string SUCCESS = "Success";
+
+            public const string FAIL = "Fail";
+            
+            public const string NOT_FOUND = "NotFoundException";
+
+            public const string INVALID_REQUEST = "One or more validation errors occurred.";
+
+            public const string NOT_MODIFIED = "Not modified";
+
+            public const string UNAUTHORIZE = "OAuthException";
+
+            public const string CAN_NOT_READ = "ExceptionOnFailedGet";
+
+            public const string CAN_NOT_CREATE = "ExceptionOnFailedCreate";
+
+            public const string CAN_NOT_UPDATE = "ExceptionOnFailedSave";
+
+            public const string CAN_NOT_DELETE = "ExceptionOnFailedDelete";
         }
 
     }

@@ -47,11 +47,16 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult> GetCouponTypeById(int id)
         {
+            ResponseModel responseModel = new();
+
             var result = await _service.GetByIdAsync(_ => _.Id == id);
 
             if (result == null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status404NotFound;
+                responseModel.Message = Constants.ResponseMessage.NOT_FOUND.Replace("Object", nameof(CouponType));
+                responseModel.Type = Constants.ResponseType.NOT_FOUND;
+                return NotFound(responseModel);
             }
 
             var rtnCouponType = _mapper.Map<CouponTypeVM>(result);
@@ -162,11 +167,16 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<CouponTypeVM>> CreateCouponType([FromBody] CouponTypeCM model)
         {
+            ResponseModel responseModel = new();
+
             var createdCouponType = _mapper.Map<CouponType>(model);
             bool isExisted = _service.GetAll().Where(_ => _.Name.ToLower().Equals(model.Name)).Count() >= 1;
             if (isExisted)
             {
-                return Conflict();
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = Constants.ResponseMessage.DUPLICATED.Replace("Object", model.Name);
+                responseModel.Type = Constants.ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel.ToString());
             }
             try
             {
@@ -176,7 +186,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = Constants.ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = Constants.ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return CreatedAtAction("CreateCouponType", new { id = createdCouponType.Id }, createdCouponType);
@@ -209,12 +222,23 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> UpdateCouponType(int id, [FromBody] CouponTypeUM model)
         {
+            ResponseModel responseModel = new();
+
             bool isExisted = _service.GetAll().Where(_ => _.Name.ToLower().Equals(model.Name) && id != _.Id).Count() >= 1;
             if (isExisted)
             {
                 return Conflict();
             }
+
             var updateCouponType = await _service.GetByIdAsync(_ => _.Id == id);
+
+            if (updateCouponType is null)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = Constants.ResponseMessage.NOT_FOUND.Replace("Object", nameof(CouponType));
+                responseModel.Type = Constants.ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
+            }
 
             try
             {
@@ -225,7 +249,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = Constants.ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = Constants.ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
@@ -245,7 +272,25 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
+            ResponseModel responseModel = new();
+
             var deleteCouponType = await _service.GetByIdAsync(_ => _.Id == id);
+
+            if (deleteCouponType is null)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = Constants.ResponseMessage.NOT_FOUND.Replace("Object", nameof(CouponType));
+                responseModel.Type = Constants.ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
+            }
+
+            if (deleteCouponType.Status.Equals(Constants.Status.INACTIVE))
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = Constants.ResponseMessage.DELETED.Replace("Object", nameof(CouponType));
+                responseModel.Type = Constants.ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
+            }
 
             try
             {
@@ -255,7 +300,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = Constants.ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = Constants.ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
