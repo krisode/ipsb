@@ -224,7 +224,7 @@ namespace IPSB.Controllers
                     return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
                 }
             }
-            else if (accountCreate.Status != Status.ACTIVE)
+            else if (accountCreate.Status != Status.ACTIVE && !accountCreate.Role.Equals(Role.VISITOR))
             {
                 responseModel.Code = StatusCodes.Status401Unauthorized;
                 responseModel.Message = ResponseMessage.UNAUTHORIZE;
