@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using static IPSB.Utils.Constants;
 
 namespace IPSB.Controllers
 {
@@ -59,6 +60,8 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<BuildingVM>> GetBuildingById(int id)
         {
+            ResponseModel responseModel = new();
+
             var cacheId = new CacheKey<Building>(id);
             var cacheObjectType = new Building();
             var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
@@ -78,7 +81,11 @@ namespace IPSB.Controllers
 
                 if (building == null)
                 {
-                    return NotFound();
+                    responseModel.Code = StatusCodes.Status404NotFound;
+                    responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Account));
+                    responseModel.Type = ResponseType.NOT_FOUND;
+
+                    return NotFound(responseModel);
                 }
 
                 /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Read);
@@ -93,11 +100,19 @@ namespace IPSB.Controllers
             }
             catch (Exception e)
             {
-                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                if (e.Message.Equals(ExceptionMessage.NOT_MODIFIED))
                 {
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
                 }
-                return StatusCode(StatusCodes.Status500InternalServerError);
+
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
+
             }
         }
 
@@ -121,7 +136,9 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<BuildingVM>>> GetAllBuildings([FromQuery] BuildingSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
-            var cacheId = new CacheKey<Building>(Utils.Constants.DefaultValue.INTEGER);
+            ResponseModel responseModel = new();
+
+            var cacheId = new CacheKey<Building>(DefaultValue.INTEGER);
             var cacheObjectType = new Building();
             string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
 
@@ -144,21 +161,24 @@ namespace IPSB.Controllers
 
                 if (!string.IsNullOrEmpty(model.Status))
                 {
-                    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                    if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
                     {
-                        return BadRequest();
+                        responseModel.Code = StatusCodes.Status400BadRequest;
+                        responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                        responseModel.Type = ResponseType.INVALID_REQUEST;
+                        return BadRequest(responseModel);
                     }
 
                     else
                     {
-                        if (model.Status == Constants.Status.ACTIVE)
+                        if (model.Status == Status.ACTIVE)
                         {
-                            list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
+                            list = list.Where(_ => _.Status == Status.ACTIVE);
                         }
 
-                        if (model.Status == Constants.Status.INACTIVE)
+                        if (model.Status == Status.INACTIVE)
                         {
-                            list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
+                            list = list.Where(_ => _.Status == Status.INACTIVE);
                         }
                     }
                 }
@@ -189,9 +209,17 @@ namespace IPSB.Controllers
             {
                 if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
                 {
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
+
                 }
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
+
             }
 
         }
@@ -217,6 +245,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<BuildingVM>>> CountBuildings([FromQuery] BuildingSM model)
         {
+            ResponseModel responseModel = new();
+
             var cacheId = new CacheKey<Building>(Utils.Constants.DefaultValue.INTEGER);
             var cacheObjectType = new Building();
             string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
@@ -240,21 +270,24 @@ namespace IPSB.Controllers
 
                 if (!string.IsNullOrEmpty(model.Status))
                 {
-                    if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                    if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
                     {
-                        return BadRequest();
+                        responseModel.Code = StatusCodes.Status400BadRequest;
+                        responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                        responseModel.Type = ResponseType.INVALID_REQUEST;
+                        return BadRequest(responseModel);
                     }
 
                     else
                     {
-                        if (model.Status == Constants.Status.ACTIVE)
+                        if (model.Status == Status.ACTIVE)
                         {
-                            list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
+                            list = list.Where(_ => _.Status == Status.ACTIVE);
                         }
 
-                        if (model.Status == Constants.Status.INACTIVE)
+                        if (model.Status == Status.INACTIVE)
                         {
-                            list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
+                            list = list.Where(_ => _.Status == Status.INACTIVE);
                         }
                     }
                 }
@@ -280,11 +313,18 @@ namespace IPSB.Controllers
             }
             catch (Exception e)
             {
-                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                if (e.Message.Equals(ExceptionMessage.NOT_MODIFIED))
                 {
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
+
                 }
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
         }
@@ -316,12 +356,19 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<BuildingCM>> CreateBuilding([FromForm] BuildingCM model)
         {
+            ResponseModel responseModel = new();
+
             bool isDuplicate = _service.GetAll()
                                         .Where(_ => _.Name.ToLower().Equals(model.Name.ToLower()) || _.ManagerId == model.ManagerId)
                                         .Count() >= 1;
             if (isDuplicate)
             {
-                return Conflict();
+                
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", nameof(Building) + " " + model.Name + " or " + " Manager with id {" + model.ManagerId.ToString() + "}");
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+
+                return Conflict(responseModel.ToString());
             }
 
 
@@ -350,7 +397,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return CreatedAtAction("GetBuildingById", new { id = crtBuilding.Id }, crtBuilding);
@@ -374,19 +424,33 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutBuilding(int id, [FromForm] BuildingUM model)
         {
+            ResponseModel responseModel = new();
+
             #region Get building by ID
             Building updBuilding = await _service.GetByIdAsync(_ => _.Id == id);
             #endregion
+
+            if (updBuilding is null)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Building));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
+            }
 
             #region Authorization(Role = "Building Manager, Admin")
             var authorizedResult = await _authorizationService.AuthorizeAsync(User, updBuilding, Operations.Update);
 
             if (!authorizedResult.Succeeded)
             {
-                return new ObjectResult($"Not authorize to update building with id: {id}") { StatusCode = 403 };
+                responseModel.Code = StatusCodes.Status403Forbidden;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE_UPDATE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Forbid(responseModel.ToString());
             }
             #endregion
 
+            
 
             #region If building has image, set it as new image in case inputted image request is null
             string imageURL = updBuilding.ImageUrl;
@@ -419,9 +483,12 @@ namespace IPSB.Controllers
                 }
 
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                return BadRequest(e);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
             #endregion
 
@@ -444,7 +511,16 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         public async Task<ActionResult> Delete(int id)
         {
+            ResponseModel responseModel = new();
             Building building = await _service.GetByIdAsync(_ => _.Id == id);
+
+            if (building is null)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Building));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
+            }
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, building, Operations.Delete);
             if (!authorizedResult.Succeeded)
@@ -452,17 +528,17 @@ namespace IPSB.Controllers
                 return new ObjectResult($"Not authorize to delete building with id: {id}") { StatusCode = 403 };
             }*/
 
-            if (building is null)
+
+            if (building.Status.Equals(Status.INACTIVE))
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.DELETED.Replace("Object", nameof(Building));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+
+                return BadRequest(responseModel);
             }
 
-            if (building.Status.Equals(Constants.Status.INACTIVE))
-            {
-                return BadRequest();
-            }
-
-            building.Status = Constants.Status.INACTIVE;
+            building.Status = Status.INACTIVE;
             try
             {
                 _service.Update(building);
@@ -470,7 +546,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();

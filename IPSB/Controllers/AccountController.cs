@@ -56,17 +56,26 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<AccountVM>> GetAccountById(int id)
         {
+            ResponseModel responseModel = new();
+
             var account = await _service.GetByIdAsync(_ => _.Id == id, _ => _.Store, _ => _.Building);
 
             if (account == null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status404NotFound;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Account));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return NotFound(responseModel);
             }
+
             // resouce-based imperative authorization
             var authorizedResult = await _authorizationService.AuthorizeAsync(User, account, Operations.Read);
             if (!authorizedResult.Succeeded)
             {
-                return Forbid();
+                responseModel.Code = StatusCodes.Status403Forbidden;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE_READ;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Forbid(responseModel.ToString());
             }
 
             var rtnAccount = _mapper.Map<AccountVM>(account);
@@ -94,6 +103,9 @@ namespace IPSB.Controllers
         //[Authorize(Policy = Policies.QUERY_ACCOUNT)]
         public ActionResult<IEnumerable<AccountVM>> GetAllAccounts([FromQuery] AccountSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
+
+            ResponseModel responseModel = new();
+
             var list = _service.GetAll(_ => _.Store, _ => _.Building);
 
             if (model.NotManageBuilding)
@@ -135,7 +147,10 @@ namespace IPSB.Controllers
             {
                 if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE && model.Status != Status.NEW)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
                 else
                 {
@@ -172,6 +187,8 @@ namespace IPSB.Controllers
         //[Authorize(Policy = Policies.QUERY_ACCOUNT)]
         public ActionResult<IEnumerable<AccountVM>> CountAccounts([FromQuery] AccountSM model)
         {
+            ResponseModel responseModel = new();
+
             var list = _service.GetAll(_ => _.Store, _ => _.Building);
 
             if (model.NotManageBuilding)
@@ -213,7 +230,10 @@ namespace IPSB.Controllers
             {
                 if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE && model.Status != Status.NEW)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
                 else
                 {
@@ -250,10 +270,16 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<AccountCM>> CreateAccount([FromForm] AccountCM model)
         {
+            ResponseModel responseModel = new();
+
             Account account = await _service.GetByIdAsync(_ => _.Email == model.Email);
+
             if (account is not null)
             {
-                return Conflict();
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Email);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel);
             }
 
             //if (!string.IsNullOrEmpty(model.Status))
@@ -264,9 +290,12 @@ namespace IPSB.Controllers
             //    }
             //}
 
-            if (!Role.BUILDING_MANAGER.Equals(model.Role) && !Role.ADMIN.Equals(model.Role))
+            if (!Role.BUILDING_MANAGER.Equals(model.Role) && !Role.STORE_OWNER.Equals(model.Role))
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Role));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
             }
 
             Account crtAccount = _mapper.Map<Account>(model);
@@ -275,8 +304,8 @@ namespace IPSB.Controllers
             crtAccount.ImageUrl = imageURL;
 
             // Default POST Status = "NEW"
-            crtAccount.Status = Constants.Status.NEW;
-            crtAccount.Password = "password123";
+            crtAccount.Status = Status.NEW;
+            crtAccount.Password = DefaultValue.PASSWORD;
 
             try
             {
@@ -285,7 +314,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return CreatedAtAction("GetAccountById", new { id = crtAccount.Id }, crtAccount);
@@ -308,13 +340,26 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutAccount(int id, [FromForm] AccountUM model)
         {
-
+            ResponseModel responseModel = new();
 
             Account updAccount = await _service.GetByIdAsync(_ => _.Id == id);
+
+            if (updAccount is null)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Account));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
+            }
+
             var authorizedResult = await _authorizationService.AuthorizeAsync(User, updAccount, Operations.Update);
+            
             if (!authorizedResult.Succeeded)
             {
-                return Forbid();
+                responseModel.Code = StatusCodes.Status403Forbidden;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE_UPDATE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Forbid(responseModel.ToString());
             }
 
             string imageURL = updAccount.ImageUrl;
@@ -333,9 +378,12 @@ namespace IPSB.Controllers
                 _service.Update(updAccount);
                 await _service.Save();
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                return BadRequest(e);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
@@ -355,16 +403,38 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
+            ResponseModel responseModel = new();
+
             var deleteEntity = await _service.GetByIdAsync(_ => _.Id == id);
+
+            if (deleteEntity is null)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Account));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
+            }
+
+            if (deleteEntity.Role.Equals(Status.INACTIVE))
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.DELETED.Replace("Object", nameof(Account));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
+            }
+
             try
             {
-                deleteEntity.Status = Constants.Status.INACTIVE;
+                deleteEntity.Status = Status.INACTIVE;
                 _service.Update(deleteEntity);
                 await _service.Save();
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
             return NoContent();
         }

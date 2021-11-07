@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static IPSB.Utils.Constants;
 
 namespace IPSB.Controllers
 {
@@ -60,11 +61,16 @@ namespace IPSB.Controllers
         [HttpGet("{id}")]
         public ActionResult<CouponVM> GetCouponById(int id)
         {
+            ResponseModel responseModel = new();
+
             var coupon = _service.GetByIdAsync(_ => _.Id == id, _ => _.Store, _ => _.CouponInUses).Result;
 
             if (coupon == null)
             {
-                return NotFound();
+                responseModel.Code = StatusCodes.Status404NotFound;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Coupon));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return NotFound(responseModel);
             }
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, coupon, Operations.Read);
@@ -98,6 +104,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<CouponVM>> GetAllCoupons([FromQuery] CouponSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
+            ResponseModel responseModel = new();
+
             IQueryable<Coupon> list = _service.GetAll(_ => _.Store, _ => _.CouponInUses, _ => _.CouponType);
 
             if (model.BuildingId != 0)
@@ -182,21 +190,24 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
 
                 else
                 {
-                    if (model.Status == Constants.Status.ACTIVE)
+                    if (model.Status == Status.ACTIVE)
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
+                        list = list.Where(_ => _.Status == Status.ACTIVE);
                     }
 
-                    if (model.Status == Constants.Status.INACTIVE)
+                    if (model.Status == Status.INACTIVE)
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
+                        list = list.Where(_ => _.Status == Status.INACTIVE);
                     }
                 }
             }
@@ -229,6 +240,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<CouponVM>> CountCoupons([FromQuery] CouponSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
+            ResponseModel responseModel = new();
+
             IQueryable<Coupon> list = _service.GetAll(_ => _.Store, _ => _.CouponInUses, _ => _.CouponType);
 
             if (model.BuildingId != 0)
@@ -313,21 +326,24 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Status))
             {
-                if (model.Status != Constants.Status.ACTIVE && model.Status != Constants.Status.INACTIVE)
+                if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
 
                 else
                 {
-                    if (model.Status == Constants.Status.ACTIVE)
+                    if (model.Status == Status.ACTIVE)
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.ACTIVE);
+                        list = list.Where(_ => _.Status == Status.ACTIVE);
                     }
 
-                    if (model.Status == Constants.Status.INACTIVE)
+                    if (model.Status == Status.INACTIVE)
                     {
-                        list = list.Where(_ => _.Status == Constants.Status.INACTIVE);
+                        list = list.Where(_ => _.Status == Status.INACTIVE);
                     }
                 }
             }
@@ -370,6 +386,8 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<CouponCM>> CreateCoupon([FromForm] CouponCM model)
         {
+            ResponseModel responseModel = new();
+
             var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             DateTimeOffset localServerTime = DateTimeOffset.Now;
             DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
@@ -377,19 +395,28 @@ namespace IPSB.Controllers
             // Created coupon has publish date less than current date
             if (model.PublishDate < localTime.DateTime)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.PublishDate));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
             }
 
             // Created coupon has expired date less than current date
             if (model.ExpireDate < localTime.DateTime)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.ExpireDate));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
             }
 
             // Created coupon has publish date less than expired date
             if (model.PublishDate.Value.AddHours(2) > model.ExpireDate)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.PublishDate) + " must be larger 2 hours than " + nameof(model.ExpireDate));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
             }
 
             // CASE: Created coupon has coupon type as FIXED
@@ -398,12 +425,18 @@ namespace IPSB.Controllers
                 // CASE-1: Created coupon does not has value for amount field 
                 if (!model.Amount.HasValue)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Amount));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
                 // CASE-2: Created coupon has value for max discount field 
                 if (model.MaxDiscount.HasValue)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.MaxDiscount));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
             }
 
@@ -413,13 +446,19 @@ namespace IPSB.Controllers
                 // CASE-1: Created coupon does not has value for max discount field 
                 if (!model.MaxDiscount.HasValue)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.MaxDiscount));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
 
                 // CASE-2: Created coupon has value for amount field 
                 if (!model.Amount.HasValue)
                 {
-                    return BadRequest();
+                    responseModel.Code = StatusCodes.Status400BadRequest;
+                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Amount));
+                    responseModel.Type = ResponseType.INVALID_REQUEST;
+                    return BadRequest(responseModel);
                 }
             }
 
@@ -430,7 +469,10 @@ namespace IPSB.Controllers
             // CASE: Coupon with the same code at the same store do exist
             if (coupon is not null)
             {
-                return Conflict();
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Code);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel.ToString());
             }
 
             Coupon crtCoupon = _mapper.Map<Coupon>(model);
@@ -466,7 +508,11 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
+
             }
 
             return CreatedAtAction("GetCouponById", new { id = crtCoupon.Id }, crtCoupon);
@@ -490,8 +536,17 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> PutCoupon(int id, [FromForm] CouponUM model)
         {
+            ResponseModel responseModel = new();
 
             Coupon updCoupon = await _service.GetByIdAsync(_ => _.Id == id);
+
+            if (updCoupon is null)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Coupon));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
+            }
 
             // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updCoupon, Operations.Update);
             // if (!authorizedResult.Succeeded)
@@ -524,7 +579,10 @@ namespace IPSB.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
@@ -545,6 +603,8 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         public async Task<ActionResult> DeleteCoupon(int id)
         {
+            ResponseModel responseModel = new();
+
             Coupon coupon = await _service.GetByIdAsync(_ => _.Id == id, _ => _.CouponInUses);
 
             // var authorizedResult = await _authorizationService.AuthorizeAsync(User, coupon, Operations.Delete);
@@ -555,15 +615,21 @@ namespace IPSB.Controllers
 
             if (coupon is null)
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Coupon));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
             }
 
-            if (coupon.Status.Equals(Constants.Status.INACTIVE))
+            if (coupon.Status.Equals(Status.INACTIVE))
             {
-                return BadRequest();
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.DELETED.Replace("Object", nameof(Coupon));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
             }
 
-            coupon.Status = Constants.Status.INACTIVE;
+            coupon.Status = Status.INACTIVE;
 
             try
             {
@@ -607,7 +673,10 @@ namespace IPSB.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
+                responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
             return NoContent();
