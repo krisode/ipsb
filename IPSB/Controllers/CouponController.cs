@@ -108,8 +108,8 @@ namespace IPSB.Controllers
         {
             ResponseModel responseModel = new();
 
-            IQueryable<Coupon> list = _service.GetAll(_ => _.Store, 
-            // _ => _.CouponInUses,
+            IQueryable<Coupon> list = _service.GetAll(_ => _.Store,
+             // _ => _.CouponInUses,
              _ => _.CouponType);
 
             if (model.BuildingId != 0)
@@ -222,12 +222,14 @@ namespace IPSB.Controllers
 
             if (model.CheckLimit)
             {
-                pagedModel.Content.ToList().ForEach(coupon =>
+                pagedModel.Content = pagedModel.Content.ToList().Select(coupon =>
                 {
-                    coupon.OverLimit = _couponInUseService.GetAll()
+                    bool overLimit = _couponInUseService.GetAll()
                                                             .Where(couponInUse => couponInUse.CouponId == coupon.Id && couponInUse.Status == Status.USED)
                                                             .Count() >= coupon.Limit;
-                });
+                    coupon.OverLimit = overLimit;
+                    return coupon;
+                }).AsQueryable();
             }
 
             return Ok(pagedModel);
