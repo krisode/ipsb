@@ -118,47 +118,7 @@ namespace IPSB.Controllers
 
             }
         }
-
-        /// <summary>
-        /// Get a specific building by locator tag uuid
-        /// </summary>
-        /// <remarks>
-        /// Sample Request:
-        /// 
-        ///     GET {
-        ///         "locatorTagUuid" : "32938293-343434-dsdsdsdd",
-        ///     }
-        /// </remarks>
-        /// <returns>Return the building with the corresponding locator tag uuid</returns>
-        /// <response code="200">Returns the building with the specified locator tag uuid</response>
-        /// <response code="404">No buildings found with the specified locator tag uuid</response>
-        [Produces("application/json")]
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpGet("{locatorTagUuid}")]
-        public async Task<ActionResult<BuildingVM>> GetBuildingByLocatorTagUUID(string locatorTagUuid)
-        {
-            try
-            {
-                var locatorTag = _locatorTagService.GetAll().Where(_ => _.Uuid == locatorTagUuid).FirstOrDefault();
-                if (locatorTag == null)
-                {
-                    return NotFound();
-                }
-                var buildingToFind = await _service.GetByIdAsync(_ => _.Id == locatorTag.BuildingId);
-                if (buildingToFind == null)
-                {
-                    return NotFound();
-                }
-                return Ok(_mapper.Map<BuildingVM>(buildingToFind));
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-        }
-
+        
         /// <summary>
         /// Get all buildings
         /// </summary>
