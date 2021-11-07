@@ -22,6 +22,7 @@ namespace IPSB.Controllers
     public class CouponInUseController : ControllerBase
     {
         private readonly ICouponInUseService _service;
+        private readonly ICouponService _couponService;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<CouponInUse> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
@@ -29,11 +30,12 @@ namespace IPSB.Controllers
         private readonly IPushNotificationService _pushNotificationService;
         private readonly INotificationService _notificationService;
 
-        public CouponInUseController(ICouponInUseService service, IMapper mapper, IPagingSupport<CouponInUse> pagingSupport,
+        public CouponInUseController(ICouponInUseService service, ICouponService couponService, IMapper mapper, IPagingSupport<CouponInUse> pagingSupport,
             IUploadFileService uploadFileService, IAuthorizationService authorizationService, IPushNotificationService pushNotificationService,
             INotificationService notificationService)
         {
             _service = service;
+            _couponService = couponService;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
@@ -117,6 +119,7 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.VisitorId == model.VisitorId);
             }
 
+
             if (model.LowerRedeemDate.HasValue)
             {
                 list = list.Where(_ => _.RedeemDate >= model.LowerRedeemDate);
@@ -175,9 +178,22 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.RateScore != null);
             }
 
+
+
             var pagedModel = _pagingSupport.From(list)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
                 .Paginate<CouponInUseVM>();
+
+            if (model.VisitorId != 0 && model.CouponId != 0 && model.CheckLimit)
+            {
+                pagedModel.Content = pagedModel.Content.ToList().Select(_ =>
+                {
+                    _.OverLimit = _service.GetAll().Where(
+                        _ => _.CouponId == model.CouponId && _.Status.Equals(Status.ACTIVE)
+                        ).Count() >= _.Coupon.Limit;
+                    return _;
+                }).AsQueryable();
+            }
 
             return Ok(pagedModel);
         }
@@ -417,7 +433,7 @@ namespace IPSB.Controllers
                     {
                         if (!string.IsNullOrEmpty(updCouponInUse.FeedbackContent) && string.IsNullOrEmpty(updCouponInUse.FeedbackReply))
                         {
-                           
+
                             var notification = new Notification();
                             notification.Title = "Feedback on coupon";
                             notification.Body = "Coupon " + updCouponInUse.Coupon.Name + " has just received feedback from customer";

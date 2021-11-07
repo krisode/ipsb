@@ -54,7 +54,9 @@ namespace IPSB.ViewModels
 
     public class AuthWebChangePassword
     {
-        public int AccountId { get; set; }
+        [Required]
+        public int? AccountId { get; set; }
+         [Required]
         public string Password { get; set; }
 
     }

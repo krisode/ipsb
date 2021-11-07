@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using FirebaseAdmin.Auth;
 using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
@@ -321,15 +321,23 @@ namespace IPSB.Controllers
         public async Task<ActionResult> ChangePassword(AuthWebChangePassword authAccount)
         {
             ResponseModel responseModel = new();
-
+            
             var updAccount = await _accountService.GetByIdAsync(_ => _.Id == authAccount.AccountId);
-
+            
             if (updAccount == null)
             {
                 responseModel.Code = StatusCodes.Status400BadRequest;
                 responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Account));
                 responseModel.Type = ResponseType.NOT_FOUND;
                 return BadRequest(responseModel);
+            }
+            
+            if (!authAccount.AccountId.ToString().Equals(User.Identity.Name))
+            {
+                responseModel.Code = StatusCodes.Status403Forbidden;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE_UPDATE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Forbid(responseModel.ToString());
             }
 
             if (updAccount.Status.Equals(Status.INACTIVE))
@@ -342,7 +350,7 @@ namespace IPSB.Controllers
 
             try
             {
-                updAccount.Id = authAccount.AccountId;
+                updAccount.Id = (int) authAccount.AccountId;
                 updAccount.Password = authAccount.Password;
                 updAccount.Status = Constants.Status.ACTIVE;
 

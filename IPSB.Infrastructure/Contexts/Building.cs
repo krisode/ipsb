@@ -20,8 +20,8 @@ namespace IPSB.Infrastructure.Contexts
         public string Name { get; set; }
         public string ImageUrl { get; set; }
         public string Address { get; set; }
-        public double? Lat { get; set; }
-        public double? Lng { get; set; }
+        public double Lat { get; set; }
+        public double Lng { get; set; }
         public string Status { get; set; }
 
         public virtual Account Manager { get; set; }
