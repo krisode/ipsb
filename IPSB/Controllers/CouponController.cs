@@ -22,6 +22,7 @@ namespace IPSB.Controllers
     public class CouponController : ControllerBase
     {
         private readonly ICouponService _service;
+        private readonly ICouponInUseService _couponInUseService;
         private readonly INotificationService _notificationService;
         private readonly IPushNotificationService _pushNotificationService;
         private readonly IMapper _mapper;
@@ -29,10 +30,11 @@ namespace IPSB.Controllers
         private readonly IUploadFileService _uploadFileService;
         private readonly IAuthorizationService _authorizationService;
 
-        public CouponController(ICouponService service, INotificationService notificationService, IPushNotificationService pushNotificationService,
+        public CouponController(ICouponService service, ICouponInUseService couponInUseService, INotificationService notificationService, IPushNotificationService pushNotificationService,
             IMapper mapper, IPagingSupport<Coupon> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService)
         {
             _service = service;
+            _couponInUseService = couponInUseService;
             _notificationService = notificationService;
             _pushNotificationService = pushNotificationService;
             _mapper = mapper;
@@ -106,7 +108,9 @@ namespace IPSB.Controllers
         {
             ResponseModel responseModel = new();
 
-            IQueryable<Coupon> list = _service.GetAll(_ => _.Store, _ => _.CouponInUses, _ => _.CouponType);
+            IQueryable<Coupon> list = _service.GetAll(_ => _.Store, 
+            // _ => _.CouponInUses,
+             _ => _.CouponType);
 
             if (model.BuildingId != 0)
             {
@@ -215,6 +219,16 @@ namespace IPSB.Controllers
             var pagedModel = _pagingSupport.From(list)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
                 .Paginate<CouponVM>();
+
+            if (model.CheckLimit)
+            {
+                pagedModel.Content.ToList().ForEach(coupon =>
+                {
+                    coupon.OverLimit = _couponInUseService.GetAll()
+                                                            .Where(couponInUse => couponInUse.CouponId == coupon.Id && couponInUse.Status == Status.USED)
+                                                            .Count() >= coupon.Limit;
+                });
+            }
 
             return Ok(pagedModel);
         }

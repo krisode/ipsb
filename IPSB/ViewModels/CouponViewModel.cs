@@ -16,17 +16,17 @@ namespace IPSB.ViewModels
         public int StoreId { get; set; }
         public string Code { get; set; }
         public int CouponTypeId { get; set; }
-        public CouponType CouponType { get; set; }
+        public CouponTypeVM CouponType { get; set; }
         public DateTime PublishDate { get; set; }
         public DateTime ExpireDate { get; set; }
         public double Amount { get; set; }
         public double? MaxDiscount { get; set; }
         public double? MinSpend { get; set; }
         public int? Limit { get; set; }
+        public bool OverLimit { get; set; }
         public string Status { get; set; }
-
         public StoreRefModel Store { get; set; }
-        public ICollection<CouponInUseRefModel> CouponInUses { get; set; }
+        // public ICollection<CouponInUseRefModel> CouponInUses { get; set; }
     }
     public class CouponRefModel
     {
@@ -36,6 +36,7 @@ namespace IPSB.ViewModels
         public string Description { get; set; }
         public int StoreId { get; set; }
         public string Code { get; set; }
+        public bool OverLimit { get; set; }
         public CouponType CouponType { get; set; }
         public DateTime PublishDate { get; set; }
         public DateTime ExpireDate { get; set; }
@@ -60,6 +61,8 @@ namespace IPSB.ViewModels
         public double UpperAmount { get; set; }
         public double MaxDiscount { get; set; }
         public double MinSpend { get; set; }
+        [DefaultValue(true)]
+        public bool CheckLimit { get; set; }
         public int BuildingId { get; set; }
         public int LowerLimit { get; set; }
         public int UpperLimit { get; set; }
