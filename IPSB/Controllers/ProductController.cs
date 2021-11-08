@@ -487,8 +487,8 @@ namespace IPSB.Controllers
                             DateTimeOffset localServerTime = DateTimeOffset.Now;
                             DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
                             var notification = new Notification();
-                            notification.Title = "Product is no longer available";
-                            notification.Body = "Product " + product.Name + " in your shopping list " + item.ShoppingList.Name + " is no longer available";
+                            notification.Title = item.ShoppingList.Name;
+                            notification.Body = "Product " + product.Name + " is no longer available.";
                             notification.ImageUrl = product.ImageUrl;
                             notification.Screen = Route.SHOPPING_LIST_DETAIL;
                             notification.Parameter = "shoppingListId:" + item.ShoppingListId;
@@ -498,14 +498,14 @@ namespace IPSB.Controllers
                             var crtNotification = await _notificationService.AddAsync(notification);
                             if (await _notificationService.Save() > 0)
                             {
-                                var data = new Dictionary<String, String>();
+                                var data = new Dictionary<string, string>();
                                 data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
                                 data.Add("notificationType", "shopping_list_changed");
                                 data.Add("shoppingListId", item.ShoppingListId.ToString());
                                 _ = _pushNotificationService.SendMessage(
-                                    "Product is no longer available",
-                                    "Product " + product.Name + " in your shopping list " + item.ShoppingList.Name + " is no longer available",
-                                    "shopping_list_id_" + item.ShoppingListId,
+                                    item.ShoppingList.Name,
+                                    "Product " + product.Name + " is no longer available.",
+                                    "account_id_" + item.ShoppingList.AccountId,
                                     data
                                     );
                             }

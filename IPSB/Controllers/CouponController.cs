@@ -828,13 +828,13 @@ namespace IPSB.Controllers
                             DateTimeOffset localServerTime = DateTimeOffset.Now;
                             DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
                             var notification = new Notification();
-                            notification.Title = "Coupon is no longer available";
-                            notification.Body = "Coupon " + coupon.Name + " that you saved on " + item.RedeemDate.ToString("dddd, dd MMMM yyyy, hh:mm tt") + " is no longer available";
+                            notification.Title = coupon.Name;
+                            notification.Body = coupon.Name + " is no longer available.";
                             notification.ImageUrl = coupon.ImageUrl;
-                            notification.Screen = Constants.Route.COUPON_DETAIL;
+                            notification.Screen = Route.COUPON_DETAIL;
                             notification.Parameter = "couponId:" + coupon.Id;
                             notification.AccountId = item.VisitorId;
-                            notification.Status = Constants.Status.UNREAD;
+                            notification.Status = Status.UNREAD;
                             notification.Date = localTime.DateTime;
                             var crtNotification = await _notificationService.AddAsync(notification);
                             if (await _notificationService.Save() > 0)
@@ -845,9 +845,9 @@ namespace IPSB.Controllers
                                 data.Add("couponId", item.CouponId.ToString());
                                 data.Add("couponInUseId", item.Id.ToString());
                                 _ = _pushNotificationService.SendMessage(
-                                    "Coupon is no longer available",
-                                    "Coupon " + coupon.Name + " that you saved on " + item.RedeemDate.ToString("dddd, dd MMMM yyyy, hh:mm tt") + " is no longer available",
-                                    "coupon_in_use_id_" + item.Id.ToString(),
+                                    coupon.Name,
+                                    coupon.Name + " is no longer available.",
+                                    "account_id_" + item.VisitorId,
                                     data
                                     );
                             }

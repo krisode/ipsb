@@ -423,8 +423,8 @@ namespace IPSB.Controllers
                         {
 
                             var notification = new Notification();
-                            notification.Title = "Feedback on coupon";
-                            notification.Body = "Coupon " + updCouponInUse.Coupon.Name + " has just received feedback from customer";
+                            notification.Title = updCouponInUse.Coupon.Name;
+                            notification.Body = "Received feedback from customer.";
                             notification.ImageUrl = updCouponInUse.Coupon.ImageUrl;
                             notification.Screen = Route.FEEDBACK;
                             notification.Parameter = "couponId:" + updCouponInUse.CouponId;
@@ -443,8 +443,8 @@ namespace IPSB.Controllers
                                 data.Add("notificationId", crtNotification.Id.ToString());
                                 data.Add("couponId", updCouponInUse.Coupon.Id.ToString());
                                 _ = _pushNotificationService.SendMessage(
-                                    "Feedback on coupon",
-                                    "Coupon " + updCouponInUse.Coupon.Name + " has just received feedback from customer",
+                                    updCouponInUse.Coupon.Name,
+                                    "Received feedback from customer.",
                                     "store_id_" + updCouponInUse.Coupon.StoreId,
                                     data
                                     );
@@ -454,8 +454,8 @@ namespace IPSB.Controllers
                         else if (updCouponInUse.Status.Equals(Status.USED) && string.IsNullOrEmpty(updCouponInUse.FeedbackContent) && string.IsNullOrEmpty(updCouponInUse.FeedbackReply))
                         {
                             var notification = new Notification();
-                            notification.Title = "Apply coupon successfully";
-                            notification.Body = "You have successfully applied the coupon " + updCouponInUse.Coupon.Name;
+                            notification.Title = updCouponInUse.Coupon.Name;
+                            notification.Body = "Apply " + updCouponInUse.Coupon.Name + " successfully.";
                             notification.ImageUrl = updCouponInUse.Coupon.ImageUrl;
                             notification.Screen = Route.COUPON_DETAIL;
                             notification.Parameter = "couponId:" + updCouponInUse.CouponId;
@@ -471,9 +471,9 @@ namespace IPSB.Controllers
                                 data.Add("notificationId", crtNotification.Id.ToString());
                                 data.Add("couponInUseId", updCouponInUse.Id.ToString());
                                 _ = _pushNotificationService.SendMessage(
-                                    "Apply coupon successfully",
-                                    "You have successfully applied the coupon " + updCouponInUse.Coupon.Name,
-                                    "coupon_in_use_id_" + updCouponInUse.Id,
+                                    updCouponInUse.Coupon.Name,
+                                    "Apply " + updCouponInUse.Coupon.Name + " successfully.",
+                                    "account_id_" + updCouponInUse.VisitorId,
                                     data
                                     );
                             }
