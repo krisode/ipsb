@@ -89,27 +89,27 @@ namespace IPSB.Controllers
             var result = _service.GetAll(_ => _.Building);
             if (model.BuildingId > 0)
             {
-                result.Where(_ => _.BuildingId == model.BuildingId);
+                result = result.Where(_ => _.BuildingId == model.BuildingId);
             }
             if (model.AccountId > 0)
             {
-                result.Where(_ => _.AccountId == model.AccountId);
+                result = result.Where(_ => _.AccountId == model.AccountId);
             }
             if (model.Name != null)
             {
-                result.Where(_ => _.Name.Contains(model.Name));
+                result = result.Where(_ => _.Name.Contains(model.Name));
             }
             if (model.StartShoppingDate != null)
             {
-                result.Where(_ => _.ShoppingDate >= model.StartShoppingDate);
+                result = result.Where(_ => _.ShoppingDate >= model.StartShoppingDate);
             }
             if (model.EndShoppingDate != null)
             {
-                result.Where(_ => _.ShoppingDate <= model.EndShoppingDate);
+                result = result.Where(_ => _.ShoppingDate <= model.EndShoppingDate);
             }
             if (model.Status != null)
             {
-                result.Where(_ => _.Status.Equals(model.Status));
+                result = result.Where(_ => _.Status.Equals(model.Status));
             }
             var pagedModel = _pagingSupport.From(result)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
@@ -133,27 +133,27 @@ namespace IPSB.Controllers
             var result = _service.GetAll(_ => _.Building);
             if (model.BuildingId > 0)
             {
-                result.Where(_ => _.BuildingId == model.BuildingId);
+                result = result.Where(_ => _.BuildingId == model.BuildingId);
             }
             if (model.AccountId > 0)
             {
-                result.Where(_ => _.AccountId == model.AccountId);
+                result = result.Where(_ => _.AccountId == model.AccountId);
             }
             if (model.Name != null)
             {
-                result.Where(_ => _.Name.Contains(model.Name));
+                result = result.Where(_ => _.Name.Contains(model.Name));
             }
             if (model.StartShoppingDate != null)
             {
-                result.Where(_ => _.ShoppingDate >= model.StartShoppingDate);
+                result = result.Where(_ => _.ShoppingDate >= model.StartShoppingDate);
             }
             if (model.EndShoppingDate != null)
             {
-                result.Where(_ => _.ShoppingDate <= model.EndShoppingDate);
+                result = result.Where(_ => _.ShoppingDate <= model.EndShoppingDate);
             }
             if (model.Status != null)
             {
-                result.Where(_ => _.Status.Equals(model.Status));
+                result = result.Where(_ => _.Status.Equals(model.Status));
             }
 
             return Ok(result.Count());

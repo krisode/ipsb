@@ -81,11 +81,11 @@ namespace IPSB.Controllers
             var result = _service.GetAll(_ => _.Product);
             if (model.ShoppingListId > 0)
             {
-                result.Where(_ => _.ShoppingListId == model.ShoppingListId);
+                result = result.Where(_ => _.ShoppingListId == model.ShoppingListId);
             }
             if (model.Note != null)
             {
-                result.Where(_ => _.Note.Contains(model.Note));
+                result = result.Where(_ => _.Note.Contains(model.Note));
             }
 
             var pagedModel = _pagingSupport.From(result)
@@ -110,11 +110,11 @@ namespace IPSB.Controllers
             var result = _service.GetAll(_ => _.Product);
             if (model.ShoppingListId > 0)
             {
-                result.Where(_ => _.ShoppingListId == model.ShoppingListId);
+                result = result.Where(_ => _.ShoppingListId == model.ShoppingListId);
             }
             if (model.Note != null)
             {
-                result.Where(_ => _.Note.Contains(model.Note));
+                result = result.Where(_ => _.Note.Contains(model.Note));
             }
 
             return Ok(result.Count());
