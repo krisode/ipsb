@@ -216,24 +216,6 @@ namespace IPSB
             });
             #endregion
 
-            #region Add SuppressModelStateInvalidFilter
-            services.AddControllers().ConfigureApiBehaviorOptions(options => {
-                options.InvalidModelStateResponseFactory = actionContext =>
-                {
-                    ResponseModel responseModel = new();
-                    responseModel.Code = StatusCodes.Status400BadRequest;
-                    foreach (var modelState in actionContext.ModelState)
-                    {
-                        if (modelState.Value.Errors.FirstOrDefault() != null)
-                        {
-                            responseModel.Message = modelState.Value.Errors.Select(_ => _.ErrorMessage).FirstOrDefault();
-                        }
-                    }
-                    responseModel.Type = Constants.ResponseType.INVALID_REQUEST;
-                    return new BadRequestObjectResult(responseModel);
-                };
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
-            #endregion
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
