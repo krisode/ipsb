@@ -116,9 +116,15 @@ namespace IPSB.Controllers
             {
                 list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
             }
+
             if (model.StoreId != 0)
             {
                 list = list.Where(_ => _.StoreId == model.StoreId);
+            }
+
+            if (model.FloorPlanId > 0)
+            {
+                list = list.Where(_ => _.Store.FloorPlan.Id == model.FloorPlanId);
             }
 
             if (!string.IsNullOrEmpty(model.Name))
@@ -220,7 +226,7 @@ namespace IPSB.Controllers
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
                 .Paginate<CouponVM>();
 
-            if (model.CheckLimit != null && (bool) model.CheckLimit)
+            if (model.CheckLimit != null && (bool)model.CheckLimit)
             {
                 pagedModel.Content = pagedModel.Content.ToList().Select(coupon =>
                 {

@@ -53,6 +53,7 @@ namespace IPSB.ViewModels
         public int StoreId { get; set; }
         public string Code { get; set; }
         public int CouponTypeId { get; set; }
+        public int FloorPlanId { get; set; }
         public DateTime? LowerPublishDate { get; set; }
         public DateTime? UpperPublishDate { get; set; }
         public DateTime? LowerExpireDate { get; set; }
