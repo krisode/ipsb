@@ -49,11 +49,13 @@ namespace IPSB.ViewModels
         public string Phone { get; set; }
         public IFormFile ImageUrl { get; set; }
         public string Role { get; set; }
+        
     }
     public class AccountUM
     {
         public string Name { get; set; }
         public IFormFile ImageUrl { get; set; }
         public string Phone { get; set; }
+        public bool FirstUpdateProfile { get; set; }
     }
 }
