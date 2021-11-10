@@ -357,7 +357,7 @@ namespace IPSB.Controllers
                 _accountService.Update(updAccount);
                 await _accountService.Save();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 responseModel.Code = StatusCodes.Status500InternalServerError;
                 responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
@@ -433,7 +433,7 @@ namespace IPSB.Controllers
                 _accountService.Update(updAccount);
                 await _accountService.Save();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 responseModel.Code = StatusCodes.Status500InternalServerError;
                 responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
