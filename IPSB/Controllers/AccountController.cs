@@ -374,6 +374,7 @@ namespace IPSB.Controllers
             {
                 if(model.FirstUpdateProfile && updAccount.Status.Equals(Status.NEW)){
                     updAccount.Status = Status.ACTIVE;
+                    updAccount.Password = model.Password;
                 }
                 updAccount.Name = model.Name;
                 updAccount.ImageUrl = imageURL;

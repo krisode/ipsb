@@ -56,6 +56,7 @@ namespace IPSB.ViewModels
         public string Name { get; set; }
         public IFormFile ImageUrl { get; set; }
         public string Phone { get; set; }
+        public string Password { get; set; }
         public bool FirstUpdateProfile { get; set; }
     }
 }
