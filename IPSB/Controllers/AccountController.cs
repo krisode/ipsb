@@ -299,6 +299,7 @@ namespace IPSB.Controllers
             }
 
             Account crtAccount = _mapper.Map<Account>(model);
+            
 
             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "account", "account-profile");
             crtAccount.ImageUrl = imageURL;
@@ -371,6 +372,9 @@ namespace IPSB.Controllers
 
             try
             {
+                if(model.FirstUpdateProfile && updAccount.Status.Equals(Status.NEW)){
+                    updAccount.Status = Status.ACTIVE;
+                }
                 updAccount.Name = model.Name;
                 updAccount.ImageUrl = imageURL;
                 updAccount.Phone = model.Phone;
