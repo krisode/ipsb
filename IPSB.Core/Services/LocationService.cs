@@ -14,7 +14,6 @@ namespace IPSB.Core.Services
 {
     public interface ILocationService : IService<Location, int>
     {
-        static int TYPE_POINT_ON_ROUTE = 2;
         Task AddRangeAsync(List<Location> list);
         void DeleteRange(List<int> ids);
         Task DeleteById(int id);
@@ -55,16 +54,13 @@ namespace IPSB.Core.Services
 
         public void DeleteRange(List<int> ids)
         {
-            var lstRemove = _iRepository.GetAll()
-           .Where(_ => ids.Contains(_.Id) && _.LocationTypeId == ILocationService.TYPE_POINT_ON_ROUTE);
+            var lstRemove = _iRepository.GetAll().Where(_ => ids.Contains(_.Id));
             _iRepository.DeleteRange(lstRemove);
         }
 
         public void Disable(List<int> ids)
         {
-            var lstLocation = _iRepository.GetAll()
-            .Where(_ => ids.Contains(_.Id) && _.LocationTypeId != ILocationService.TYPE_POINT_ON_ROUTE)
-            .ToList();
+            var lstLocation = _iRepository.GetAll().Where(_ => ids.Contains(_.Id)).ToList();
             lstLocation.ForEach(loc => loc.Status = "Inactive");
             _iRepository.UpdateRange(lstLocation);
         }
