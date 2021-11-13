@@ -280,7 +280,7 @@ namespace IPSB.Controllers
                 responseModel.Code = StatusCodes.Status409Conflict;
                 responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Uuid);
                 responseModel.Type = ResponseType.INVALID_REQUEST;
-                return Conflict(responseModel.ToString());
+                return Conflict(responseModel);
             }
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, locatorTag, Operations.Create);

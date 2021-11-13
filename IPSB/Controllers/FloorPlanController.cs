@@ -319,7 +319,7 @@ namespace IPSB.Controllers
                 responseModel.Code = StatusCodes.Status409Conflict;
                 responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.FloorCode);
                 responseModel.Type = ResponseType.INVALID_REQUEST;
-                return Conflict(responseModel.ToString());
+                return Conflict(responseModel);
             }
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, floorPlan, Operations.Create);
@@ -377,7 +377,7 @@ namespace IPSB.Controllers
                 responseModel.Code = StatusCodes.Status409Conflict;
                 responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.FloorCode);
                 responseModel.Type = ResponseType.INVALID_REQUEST;
-                return Conflict(responseModel.ToString());
+                return Conflict(responseModel);
             }
 
             FloorPlan updLocationType = await _service.GetByIdAsync(_ => _.Id == id);

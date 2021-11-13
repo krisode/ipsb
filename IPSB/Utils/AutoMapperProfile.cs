@@ -114,12 +114,6 @@ namespace IPSB.Utils
             CreateMap<StoreCM, Store>();
             #endregion
 
-            #region VisitPointModel
-            CreateMap<VisitStore, VisitStoreRefModel>();
-            CreateMap<VisitStore, VisitStoreVM>();
-            CreateMap<VisitStoreCM, VisitStore>();
-            #endregion
-
             #region ShoppingList
             CreateMap<ShoppingList, ShoppingListVM>();
             CreateMap<ShoppingList, ShoppingListRefModel>();

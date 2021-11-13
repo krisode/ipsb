@@ -48,5 +48,9 @@ namespace IPSB.ViewModels
 
         }
 
+        public override string ToString()
+        {
+            return Message;
+        }
     }
 }

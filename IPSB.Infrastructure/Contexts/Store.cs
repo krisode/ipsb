@@ -11,7 +11,6 @@ namespace IPSB.Infrastructure.Contexts
         {
             Coupons = new HashSet<Coupon>();
             Products = new HashSet<Product>();
-            VisitStores = new HashSet<VisitStore>();
         }
 
         public int Id { get; set; }
@@ -32,6 +31,5 @@ namespace IPSB.Infrastructure.Contexts
         public virtual Location Location { get; set; }
         public virtual ICollection<Coupon> Coupons { get; set; }
         public virtual ICollection<Product> Products { get; set; }
-        public virtual ICollection<VisitStore> VisitStores { get; set; }
     }
 }

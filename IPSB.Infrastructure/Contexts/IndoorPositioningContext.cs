@@ -34,7 +34,6 @@ namespace IPSB.Infrastructure.Contexts
         public virtual DbSet<ShoppingItem> ShoppingItems { get; set; }
         public virtual DbSet<ShoppingList> ShoppingLists { get; set; }
         public virtual DbSet<Store> Stores { get; set; }
-        public virtual DbSet<VisitStore> VisitStores { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -548,19 +547,6 @@ namespace IPSB.Infrastructure.Contexts
                     .WithOne(p => p.Store)
                     .HasForeignKey<Store>(d => d.LocationId)
                     .HasConstraintName("FK_Store_Location");
-            });
-
-            modelBuilder.Entity<VisitStore>(entity =>
-            {
-                entity.ToTable("VisitStore");
-
-                entity.Property(e => e.RecordTime).HasColumnType("datetime");
-
-                entity.HasOne(d => d.Store)
-                    .WithMany(p => p.VisitStores)
-                    .HasForeignKey(d => d.StoreId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_VisitStore_Store");
             });
 
             OnModelCreatingPartial(modelBuilder);
