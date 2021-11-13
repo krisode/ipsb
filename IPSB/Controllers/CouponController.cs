@@ -494,7 +494,7 @@ namespace IPSB.Controllers
                 responseModel.Code = StatusCodes.Status409Conflict;
                 responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Code);
                 responseModel.Type = ResponseType.INVALID_REQUEST;
-                return Conflict(responseModel.ToString());
+                return Conflict(responseModel);
             }
 
             Coupon crtCoupon = _mapper.Map<Coupon>(model);
@@ -662,7 +662,7 @@ namespace IPSB.Controllers
                 responseModel.Code = StatusCodes.Status409Conflict;
                 responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Code);
                 responseModel.Type = ResponseType.INVALID_REQUEST;
-                return Conflict(responseModel.ToString());
+                return Conflict(responseModel);
             }
 
             Coupon crtCoupon = _mapper.Map<Coupon>(model);

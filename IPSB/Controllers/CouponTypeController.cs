@@ -176,7 +176,7 @@ namespace IPSB.Controllers
                 responseModel.Code = StatusCodes.Status409Conflict;
                 responseModel.Message = Constants.ResponseMessage.DUPLICATED.Replace("Object", model.Name);
                 responseModel.Type = Constants.ResponseType.INVALID_REQUEST;
-                return Conflict(responseModel.ToString());
+                return Conflict(responseModel);
             }
             try
             {

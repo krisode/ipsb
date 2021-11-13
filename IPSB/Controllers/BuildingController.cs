@@ -396,7 +396,7 @@ namespace IPSB.Controllers
                 responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", nameof(Building) + " " + model.Name + " or " + " Manager with id {" + model.ManagerId.ToString() + "}");
                 responseModel.Type = ResponseType.INVALID_REQUEST;
 
-                return Conflict(responseModel.ToString());
+                return Conflict(responseModel);
             }
 
 
