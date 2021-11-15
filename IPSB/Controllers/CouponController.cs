@@ -223,7 +223,7 @@ namespace IPSB.Controllers
             }
 
             var pagedModel = _pagingSupport.From(list)
-                .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
+                .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending, model.Random)
                 .Paginate<CouponVM>();
 
             if (model.CheckLimit != null && (bool)model.CheckLimit)

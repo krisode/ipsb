@@ -20,7 +20,7 @@ namespace IPSB.Utils
         ///<summary>
         /// Get a range of persited entities.
         ///</summary>
-        PagingSupport<T> GetRange(int pageIndex, int pageSize, Expression<Func<T, object>> selector, bool isAll, bool sortOrder);
+        PagingSupport<T> GetRange(int pageIndex, int pageSize, Expression<Func<T, object>> selector, bool isAll, bool sortOrder, bool random = false);
 
 
 
@@ -54,25 +54,37 @@ namespace IPSB.Utils
             get { return _source.Count(); }
         }
 
-        public PagingSupport<T> GetRange(int pageIndex, int pageSize, Expression<Func<T, object>> selector, bool isAll, bool sortOrder = true)
+        public PagingSupport<T> GetRange(int pageIndex, int pageSize, Expression<Func<T, object>> selector, bool isAll, bool sortOrder = true, bool random = false)
         {
+            // If random and isAll is both specified at the same time
+            if (random && isAll)
+            {
+                throw new ArgumentException("[random = true] and [isAll = true] is specifed at the same time!");
+            }
+
             _pageIndex = pageIndex;
             _pageSize = pageSize;
-
-            if (sortOrder)
+            int toSkip = (pageIndex - 1) * pageSize;
+            if (random)
             {
-                _sourcePageSize = _source.OrderBy(selector);
+                toSkip = new Random().Next(1, _source.Count());
+                _sourcePageSize = _source.OrderBy(x => Guid.NewGuid());
             }
             else
             {
-                _sourcePageSize = _source.OrderByDescending(selector);
+                if (sortOrder)
+                {
+                    _sourcePageSize = _source.OrderBy(selector);
+                }
+                else
+                {
+                    _sourcePageSize = _source.OrderByDescending(selector);
+                }
             }
-
             if (!isAll)
             {
-                _sourcePageSize = _sourcePageSize.Skip((pageIndex - 1) * pageSize).Take(pageSize);
+                _sourcePageSize = _sourcePageSize.Skip(toSkip).Take(pageSize);
             }
-
             return this;
         }
 
