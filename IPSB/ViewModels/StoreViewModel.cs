@@ -76,6 +76,7 @@ namespace IPSB.ViewModels
         public int FloorPlanId { get; set; }
         public string[] ProductCategoryIds { get; set; }
         public string Phone { get; set; }
+        public bool Random { get; set; }
         public string Status { get; set; }
     }
     public class StoreCM
