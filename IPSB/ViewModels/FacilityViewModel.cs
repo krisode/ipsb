@@ -9,6 +9,7 @@ namespace IPSB.ViewModels
         public string Description { get; set; }
         public string Status { get; set; }
         public int FloorPlanId { get; set; }
+        public int BuildingId { get; set; }
         public virtual LocationRefModel Location { get; set; }
         public FloorPlanStoreRefModel FloorPlan { get; set; }
     }
@@ -20,6 +21,7 @@ namespace IPSB.ViewModels
         public string Description { get; set; }
         public string Status { get; set; }
         public int FloorPlanId { get; set; }
+        public int BuildingId { get; set; }
     }
 
     public class FacilitySM
@@ -38,7 +40,9 @@ namespace IPSB.ViewModels
         [Required]
         public string Description { get; set; }
         [Required]
-        public int FloorPlanId { get; set; }
+        public int? BuildingId { get; set; }
+        [Required]
+        public int? FloorPlanId { get; set; }
         [Required]
         public string LocationJson { get; set; }
     }

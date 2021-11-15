@@ -239,9 +239,16 @@ namespace IPSB.Infrastructure.Contexts
                     .HasMaxLength(20)
                     .IsUnicode(false);
 
+                entity.HasOne(d => d.Building)
+                    .WithMany(p => p.Facilities)
+                    .HasForeignKey(d => d.BuildingId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Facility_Building");
+
                 entity.HasOne(d => d.FloorPlan)
                     .WithMany(p => p.Facilities)
                     .HasForeignKey(d => d.FloorPlanId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Facility_FloorPlan");
 
                 entity.HasOne(d => d.Location)
