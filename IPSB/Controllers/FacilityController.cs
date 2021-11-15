@@ -100,7 +100,7 @@ namespace IPSB.Controllers
             }
             if (model.BuildingId > 0)
             {
-                facilityList = facilityList.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
+                facilityList = facilityList.Where(_ => _.BuildingId == model.BuildingId);
             }
             if (!string.IsNullOrEmpty(model.LocationType))
             {
@@ -146,7 +146,7 @@ namespace IPSB.Controllers
             }
             if (model.BuildingId > 0)
             {
-                facilityList = facilityList.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
+                facilityList = facilityList.Where(_ => _.BuildingId == model.BuildingId);
             }
             if (!string.IsNullOrEmpty(model.LocationType))
             {
