@@ -26,10 +26,12 @@ namespace IPSB.Core.Services
     public class LocationService : ILocationService
     {
         private readonly IRepository<Location, int> _iRepository;
+        private readonly IEdgeService _edgeService;
 
-        public LocationService(IRepository<Location, int> iRepository)
+        public LocationService(IRepository<Location, int> iRepository, IEdgeService edgeService)
         {
             _iRepository = iRepository;
+            _edgeService = edgeService;
         }
 
         public async Task<Location> AddAsync(Location entity)
@@ -139,6 +141,7 @@ namespace IPSB.Core.Services
                             updateEntity.X = locationEntity.X;
                             updateEntity.Y = locationEntity.Y;
                             updateLocationId = updateEntity.Id;
+                            _edgeService.UpdateEdgeRange(updateEntity);
                             Update(updateEntity);
                         }
                     }
