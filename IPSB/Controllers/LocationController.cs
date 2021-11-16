@@ -184,13 +184,21 @@ namespace IPSB.Controllers
                     list = list.Where(_ => _.LocationTypeId == model.LocationTypeId);
                 }
 
-                if (model.NotLocationTypeId != 0)
+                if (model.NotLocationTypeIds != null && model.NotLocationTypeIds.Count() > 0)
                 {
-                    list = list.Where(_ => _.LocationTypeId != model.NotLocationTypeId);
+                    list = list.Where(_ => !model.NotLocationTypeIds.Contains(_.LocationTypeId));
                 }
                 if (model.LocationTypeIds != null && model.LocationTypeIds.Length > 0)
                 {
                     list = list.Where(_ => model.LocationTypeIds.Contains(_.LocationTypeId));
+                }
+
+                if (!string.IsNullOrEmpty(model.SearchKey))
+                {
+                    list = list.Where(_ =>
+                    _.LocationType.Name.Contains(model.SearchKey)
+                    || _.Store.Name.Contains(model.SearchKey)
+                    || _.Facility.Name.Contains(model.SearchKey));
                 }
 
                 if (!string.IsNullOrEmpty(model.LocationTypeName))
@@ -320,9 +328,9 @@ namespace IPSB.Controllers
                     list = list.Where(_ => _.LocationTypeId == model.LocationTypeId);
                 }
 
-                if (model.NotLocationTypeId != 0)
+                if (model.NotLocationTypeIds != null && model.NotLocationTypeIds.Count() > 0)
                 {
-                    list = list.Where(_ => _.LocationTypeId != model.NotLocationTypeId);
+                    list = list.Where(_ => !model.NotLocationTypeIds.Contains(_.LocationTypeId));
                 }
                 if (model.LocationTypeIds != null && model.LocationTypeIds.Length > 0)
                 {
