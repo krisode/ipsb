@@ -118,7 +118,7 @@ namespace IPSB.Controllers
 
             }
         }
-        
+
         /// <summary>
         /// Get all buildings
         /// </summary>
@@ -203,33 +203,33 @@ namespace IPSB.Controllers
 
                 if (model.FindCurrentBuilding && model.Lat != 0 && model.Lng != 0)
                 {
-                    list = list.Where(_ => 12742.02 * Math.Asin(Math.Sqrt(Math.Sin(((Math.PI / 180) * (_.Lat - model.Lat)) / 2) * Math.Sin(((Math.PI / 180) * (_.Lat - model.Lat)) / 2) +
-                                    Math.Cos((Math.PI / 180) * model.Lat) * Math.Cos((Math.PI / 180) * (_.Lat)) *
-                                    Math.Sin(((Math.PI / 180) * (_.Lng - model.Lng)) / 2) * Math.Sin(((Math.PI / 180) * (_.Lng - model.Lng)) / 2))) < 0.5);
+                    list = list.Where(_ => IndoorPositioningContext.DistanceBetweenLatLng(_.Lat, _.Lng, model.Lat, model.Lng) < 0.5);
                 }
 
                 Expression<Func<Building, object>> sorter = _ => _.Id;
-                if (model.Lat != 0 && model.Lng != 0)
+
+                bool includeDistanceTo = model.Lat != 0 && model.Lng != 0;
+                if (includeDistanceTo)
                 {
-                    sorter = _ => 12742.02 * Math.Asin(Math.Sqrt(Math.Sin(((Math.PI / 180) * (_.Lat - model.Lat)) / 2) * Math.Sin(((Math.PI / 180) * (_.Lat - model.Lat)) / 2) +
-                                    Math.Cos((Math.PI / 180) * model.Lat) * Math.Cos((Math.PI / 180) * (_.Lat)) *
-                                    Math.Sin(((Math.PI / 180) * (_.Lng - model.Lng)) / 2) * Math.Sin(((Math.PI / 180) * (_.Lng - model.Lng)) / 2)));
+                    sorter = _ => IndoorPositioningContext.DistanceBetweenLatLng(_.Lat, _.Lng, model.Lat, model.Lng);
                 }
+
+                Func<BuildingVM, Building, BuildingVM> transformData = (buildingVM, building) =>
+                {
+                    if (includeDistanceTo)
+                    {
+                        double fromLat = building.Lat;
+                        double fromLng = building.Lng;
+                        double toLat = model.Lat;
+                        double toLng = model.Lng;
+                        buildingVM.DistanceTo = HelperFunctions.DistanceBetweenLatLng(fromLat, fromLng, toLat, toLng);
+                    }
+                    return buildingVM;
+                };
 
                 var pagedModel = _pagingSupport.From(list)
                     .GetRange(pageIndex, pageSize, sorter, isAll, isAscending)
-                    .Paginate<BuildingVM>();
-
-                if (model.Lat != 0 && model.Lng != 0)
-                {
-                    pagedModel.Content = pagedModel.Content.ToList().Select(_ =>
-                    {
-                        _.DistanceTo = 12742.02 * Math.Asin(Math.Sqrt(Math.Sin(((Math.PI / 180) * (_.Lat - model.Lat)) / 2) * Math.Sin(((Math.PI / 180) * (_.Lat - model.Lat)) / 2) +
-                                    Math.Cos((Math.PI / 180) * model.Lat) * Math.Cos((Math.PI / 180) * (_.Lat)) *
-                                    Math.Sin(((Math.PI / 180) * (_.Lng - model.Lng)) / 2) * Math.Sin(((Math.PI / 180) * (_.Lng - model.Lng)) / 2)));
-                        return _;
-                    }).AsQueryable();
-                }
+                    .Paginate<BuildingVM>(transform: transformData);
 
                 return Ok(pagedModel);
             }
@@ -247,7 +247,6 @@ namespace IPSB.Controllers
                 responseModel.Message = ResponseMessage.CAN_NOT_READ;
                 responseModel.Type = ResponseType.CAN_NOT_READ;
                 return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
-
             }
 
         }
@@ -391,7 +390,7 @@ namespace IPSB.Controllers
                                         .Count() >= 1;
             if (isDuplicate)
             {
-                
+
                 responseModel.Code = StatusCodes.Status409Conflict;
                 responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", nameof(Building) + " " + model.Name + " or " + " Manager with id {" + model.ManagerId.ToString() + "}");
                 responseModel.Type = ResponseType.INVALID_REQUEST;
@@ -478,7 +477,7 @@ namespace IPSB.Controllers
             }
             #endregion
 
-            
+
 
             #region If building has image, set it as new image in case inputted image request is null
             string imageURL = updBuilding.ImageUrl;

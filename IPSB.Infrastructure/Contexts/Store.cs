@@ -21,7 +21,6 @@ namespace IPSB.Infrastructure.Contexts
         public string Description { get; set; }
         public int? LocationId { get; set; }
         public int FloorPlanId { get; set; }
-        public string ProductCategoryIds { get; set; }
         public string Phone { get; set; }
         public string Status { get; set; }
 

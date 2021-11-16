@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using static IPSB.Utils.Constants;
 
@@ -141,13 +142,9 @@ namespace IPSB.Controllers
 
             if (model.ProductCategoryIds is not null && model.ProductCategoryIds.Length > 0)
             {
-                foreach (var include in model.ProductCategoryIds)
-                {
-                    list = list.Where(_ => _.ProductCategoryIds.Contains(include));
-                }
+                list = list.Where(store => store.Products.Any(product => model.ProductCategoryIds.Contains(product.ProductCategoryId)));
             }
 
-            
             if (!string.IsNullOrEmpty(model.Status))
             {
                 if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
@@ -163,14 +160,36 @@ namespace IPSB.Controllers
                 }
             }
 
-            var pagedModel = _pagingSupport.From(list)
-                .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending, model.Random)
-                .Paginate<StoreVM>();
+            bool includeDistanceToBuilding = model.Lat != 0 && model.Lng != 0;
+            Expression<Func<Store, object>> sorter = _ => _.Id;
+            if (includeDistanceToBuilding)
+            {
+                sorter = _ => IndoorPositioningContext.DistanceBetweenLatLng(_.Building.Lat, _.Building.Lng, model.Lat, model.Lng);
+            }
 
-            
+            Func<StoreVM, Store, StoreVM> transformData = (storeVM, store) =>
+           {
+              
+               if (includeDistanceToBuilding)
+               {
+                   double fromLat = store.Building.Lat;
+                   double fromLng = store.Building.Lng;
+                   double toLat = model.Lat;
+                   double toLng = model.Lng;
+                   storeVM.Building.Name = store.Building.Name;
+                   storeVM.Building.DistanceTo = HelperFunctions.DistanceBetweenLatLng(fromLat, fromLng, toLat, toLng);
+               }
+               return storeVM;
+           };
+
+            var pagedModel = _pagingSupport.From(list)
+                .GetRange(pageIndex, pageSize, sorter, isAll, isAscending, model.Random)
+                .Paginate<StoreVM>(transform: transformData);
+
+
             return Ok(pagedModel);
         }
-        
+
         /// <summary>
         /// Count stores
         /// </summary>
@@ -228,10 +247,7 @@ namespace IPSB.Controllers
 
             if (model.ProductCategoryIds is not null && model.ProductCategoryIds.Length > 0)
             {
-                foreach (var include in model.ProductCategoryIds)
-                {
-                    list = list.Where(_ => _.ProductCategoryIds.Contains(include));
-                }
+                list = list.Where(store => store.Products.Any(product => model.ProductCategoryIds.Contains(product.ProductCategoryId)));
             }
 
             if (!string.IsNullOrEmpty(model.Status))
@@ -249,7 +265,7 @@ namespace IPSB.Controllers
                 }
             }
 
-            
+
             return Ok(list.Count());
         }
 
@@ -298,9 +314,9 @@ namespace IPSB.Controllers
                 return new ObjectResult($"Not authorize to create store") { StatusCode = 403 };
             }*/
             // Default POST Status = "Active" of Location
-            
+
             Store crtStore = _mapper.Map<Store>(model);
-            
+
             // Default POST Status = "Active"
             crtStore.Status = Status.ACTIVE;
             crtStore.LocationId = await _locationService.CreateLocationJson(model.LocationJson);
@@ -374,7 +390,7 @@ namespace IPSB.Controllers
 
             try
             {
-                
+
                 updStore.Name = model.Name;
                 updStore.AccountId = model.AccountId;
                 updStore.Description = model.Description;
@@ -437,7 +453,7 @@ namespace IPSB.Controllers
             }
 
             store.Status = Status.INACTIVE;
-            store.AccountId = null;      
+            store.AccountId = null;
             try
             {
                 _service.Update(store);

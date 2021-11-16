@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices;
 
 namespace IPSB.Utils
 {
@@ -27,7 +28,7 @@ namespace IPSB.Utils
         ///<summary>
         /// Get paginated result.
         ///</summary>
-        Paged<TResult> Paginate<TResult>();
+        Paged<TResult> Paginate<TResult>([Optional] Func<TResult, T, TResult> transform);
     }
 
     public class PagingSupport<T> : IPagingSupport<T>
@@ -88,7 +89,7 @@ namespace IPSB.Utils
             return this;
         }
 
-        public Paged<TResult> Paginate<TResult>()
+        public Paged<TResult> Paginate<TResult>([Optional] Func<TResult, T, TResult> transform)
         {
             int count = Count;
 
@@ -97,9 +98,17 @@ namespace IPSB.Utils
                 TotalCount = Count,
                 PageSize = _pageSize,
                 TotalPage = (int)Math.Ceiling((double)Count / _pageSize),
-                CurrentPage = _pageIndex,
-                Content = _sourcePageSize?.Select(t => _mapper.Map<TResult>(t))
+                CurrentPage = _pageIndex
             };
+            if (transform != null)
+            {
+                pagingVM.Content = _sourcePageSize?.Select(_ => transform(_mapper.Map<TResult>(_), _));
+            }
+            else
+            {
+                pagingVM.Content = _sourcePageSize?.Select(_ => _mapper.Map<TResult>(_));
+            }
+
             if (_pageIndex > 1)
             {
                 pagingVM.PreviousPage = _pageIndex - 1;

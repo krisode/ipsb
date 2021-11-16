@@ -25,6 +25,7 @@ namespace IPSB.Utils
             CreateMap<Building, BuildingRefModelForStore>();
             CreateMap<Building, BuildingVM>();
             CreateMap<Building, BuildingRefModelForAccount>();
+            CreateMap<Building, BuildingRefModelForCoupon>();
             CreateMap<Building, BuildingRefModelForShoppingList>();
             CreateMap<BuildingCM, Building>();
             #endregion
@@ -111,6 +112,7 @@ namespace IPSB.Utils
             CreateMap<Store, StoreRefModelForProduct>();
             CreateMap<Store, StoreVM>();
             CreateMap<Store, StoreRefModelForAccount>();
+            CreateMap<Store, StoreRefModelForCoupon>();
             CreateMap<StoreCM, Store>();
             #endregion
 

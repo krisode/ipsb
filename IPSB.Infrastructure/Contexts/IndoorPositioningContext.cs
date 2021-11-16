@@ -524,10 +524,6 @@ namespace IPSB.Infrastructure.Contexts
                     .HasMaxLength(15)
                     .IsUnicode(false);
 
-                entity.Property(e => e.ProductCategoryIds)
-                    .HasMaxLength(200)
-                    .IsUnicode(false);
-
                 entity.Property(e => e.Status)
                     .IsRequired()
                     .HasMaxLength(20)

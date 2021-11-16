@@ -38,7 +38,15 @@ namespace IPSB.ViewModels
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public double? DistanceTo { get; set; }
         public string ImageUrl { get; set; }
+    }
+
+    public class BuildingRefModelForCoupon
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public double? DistanceTo { get; set; }
     }
 
     public class BuildingRefModelForShoppingList
