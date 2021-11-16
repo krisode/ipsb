@@ -1,16 +1,18 @@
 ﻿using AutoMapper;
-using IPSB.AuthorizationHandler;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
 using IPSB.ViewModels;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using static IPSB.Utils.Constants;
 
@@ -108,9 +110,13 @@ namespace IPSB.Controllers
         {
             ResponseModel responseModel = new();
 
-            IQueryable<Coupon> list = _service.GetAll(_ => _.Store,
-             // _ => _.CouponInUses,
-             _ => _.CouponType);
+            IQueryable<Coupon> list = _service.GetAll(_ => _.CouponType).Include(_ => _.Store);
+
+            var includeDistanceToBuilding = model.Lat != 0 && model.Lng != 0;
+            if (includeDistanceToBuilding)
+            {
+                list = ((IIncludableQueryable<Coupon, Store>)list).ThenInclude(_ => _.Building);
+            }
 
             if (model.BuildingId != 0)
             {
@@ -222,21 +228,33 @@ namespace IPSB.Controllers
                 }
             }
 
-            var pagedModel = _pagingSupport.From(list)
-                .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending, model.Random)
-                .Paginate<CouponVM>();
-
-            if (model.CheckLimit != null && (bool)model.CheckLimit)
+            Func<CouponVM, Coupon, CouponVM> transformData = (couponVM, coupon) =>
             {
-                pagedModel.Content = pagedModel.Content.ToList().Select(coupon =>
+                if (model.CheckLimit != null && (bool)model.CheckLimit)
                 {
-                    bool overLimit = _couponInUseService.GetAll()
-                                                            .Where(couponInUse => couponInUse.CouponId == coupon.Id && couponInUse.Status == Status.USED)
-                                                            .Count() >= coupon.Limit;
-                    coupon.OverLimit = overLimit;
-                    return coupon;
-                }).AsQueryable();
+                    int couponUsed = _couponInUseService.GetAllWhere(_ => _.CouponId == coupon.Id && _.Status == Status.USED).Count();
+                    couponVM.OverLimit = couponUsed >= coupon.Limit;
+                }
+                if (includeDistanceToBuilding)
+                {
+                    double fromLat = coupon.Store.Building.Lat;
+                    double fromLng = coupon.Store.Building.Lng;
+                    double toLat = model.Lat;
+                    double toLng = model.Lng;
+                    couponVM.Store.Building.Name = coupon.Store.Building.Name;
+                    couponVM.Store.Building.DistanceTo = HelperFunctions.DistanceBetweenLatLng(fromLat, fromLng, toLat, toLng);
+                }
+                return couponVM;
+            };
+
+            Expression<Func<Coupon, object>> sorter = _ => _.Id;
+            if (includeDistanceToBuilding)
+            {
+                sorter = _ => IndoorPositioningContext.DistanceBetweenLatLng(_.Store.Building.Lat, _.Store.Building.Lng, model.Lat, model.Lng);
             }
+            var pagedModel = _pagingSupport.From(list)
+                .GetRange(pageIndex, pageSize, sorter, isAll, isAscending, model.Random)
+                .Paginate<CouponVM>(transform: transformData);
 
             return Ok(pagedModel);
         }

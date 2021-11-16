@@ -25,8 +25,7 @@ namespace IPSB.ViewModels
         public int? Limit { get; set; }
         public bool OverLimit { get; set; }
         public string Status { get; set; }
-        public StoreRefModel Store { get; set; }
-        // public ICollection<CouponInUseRefModel> CouponInUses { get; set; }
+        public StoreRefModelForCoupon Store { get; set; }
     }
     public class CouponRefModel
     {
@@ -61,6 +60,8 @@ namespace IPSB.ViewModels
         public double LowerAmount { get; set; }
         public double UpperAmount { get; set; }
         public double MaxDiscount { get; set; }
+        public double Lat { get; set; }
+        public double Lng { get; set; }
         public double MinSpend { get; set; }
         [DefaultValue(true)]
         public bool? CheckLimit { get; set; }

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using static IPSB.Utils.Constants;
 
@@ -153,15 +154,6 @@ namespace IPSB.Controllers
                     list = list.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
                 }
 
-                if (model.X != 0)
-                {
-                    list = list.Where(_ => _.X == model.X);
-                }
-
-                if (model.Y != 0)
-                {
-                    list = list.Where(_ => _.Y == model.Y);
-                }
                 if (!string.IsNullOrEmpty(model.Status))
                 {
                     if (Status.ACTIVE.Equals(model.Status) || Status.INACTIVE.Equals(model.Status))
@@ -216,6 +208,7 @@ namespace IPSB.Controllers
 
                     list = list.Where(_ => _.Store.Products.Any(_ => _.Name.Contains(model.ProductName)));
                 }
+
 
                 var pagedModel = _pagingSupport.From(list)
                     .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
@@ -351,7 +344,7 @@ namespace IPSB.Controllers
 
                     list = list.Where(_ => _.Store.Products.Any(_ => _.Name.Contains(model.ProductName)));
                 }
-                
+
                 return Ok(list.Count());
             }
             catch (Exception e)

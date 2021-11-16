@@ -7,6 +7,7 @@ namespace IPSB.ViewModels
         public int Id { get; set; }
         public double X { get; set; }
         public double Y { get; set; }
+        public double DistanceTo { get; set; }
         public int FloorPlanId { get; set; }
         public int StoreId { get; set; }
         public int LocationTypeId { get; set; }
@@ -16,11 +17,6 @@ namespace IPSB.ViewModels
         public StoreRefModel Store { get; set; }
         public LocatorTagRefModel LocatorTag { get; set; }
         public FacilityRefModel Facility { get; set; }
-
-        // public ICollection<EdgeRefModel> EdgeFromLocations { get; set; }
-        // public ICollection<EdgeRefModel> EdgeToLocations { get; set; }
-        // public ICollection<LocatorTagRefModel> LocatorTags { get; set; }
-        // public ICollection<VisitPointRefModel> VisitPoints { get; set; }
     }
 
     public class LocationRefModel
@@ -72,8 +68,8 @@ namespace IPSB.ViewModels
 
     public class LocationSM
     {
-        public double X { get; set; }
-        public double Y { get; set; }
+        public double? X { get; set; }
+        public double? Y { get; set; }
         public int BuildingId { get; set; }
         public int FloorPlanId { get; set; }
         public int StoreId { get; set; }
