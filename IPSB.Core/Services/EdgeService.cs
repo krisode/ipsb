@@ -13,6 +13,7 @@ namespace IPSB.Core.Services
     {
         Task AddRangeAsync(List<Edge> list);
         void DeleteRange(List<int> ids);
+        void UpdateEdgeRange(Location location);
     }
 
     public class EdgeService : IEdgeService
@@ -67,6 +68,28 @@ namespace IPSB.Core.Services
         public void Update(Edge entity)
         {
             _iRepository.Update(entity);
+        }
+
+        public void UpdateEdgeRange(Location location)
+        {
+            var listEdges = _iRepository.GetAll(_ => _.FromLocation, _ => _.ToLocation)
+                                        .Where(_ => _.FromLocationId == location.Id || _.ToLocationId == location.Id)
+                                        .ToList();
+            listEdges.ForEach(edge =>
+            {
+                if (edge.FromLocationId == location.Id)
+                {
+                    edge.FromLocation = location;
+                }
+                else if (edge.ToLocationId == location.Id)
+                {
+                    edge.ToLocation = location;
+                }
+                edge.Distance = Math.Sqrt(Math.Pow(edge.ToLocation.X - edge.FromLocation.X, 2) + Math.Pow(edge.ToLocation.Y - edge.FromLocation.Y, 2));
+                edge.FromLocation = null;
+                edge.ToLocation = null;
+                Update(edge);
+            });
         }
     }
 }
