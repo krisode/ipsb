@@ -143,7 +143,7 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.Description.Contains(model.Description));
             }
 
-            if (model.SearchKey != null)
+            if (!string.IsNullOrEmpty(model.SearchKey))
             {
                 list = list.Where(_ => _.Name.Contains(model.SearchKey)
                 || _.Description.Contains(model.SearchKey)
