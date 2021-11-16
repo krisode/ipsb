@@ -47,6 +47,7 @@ namespace IPSB.ViewModels
     }
     public class CouponSM
     {
+        public string SearchKey { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public int StoreId { get; set; }
