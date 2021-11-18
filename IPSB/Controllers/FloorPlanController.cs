@@ -200,7 +200,7 @@ namespace IPSB.Controllers
             }
 
         }
-        
+
         /// <summary>
         /// Count floor plans
         /// </summary>
@@ -368,9 +368,12 @@ namespace IPSB.Controllers
         {
             ResponseModel responseModel = new();
 
+            int managerId = -1;
+            int.TryParse(User.Identity.Name, out managerId);
             int existed = _service.GetAll().Where(
                             _ => _.FloorCode.ToUpper() == model.FloorCode.ToUpper()
-                            && _.BuildingId == id
+                            && _.Id != id
+                            && _.Building.ManagerId == managerId
                             ).Count();
             if (existed >= 1)
             {
@@ -380,7 +383,9 @@ namespace IPSB.Controllers
                 return Conflict(responseModel);
             }
 
-            FloorPlan updLocationType = await _service.GetByIdAsync(_ => _.Id == id);
+            FloorPlan updFloorPlan = await _service.GetByIdAsync(_ => _.Id == id);
+
+
 
             // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updLocationType, Operations.Update);
             // if (!authorizedResult.Succeeded)
@@ -388,7 +393,7 @@ namespace IPSB.Controllers
             //     return new ObjectResult($"Not authorize to update floor plan with id: {id}") { StatusCode = 403 };
             // }
 
-            string imageURL = updLocationType.ImageUrl;
+            string imageURL = updFloorPlan.ImageUrl;
 
             if (model.ImageUrl is not null)
             {
@@ -397,13 +402,13 @@ namespace IPSB.Controllers
 
             try
             {
-                updLocationType.ImageUrl = imageURL;
-                updLocationType.FloorCode = model.FloorCode;
-                updLocationType.FloorNumber = model.FloorNumber;
-                updLocationType.RotationAngle = model.RotationAngle;
-                updLocationType.MapScale = model.MapScale;
+                updFloorPlan.ImageUrl = imageURL;
+                updFloorPlan.FloorCode = model.FloorCode;
+                updFloorPlan.FloorNumber = model.FloorNumber;
+                updFloorPlan.RotationAngle = model.RotationAngle;
+                updFloorPlan.MapScale = model.MapScale;
                 // updLocationType.Status = model.Status;
-                _service.Update(updLocationType);
+                _service.Update(updFloorPlan);
                 if (await _service.Save() > 0)
                 {
                     // #region Updating cache
