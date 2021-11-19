@@ -140,29 +140,20 @@ namespace IPSB.Controllers
             var cacheId = new CacheKey<Coupon>(DefaultValue.INTEGER);
             var cacheObjectType = new Coupon();
             string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
-
+            var includeDistanceToBuilding = model.Lat != 0 && model.Lng != 0;
             try
             {
                 var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
-                    var list = _service.GetAll(_ => _.CouponType, _ => _.Store);
+                    var list = _service.GetAll(_ => _.CouponType, _ => _.Store.Building);
 
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
-
                     return Task.FromResult(list);
-
                 }, setLastModified: (cachedTime) =>
                 {
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
                     return cachedTime;
                 }, ifModifiedSince);
-
-
-                var includeDistanceToBuilding = model.Lat != 0 && model.Lng != 0;
-                if (includeDistanceToBuilding)
-                {
-                    list = ((IIncludableQueryable<Coupon, Store>)list).ThenInclude(_ => _.Building);
-                }
 
                 if (model.BuildingId != 0)
                 {
@@ -327,7 +318,7 @@ namespace IPSB.Controllers
                 responseModel.Type = ResponseType.CAN_NOT_READ;
                 return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
-            
+
         }
 
         /// <summary>
