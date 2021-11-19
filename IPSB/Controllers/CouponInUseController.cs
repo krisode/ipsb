@@ -391,7 +391,7 @@ namespace IPSB.Controllers
             try
             {
                 bool needUpdate = false;
-                if (updCouponInUse.ApplyDate == null)
+                if (!updCouponInUse.ApplyDate.HasValue && updCouponInUse.Status.Equals(Status.NOT_USED))
                 {
                     updCouponInUse.ApplyDate = model.ApplyDate;
                     updCouponInUse.Status = Status.USED;
