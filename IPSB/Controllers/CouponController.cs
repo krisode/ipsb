@@ -15,6 +15,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using static IPSB.Utils.Constants;
+using IPSB.Cache;
 
 namespace IPSB.Controllers
 {
@@ -31,9 +32,10 @@ namespace IPSB.Controllers
         private readonly IPagingSupport<Coupon> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly ICacheStore _cacheStore;
 
         public CouponController(ICouponService service, ICouponInUseService couponInUseService, INotificationService notificationService, IPushNotificationService pushNotificationService,
-            IMapper mapper, IPagingSupport<Coupon> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService)
+            IMapper mapper, IPagingSupport<Coupon> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService, ICacheStore cacheStore)
         {
             _service = service;
             _couponInUseService = couponInUseService;
@@ -43,6 +45,7 @@ namespace IPSB.Controllers
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
             _authorizationService = authorizationService;
+            _cacheStore = cacheStore;
         }
 
         /// <summary>
@@ -63,29 +66,53 @@ namespace IPSB.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id}")]
-        public ActionResult<CouponVM> GetCouponById(int id)
+        public async Task<ActionResult<CouponVM>> GetCouponById(int id)
         {
             ResponseModel responseModel = new();
 
-            var coupon = _service.GetByIdAsync(_ => _.Id == id, _ => _.Store, _ => _.CouponInUses).Result;
+            var cacheId = new CacheKey<Coupon>(id);
+            var cacheObjectType = new Coupon();
+            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
 
-            if (coupon == null)
+            try
             {
-                responseModel.Code = StatusCodes.Status404NotFound;
-                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Coupon));
-                responseModel.Type = ResponseType.NOT_FOUND;
-                return NotFound(responseModel);
+                var coupon = await _cacheStore.GetOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                {
+                    var coupon = _service.GetByIdAsync(_ => _.Id == id, _ => _.Store, _ => _.CouponInUses).Result;
+
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                    return Task.FromResult(coupon);
+
+                }, ifModifiedSince);
+
+                if (coupon == null)
+                {
+                    responseModel.Code = StatusCodes.Status404NotFound;
+                    responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Coupon));
+                    responseModel.Type = ResponseType.NOT_FOUND;
+                    return NotFound(responseModel);
+                }
+
+                var rtnCoupon = _mapper.Map<CouponVM>(coupon);
+
+                return Ok(rtnCoupon);
             }
-
-            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, coupon, Operations.Read);
-            if (!authorizedResult.Succeeded)
+            catch (Exception e)
             {
-                return Forbid($"Not authorized to access coupon with id: {id}");
-            }*/
+                if (e.Message.Equals(ExceptionMessage.NOT_MODIFIED))
+                {
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
+                }
 
-            var rtnCoupon = _mapper.Map<CouponVM>(coupon);
-
-            return Ok(rtnCoupon);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
+            }
         }
 
         /// <summary>
@@ -106,165 +133,201 @@ namespace IPSB.Controllers
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<CouponVM>> GetAllCoupons([FromQuery] CouponSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
+        public async Task<ActionResult<IEnumerable<CouponVM>>> GetAllCoupons([FromQuery] CouponSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             ResponseModel responseModel = new();
 
-            IQueryable<Coupon> list = _service.GetAll(_ => _.CouponType).Include(_ => _.Store);
+            var cacheId = new CacheKey<Coupon>(DefaultValue.INTEGER);
+            var cacheObjectType = new Coupon();
+            string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
 
-            var includeDistanceToBuilding = model.Lat != 0 && model.Lng != 0;
-            if (includeDistanceToBuilding)
+            try
             {
-                list = ((IIncludableQueryable<Coupon, Store>)list).ThenInclude(_ => _.Building);
-            }
-
-            if (model.BuildingId != 0)
-            {
-                list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
-            }
-
-            if (model.StoreId != 0)
-            {
-                list = list.Where(_ => _.StoreId == model.StoreId);
-            }
-
-            if (model.FloorPlanId > 0)
-            {
-                list = list.Where(_ => _.Store.FloorPlan.Id == model.FloorPlanId);
-            }
-
-            if (!string.IsNullOrEmpty(model.Name))
-            {
-                list = list.Where(_ => _.Name.Contains(model.Name));
-            }
-
-            if (!string.IsNullOrEmpty(model.Description))
-            {
-                list = list.Where(_ => _.Description.Contains(model.Description));
-            }
-
-            if (!string.IsNullOrEmpty(model.SearchKey))
-            {
-                list = list.Where(_ => _.Name.Contains(model.SearchKey)
-                || _.Description.Contains(model.SearchKey)
-                || _.Store.Name.Contains(model.SearchKey)
-                );
-            }
-
-            if (!string.IsNullOrEmpty(model.Code))
-            {
-                list = list.Where(_ => _.Code.Contains(model.Code));
-            }
-
-            if (model.CouponTypeId > 0)
-            {
-                list = list.Where(_ => _.CouponTypeId == model.CouponTypeId);
-            }
-
-            if (model.LowerPublishDate.HasValue)
-            {
-                list = list.Where(_ => _.PublishDate >= model.LowerPublishDate);
-            }
-
-            if (model.UpperPublishDate.HasValue)
-            {
-                list = list.Where(_ => _.PublishDate <= model.UpperPublishDate);
-            }
-
-            if (model.LowerExpireDate.HasValue)
-            {
-                list = list.Where(_ => _.ExpireDate >= model.LowerExpireDate);
-            }
-
-            if (model.UpperExpireDate.HasValue)
-            {
-                list = list.Where(_ => _.ExpireDate <= model.UpperExpireDate);
-            }
-
-            if (model.LowerAmount != 0)
-            {
-                list = list.Where(_ => _.Amount >= model.LowerAmount);
-            }
-
-            if (model.UpperAmount != 0)
-            {
-                list = list.Where(_ => _.Amount <= model.UpperAmount);
-            }
-
-            if (model.MaxDiscount != 0)
-            {
-                list = list.Where(_ => _.MaxDiscount == model.MaxDiscount);
-            }
-
-            if (model.MinSpend != 0)
-            {
-                list = list.Where(_ => _.MinSpend <= model.MinSpend);
-            }
-
-
-            if (model.LowerLimit != 0)
-            {
-                list = list.Where(_ => _.Limit >= model.LowerLimit);
-            }
-
-            if (model.UpperLimit != 0)
-            {
-                list = list.Where(_ => _.Limit <= model.UpperLimit);
-            }
-
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
+                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
-                    responseModel.Code = StatusCodes.Status400BadRequest;
-                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
-                    responseModel.Type = ResponseType.INVALID_REQUEST;
-                    return BadRequest(responseModel);
-                }
+                    var list = _service.GetAll(_ => _.CouponType, _ => _.Store);
 
-                else
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                    return Task.FromResult(list);
+
+                }, setLastModified: (cachedTime) =>
                 {
-                    if (model.Status == Status.ACTIVE)
-                    {
-                        list = list.Where(_ => _.Status == Status.ACTIVE);
-                    }
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
+                    return cachedTime;
+                }, ifModifiedSince);
 
-                    if (model.Status == Status.INACTIVE)
-                    {
-                        list = list.Where(_ => _.Status == Status.INACTIVE);
-                    }
-                }
-            }
 
-            Func<CouponVM, Coupon, CouponVM> transformData = (couponVM, coupon) =>
-            {
-                if (model.CheckLimit != null && (bool)model.CheckLimit)
-                {
-                    int couponUsed = _couponInUseService.GetAllWhere(_ => _.CouponId == coupon.Id && _.Status == Status.USED).Count();
-                    couponVM.OverLimit = couponUsed >= coupon.Limit;
-                }
+                var includeDistanceToBuilding = model.Lat != 0 && model.Lng != 0;
                 if (includeDistanceToBuilding)
                 {
-                    double fromLat = coupon.Store.Building.Lat;
-                    double fromLng = coupon.Store.Building.Lng;
-                    double toLat = model.Lat;
-                    double toLng = model.Lng;
-                    couponVM.Store.Building.Name = coupon.Store.Building.Name;
-                    couponVM.Store.Building.DistanceTo = HelperFunctions.DistanceBetweenLatLng(fromLat, fromLng, toLat, toLng);
+                    list = ((IIncludableQueryable<Coupon, Store>)list).ThenInclude(_ => _.Building);
                 }
-                return couponVM;
-            };
 
-            Expression<Func<Coupon, object>> sorter = _ => _.Id;
-            if (includeDistanceToBuilding)
-            {
-                sorter = _ => IndoorPositioningContext.DistanceBetweenLatLng(_.Store.Building.Lat, _.Store.Building.Lng, model.Lat, model.Lng);
+                if (model.BuildingId != 0)
+                {
+                    list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
+                }
+
+                if (model.StoreId != 0)
+                {
+                    list = list.Where(_ => _.StoreId == model.StoreId);
+                }
+
+                if (model.FloorPlanId > 0)
+                {
+                    list = list.Where(_ => _.Store.FloorPlan.Id == model.FloorPlanId);
+                }
+
+                if (!string.IsNullOrEmpty(model.Name))
+                {
+                    list = list.Where(_ => _.Name.Contains(model.Name));
+                }
+
+                if (!string.IsNullOrEmpty(model.Description))
+                {
+                    list = list.Where(_ => _.Description.Contains(model.Description));
+                }
+
+                if (!string.IsNullOrEmpty(model.SearchKey))
+                {
+                    list = list.Where(_ => _.Name.Contains(model.SearchKey)
+                    || _.Description.Contains(model.SearchKey)
+                    || _.Store.Name.Contains(model.SearchKey)
+                    );
+                }
+
+                if (!string.IsNullOrEmpty(model.Code))
+                {
+                    list = list.Where(_ => _.Code.Contains(model.Code));
+                }
+
+                if (model.CouponTypeId > 0)
+                {
+                    list = list.Where(_ => _.CouponTypeId == model.CouponTypeId);
+                }
+
+                if (model.LowerPublishDate.HasValue)
+                {
+                    list = list.Where(_ => _.PublishDate >= model.LowerPublishDate);
+                }
+
+                if (model.UpperPublishDate.HasValue)
+                {
+                    list = list.Where(_ => _.PublishDate <= model.UpperPublishDate);
+                }
+
+                if (model.LowerExpireDate.HasValue)
+                {
+                    list = list.Where(_ => _.ExpireDate >= model.LowerExpireDate);
+                }
+
+                if (model.UpperExpireDate.HasValue)
+                {
+                    list = list.Where(_ => _.ExpireDate <= model.UpperExpireDate);
+                }
+
+                if (model.LowerAmount != 0)
+                {
+                    list = list.Where(_ => _.Amount >= model.LowerAmount);
+                }
+
+                if (model.UpperAmount != 0)
+                {
+                    list = list.Where(_ => _.Amount <= model.UpperAmount);
+                }
+
+                if (model.MaxDiscount != 0)
+                {
+                    list = list.Where(_ => _.MaxDiscount == model.MaxDiscount);
+                }
+
+                if (model.MinSpend != 0)
+                {
+                    list = list.Where(_ => _.MinSpend <= model.MinSpend);
+                }
+
+
+                if (model.LowerLimit != 0)
+                {
+                    list = list.Where(_ => _.Limit >= model.LowerLimit);
+                }
+
+                if (model.UpperLimit != 0)
+                {
+                    list = list.Where(_ => _.Limit <= model.UpperLimit);
+                }
+
+                if (!string.IsNullOrEmpty(model.Status))
+                {
+                    if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
+                    {
+                        responseModel.Code = StatusCodes.Status400BadRequest;
+                        responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                        responseModel.Type = ResponseType.INVALID_REQUEST;
+                        return BadRequest(responseModel);
+                    }
+
+                    else
+                    {
+                        if (model.Status == Status.ACTIVE)
+                        {
+                            list = list.Where(_ => _.Status == Status.ACTIVE);
+                        }
+
+                        if (model.Status == Status.INACTIVE)
+                        {
+                            list = list.Where(_ => _.Status == Status.INACTIVE);
+                        }
+                    }
+                }
+
+                Func<CouponVM, Coupon, CouponVM> transformData = (couponVM, coupon) =>
+                {
+                    if (model.CheckLimit != null && (bool)model.CheckLimit)
+                    {
+                        int couponUsed = _couponInUseService.GetAllWhere(_ => _.CouponId == coupon.Id && _.Status == Status.USED).Count();
+                        couponVM.OverLimit = couponUsed >= coupon.Limit;
+                    }
+                    if (includeDistanceToBuilding)
+                    {
+                        double fromLat = coupon.Store.Building.Lat;
+                        double fromLng = coupon.Store.Building.Lng;
+                        double toLat = model.Lat;
+                        double toLng = model.Lng;
+                        couponVM.Store.Building.Name = coupon.Store.Building.Name;
+                        couponVM.Store.Building.DistanceTo = HelperFunctions.DistanceBetweenLatLng(fromLat, fromLng, toLat, toLng);
+                    }
+                    return couponVM;
+                };
+
+                Expression<Func<Coupon, object>> sorter = _ => _.Id;
+                if (includeDistanceToBuilding)
+                {
+                    sorter = _ => IndoorPositioningContext.DistanceBetweenLatLng(_.Store.Building.Lat, _.Store.Building.Lng, model.Lat, model.Lng);
+                }
+                var pagedModel = _pagingSupport.From(list)
+                    .GetRange(pageIndex, pageSize, sorter, isAll, isAscending, model.Random)
+                    .Paginate<CouponVM>(transform: transformData);
+
+                return Ok(pagedModel);
             }
-            var pagedModel = _pagingSupport.From(list)
-                .GetRange(pageIndex, pageSize, sorter, isAll, isAscending, model.Random)
-                .Paginate<CouponVM>(transform: transformData);
+            catch (Exception e)
+            {
+                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                {
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
 
-            return Ok(pagedModel);
+                }
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
+            }
+            
         }
 
         /// <summary>
