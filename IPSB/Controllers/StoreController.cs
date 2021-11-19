@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using IPSB.AuthorizationHandler;
+using IPSB.Cache;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
@@ -30,8 +31,11 @@ namespace IPSB.Controllers
         private readonly IUploadFileService _uploadFileService;
         private readonly IAuthorizationService _authorizationService;
         private readonly ILocationService _locationService;
+        private readonly ICacheStore _cacheStore;
 
-        public StoreController(IStoreService service, IProductCategoryService productCategoryService, IMapper mapper, IPagingSupport<Store> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService, ILocationService locationService)
+        public StoreController(IStoreService service, IProductCategoryService productCategoryService, IMapper mapper, 
+            IPagingSupport<Store> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService, 
+            ILocationService locationService, ICacheStore cacheStore)
         {
             _service = service;
             _productCategoryService = productCategoryService;
@@ -40,6 +44,7 @@ namespace IPSB.Controllers
             _uploadFileService = uploadFileService;
             _authorizationService = authorizationService;
             _locationService = locationService;
+            _cacheStore = cacheStore;
         }
 
 
@@ -65,25 +70,51 @@ namespace IPSB.Controllers
         {
             ResponseModel responseModel = new();
 
-            var store = await _service.GetByIdAsync(_ => _.Id == id, _ => _.Account, _ => _.Building, _ => _.FloorPlan);
+            var cacheId = new CacheKey<Store>(id);
+            var cacheObjectType = new Store();
+            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
 
-            if (store == null)
+            try
             {
-                responseModel.Code = StatusCodes.Status404NotFound;
-                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Store));
-                responseModel.Type = ResponseType.NOT_FOUND;
-                return NotFound(responseModel);
+                var store = await _cacheStore.GetOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                {
+                    var store = _service.GetByIdAsync(_ => _.Id == id, _ => _.Account, _ => _.Building, _ => _.FloorPlan).Result;
+
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                    return Task.FromResult(store);
+
+                }, ifModifiedSince);
+
+                if (store == null)
+                {
+                    responseModel.Code = StatusCodes.Status404NotFound;
+                    responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(Store));
+                    responseModel.Type = ResponseType.NOT_FOUND;
+                    return NotFound(responseModel);
+                }
+
+
+                var rtnStore = _mapper.Map<StoreVM>(store);
+
+                return Ok(rtnStore);
             }
-
-            /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, store, Operations.Read);
-            if (!authorizedResult.Succeeded)
+            catch (Exception e)
             {
-                return new ObjectResult($"Not authorize to access store with id: {id}") { StatusCode = 403 };
-            }*/
+                if (e.Message.Equals(ExceptionMessage.NOT_MODIFIED))
+                {
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
+                }
 
-            var rtnStore = _mapper.Map<StoreVM>(store);
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
 
-            return Ok(rtnStore);
+            }
         }
 
         /// <summary>
@@ -104,90 +135,126 @@ namespace IPSB.Controllers
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<StoreVM>> GetAllStores([FromQuery] StoreSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
+        public async Task<ActionResult<IEnumerable<StoreVM>>> GetAllStores([FromQuery] StoreSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             ResponseModel responseModel = new();
 
-            IQueryable<Store> list = _service.GetAll(_ => _.Account, _ => _.Building, _ => _.FloorPlan, _ => _.Location);
+            var cacheId = new CacheKey<Store>(DefaultValue.INTEGER);
+            var cacheObjectType = new Store();
+            string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
 
-            if (model.AccountId != 0)
+            try
             {
-                list = list.Where(_ => _.AccountId == model.AccountId);
-            }
-
-            if (model.BuildingId != 0)
-            {
-                list = list.Where(_ => _.BuildingId == model.BuildingId);
-            }
-
-            if (model.FloorPlanId != 0)
-            {
-                list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
-            }
-
-            if (!string.IsNullOrEmpty(model.Name))
-            {
-                list = list.Where(_ => _.Name.Contains(model.Name));
-            }
-
-            if (!string.IsNullOrEmpty(model.Description))
-            {
-                list = list.Where(_ => _.Description.Contains(model.Description));
-            }
-
-            if (!string.IsNullOrEmpty(model.Phone))
-            {
-                list = list.Where(_ => _.Phone.Contains(model.Phone));
-            }
-
-            if (model.ProductCategoryIds is not null && model.ProductCategoryIds.Length > 0)
-            {
-                list = list.Where(store => store.Products.Any(product => model.ProductCategoryIds.Contains(product.ProductCategoryId)));
-            }
-
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
+                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
-                    responseModel.Code = StatusCodes.Status400BadRequest;
-                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
-                    responseModel.Type = ResponseType.INVALID_REQUEST;
-                    return BadRequest(responseModel);
-                }
-                else
+                    var list = _service.GetAll(_ => _.Account, _ => _.Building, _ => _.FloorPlan, _ => _.Location);
+
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                    return Task.FromResult(list);
+
+                }, setLastModified: (cachedTime) =>
                 {
-                    list = list.Where(_ => _.Status == model.Status);
+                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
+                    return cachedTime;
+                }, ifModifiedSince);
+
+
+                if (model.AccountId != 0)
+                {
+                    list = list.Where(_ => _.AccountId == model.AccountId);
                 }
-            }
 
-            bool includeDistanceToBuilding = model.Lat != 0 && model.Lng != 0;
-            Expression<Func<Store, object>> sorter = _ => _.Id;
-            if (includeDistanceToBuilding)
+                if (model.BuildingId != 0)
+                {
+                    list = list.Where(_ => _.BuildingId == model.BuildingId);
+                }
+
+                if (model.FloorPlanId != 0)
+                {
+                    list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
+                }
+
+                if (!string.IsNullOrEmpty(model.Name))
+                {
+                    list = list.Where(_ => _.Name.Contains(model.Name));
+                }
+
+                if (!string.IsNullOrEmpty(model.Description))
+                {
+                    list = list.Where(_ => _.Description.Contains(model.Description));
+                }
+
+                if (!string.IsNullOrEmpty(model.Phone))
+                {
+                    list = list.Where(_ => _.Phone.Contains(model.Phone));
+                }
+
+                if (model.ProductCategoryIds is not null && model.ProductCategoryIds.Length > 0)
+                {
+                    list = list.Where(store => store.Products.Any(product => model.ProductCategoryIds.Contains(product.ProductCategoryId)));
+                }
+
+                if (!string.IsNullOrEmpty(model.Status))
+                {
+                    if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
+                    {
+                        responseModel.Code = StatusCodes.Status400BadRequest;
+                        responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                        responseModel.Type = ResponseType.INVALID_REQUEST;
+                        return BadRequest(responseModel);
+                    }
+                    else
+                    {
+                        list = list.Where(_ => _.Status == model.Status);
+                    }
+                }
+
+                bool includeDistanceToBuilding = model.Lat != 0 && model.Lng != 0;
+                Expression<Func<Store, object>> sorter = _ => _.Id;
+                if (includeDistanceToBuilding)
+                {
+                    sorter = _ => IndoorPositioningContext.DistanceBetweenLatLng(_.Building.Lat, _.Building.Lng, model.Lat, model.Lng);
+                }
+
+                Func<StoreVM, Store, StoreVM> transformData = (storeVM, store) =>
+                {
+
+                    if (includeDistanceToBuilding)
+                    {
+                        double fromLat = store.Building.Lat;
+                        double fromLng = store.Building.Lng;
+                        double toLat = model.Lat;
+                        double toLng = model.Lng;
+                        storeVM.Building.Name = store.Building.Name;
+                        storeVM.Building.DistanceTo = HelperFunctions.DistanceBetweenLatLng(fromLat, fromLng, toLat, toLng);
+                    }
+                    return storeVM;
+                };
+
+                var pagedModel = _pagingSupport.From(list)
+                    .GetRange(pageIndex, pageSize, sorter, isAll, isAscending, model.Random)
+                    .Paginate<StoreVM>(transform: transformData);
+
+
+                return Ok(pagedModel);
+            }
+            catch (Exception e)
             {
-                sorter = _ => IndoorPositioningContext.DistanceBetweenLatLng(_.Building.Lat, _.Building.Lng, model.Lat, model.Lng);
+                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                {
+                    responseModel.Code = StatusCodes.Status304NotModified;
+                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
+                    responseModel.Type = ResponseType.NOT_MODIFIED;
+                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
+
+                }
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_READ;
+                responseModel.Type = ResponseType.CAN_NOT_READ;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
-            Func<StoreVM, Store, StoreVM> transformData = (storeVM, store) =>
-           {
-              
-               if (includeDistanceToBuilding)
-               {
-                   double fromLat = store.Building.Lat;
-                   double fromLng = store.Building.Lng;
-                   double toLat = model.Lat;
-                   double toLng = model.Lng;
-                   storeVM.Building.Name = store.Building.Name;
-                   storeVM.Building.DistanceTo = HelperFunctions.DistanceBetweenLatLng(fromLat, fromLng, toLat, toLng);
-               }
-               return storeVM;
-           };
-
-            var pagedModel = _pagingSupport.From(list)
-                .GetRange(pageIndex, pageSize, sorter, isAll, isAscending, model.Random)
-                .Paginate<StoreVM>(transform: transformData);
-
-
-            return Ok(pagedModel);
         }
 
         /// <summary>
