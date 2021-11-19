@@ -16,6 +16,7 @@ namespace IPSB.Infrastructure.Contexts
 
         public int Id { get; set; }
         public string Role { get; set; }
+        public int? StoreOwnerBuildingId { get; set; }
         public string Name { get; set; }
         public string ImageUrl { get; set; }
         public string Phone { get; set; }
@@ -23,6 +24,7 @@ namespace IPSB.Infrastructure.Contexts
         public string Password { get; set; }
         public string Status { get; set; }
 
+        public virtual Building StoreOwnerBuilding { get; set; }
         public virtual Building Building { get; set; }
         public virtual Store Store { get; set; }
         public virtual ICollection<CouponInUse> CouponInUses { get; set; }

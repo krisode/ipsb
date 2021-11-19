@@ -365,8 +365,8 @@ namespace IPSB.Controllers
         public async Task<ActionResult<StoreCM>> CreateStore([FromForm] StoreCM model)
         {
             ResponseModel responseModel = new();
-
-            bool isExisted = _service.IsExisted(_ => _.Name.ToLower().Equals(model.Name.ToLower()));
+            bool isExisted = false;
+            isExisted = _service.IsExisted(_ => _.Name.ToLower() == model.Name.ToLower() && _.BuildingId == model.BuildingId);
             if (isExisted)
             {
                 responseModel.Code = StatusCodes.Status409Conflict;
@@ -374,6 +374,16 @@ namespace IPSB.Controllers
                 responseModel.Type = ResponseType.INVALID_REQUEST;
                 return Conflict(responseModel);
             }
+
+            isExisted = _service.IsExisted(_ => _.Phone == model.Phone);
+            if (isExisted)
+            {
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Phone);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel);
+            }
+
 
             /*var authorizedResult = await _authorizationService.AuthorizeAsync(User, store, Operations.Create);
             if (!authorizedResult.Succeeded)
@@ -435,6 +445,15 @@ namespace IPSB.Controllers
             {
                 responseModel.Code = StatusCodes.Status409Conflict;
                 responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Name);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel);
+            }
+
+            bool isExisted = _service.IsExisted(_ => _.Phone == model.Phone && _.Id != id);
+            if (isExisted)
+            {
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Phone);
                 responseModel.Type = ResponseType.INVALID_REQUEST;
                 return Conflict(responseModel);
             }

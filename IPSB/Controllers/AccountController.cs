@@ -120,7 +120,7 @@ namespace IPSB.Controllers
 
             if (model.BuildingId > 0)
             {
-                list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
+                list = list.Where(_ => _.StoreOwnerBuildingId == model.BuildingId);
             }
 
             if (!string.IsNullOrEmpty(model.Role))
@@ -165,7 +165,7 @@ namespace IPSB.Controllers
 
             return Ok(pagedModel);
         }
-        
+
         /// <summary>
         /// Count accounts
         /// </summary>
@@ -203,7 +203,7 @@ namespace IPSB.Controllers
 
             if (model.BuildingId > 0)
             {
-                list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
+                list = list.Where(_ => _.StoreOwnerBuildingId == model.BuildingId);
             }
 
             if (!string.IsNullOrEmpty(model.Role))
@@ -271,9 +271,18 @@ namespace IPSB.Controllers
         public async Task<ActionResult<AccountCM>> CreateAccount([FromForm] AccountCM model)
         {
             ResponseModel responseModel = new();
+            Account account = null;
+            account = await _service.GetByIdAsync(_ => _.Phone == model.Phone);
+            if (account is not null)
+            {
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Phone);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel);
+            }
 
-            Account account = await _service.GetByIdAsync(_ => _.Email == model.Email);
 
+            account = await _service.GetByIdAsync(_ => _.Email == model.Email);
             if (account is not null)
             {
                 responseModel.Code = StatusCodes.Status409Conflict;
@@ -298,8 +307,24 @@ namespace IPSB.Controllers
                 return BadRequest(responseModel);
             }
 
+            if (Role.STORE_OWNER != model.Role && model.StoreOwnerBuildingId != null)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Role));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
+            }
+
+            if (Role.STORE_OWNER == model.Role && model.StoreOwnerBuildingId == null)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Role));
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return BadRequest(responseModel);
+            }
+
             Account crtAccount = _mapper.Map<Account>(model);
-            
+
 
             string imageURL = await _uploadFileService.UploadFile("123456798", model.ImageUrl, "account", "account-profile");
             crtAccount.ImageUrl = imageURL;
@@ -343,6 +368,16 @@ namespace IPSB.Controllers
         {
             ResponseModel responseModel = new();
 
+            Account account = null;
+            account = await _service.GetByIdAsync(_ => _.Phone == model.Phone && _.Id != id);
+            if (account is not null)
+            {
+                responseModel.Code = StatusCodes.Status409Conflict;
+                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Phone);
+                responseModel.Type = ResponseType.INVALID_REQUEST;
+                return Conflict(responseModel);
+            }
+
             Account updAccount = await _service.GetByIdAsync(_ => _.Id == id);
 
             if (updAccount is null)
@@ -354,7 +389,7 @@ namespace IPSB.Controllers
             }
 
             var authorizedResult = await _authorizationService.AuthorizeAsync(User, updAccount, Operations.Update);
-            
+
             if (!authorizedResult.Succeeded)
             {
                 responseModel.Code = StatusCodes.Status403Forbidden;
@@ -372,7 +407,8 @@ namespace IPSB.Controllers
 
             try
             {
-                if(model.FirstUpdateProfile && updAccount.Status.Equals(Status.NEW)){
+                if (model.FirstUpdateProfile && updAccount.Status.Equals(Status.NEW))
+                {
                     updAccount.Status = Status.ACTIVE;
                     updAccount.Password = model.Password;
                 }

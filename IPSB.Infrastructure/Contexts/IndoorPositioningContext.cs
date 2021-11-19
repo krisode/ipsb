@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -74,6 +74,11 @@ namespace IPSB.Infrastructure.Contexts
                     .IsRequired()
                     .HasMaxLength(30)
                     .IsUnicode(false);
+
+                entity.HasOne(d => d.StoreOwnerBuilding)
+                    .WithMany(p => p.Accounts)
+                    .HasForeignKey(d => d.StoreOwnerBuildingId)
+                    .HasConstraintName("FK_Account_Building");
             });
 
             modelBuilder.Entity<Building>(entity =>
