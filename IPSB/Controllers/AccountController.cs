@@ -118,7 +118,7 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.Store == null);
             }
 
-            if (model.BuildingId > 0)
+            if (model.BuildingId >= 0)
             {
                 list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
             }
@@ -201,7 +201,7 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.Store == null);
             }
 
-            if (model.BuildingId > 0)
+            if (model.BuildingId >= 0)
             {
                 list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
             }

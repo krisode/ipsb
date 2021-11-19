@@ -98,7 +98,7 @@ namespace IPSB.Controllers
             {
                 facilityList = facilityList.Where(_ => _.Description.Contains(model.Description));
             }
-            if (model.BuildingId > 0)
+            if (model.BuildingId >= 0)
             {
                 facilityList = facilityList.Where(_ => _.BuildingId == model.BuildingId);
             }
@@ -144,7 +144,7 @@ namespace IPSB.Controllers
             {
                 facilityList = facilityList.Where(_ => _.Description.Contains(model.Description));
             }
-            if (model.BuildingId > 0)
+            if (model.BuildingId >= 0)
             {
                 facilityList = facilityList.Where(_ => _.BuildingId == model.BuildingId);
             }

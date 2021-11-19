@@ -164,17 +164,17 @@ namespace IPSB.Controllers
                     list = ((IIncludableQueryable<Coupon, Store>)list).ThenInclude(_ => _.Building);
                 }
 
-                if (model.BuildingId != 0)
+                if (model.BuildingId >= 0)
                 {
                     list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
                 }
 
-                if (model.StoreId != 0)
+                if (model.StoreId >= 0)
                 {
                     list = list.Where(_ => _.StoreId == model.StoreId);
                 }
 
-                if (model.FloorPlanId > 0)
+                if (model.FloorPlanId >= 0)
                 {
                     list = list.Where(_ => _.Store.FloorPlan.Id == model.FloorPlanId);
                 }
@@ -202,7 +202,7 @@ namespace IPSB.Controllers
                     list = list.Where(_ => _.Code.Contains(model.Code));
                 }
 
-                if (model.CouponTypeId > 0)
+                if (model.CouponTypeId >= 0)
                 {
                     list = list.Where(_ => _.CouponTypeId == model.CouponTypeId);
                 }
@@ -227,33 +227,33 @@ namespace IPSB.Controllers
                     list = list.Where(_ => _.ExpireDate <= model.UpperExpireDate);
                 }
 
-                if (model.LowerAmount != 0)
+                if (model.LowerAmount >= 0)
                 {
                     list = list.Where(_ => _.Amount >= model.LowerAmount);
                 }
 
-                if (model.UpperAmount != 0)
+                if (model.UpperAmount >= 0)
                 {
                     list = list.Where(_ => _.Amount <= model.UpperAmount);
                 }
 
-                if (model.MaxDiscount != 0)
+                if (model.MaxDiscount >= 0)
                 {
                     list = list.Where(_ => _.MaxDiscount == model.MaxDiscount);
                 }
 
-                if (model.MinSpend != 0)
+                if (model.MinSpend >= 0)
                 {
                     list = list.Where(_ => _.MinSpend <= model.MinSpend);
                 }
 
 
-                if (model.LowerLimit != 0)
+                if (model.LowerLimit >= 0)
                 {
                     list = list.Where(_ => _.Limit >= model.LowerLimit);
                 }
 
-                if (model.UpperLimit != 0)
+                if (model.UpperLimit >= 0)
                 {
                     list = list.Where(_ => _.Limit <= model.UpperLimit);
                 }
@@ -355,11 +355,11 @@ namespace IPSB.Controllers
 
             IQueryable<Coupon> list = _service.GetAll(_ => _.Store, _ => _.CouponInUses, _ => _.CouponType);
 
-            if (model.BuildingId != 0)
+            if (model.BuildingId >= 0)
             {
                 list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
             }
-            if (model.StoreId != 0)
+            if (model.StoreId >= 0)
             {
                 list = list.Where(_ => _.StoreId == model.StoreId);
             }
@@ -404,33 +404,33 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.ExpireDate <= model.UpperExpireDate);
             }
 
-            if (model.LowerAmount != 0)
+            if (model.LowerAmount >= 0)
             {
                 list = list.Where(_ => _.Amount >= model.LowerAmount);
             }
 
-            if (model.UpperAmount != 0)
+            if (model.UpperAmount >= 0)
             {
                 list = list.Where(_ => _.Amount <= model.UpperAmount);
             }
 
-            if (model.MaxDiscount != 0)
+            if (model.MaxDiscount >= 0)
             {
                 list = list.Where(_ => _.MaxDiscount == model.MaxDiscount);
             }
 
-            if (model.MinSpend != 0)
+            if (model.MinSpend >= 0)
             {
                 list = list.Where(_ => _.MinSpend <= model.MinSpend);
             }
 
 
-            if (model.LowerLimit != 0)
+            if (model.LowerLimit >= 0)
             {
                 list = list.Where(_ => _.Limit >= model.LowerLimit);
             }
 
-            if (model.UpperLimit != 0)
+            if (model.UpperLimit >= 0)
             {
                 list = list.Where(_ => _.Limit <= model.UpperLimit);
             }

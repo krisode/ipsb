@@ -185,7 +185,7 @@ namespace IPSB.Controllers
                         }
                     }
                 }
-                if (model.ManagerId != 0)
+                if (model.ManagerId >= 0)
                 {
                     list = list.Where(_ => _.ManagerId == model.ManagerId);
                 }
@@ -319,7 +319,7 @@ namespace IPSB.Controllers
                     }
                 }
 
-                if (model.ManagerId != 0)
+                if (model.ManagerId >= 0)
                 {
                     list = list.Where(_ => _.ManagerId == model.ManagerId);
                 }

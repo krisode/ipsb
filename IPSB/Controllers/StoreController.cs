@@ -160,17 +160,17 @@ namespace IPSB.Controllers
                 }, ifModifiedSince);
 
 
-                if (model.AccountId != 0)
+                if (model.AccountId >= 0)
                 {
                     list = list.Where(_ => _.AccountId == model.AccountId);
                 }
 
-                if (model.BuildingId != 0)
+                if (model.BuildingId >= 0)
                 {
                     list = list.Where(_ => _.BuildingId == model.BuildingId);
                 }
 
-                if (model.FloorPlanId != 0)
+                if (model.FloorPlanId >= 0)
                 {
                     list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
                 }
@@ -282,17 +282,17 @@ namespace IPSB.Controllers
 
             IQueryable<Store> list = _service.GetAll(_ => _.Account, _ => _.Building, _ => _.FloorPlan, _ => _.Location);
 
-            if (model.AccountId != 0)
+            if (model.AccountId >= 0)
             {
                 list = list.Where(_ => _.AccountId == model.AccountId);
             }
 
-            if (model.BuildingId != 0)
+            if (model.BuildingId >= 0)
             {
                 list = list.Where(_ => _.BuildingId == model.BuildingId);
             }
 
-            if (model.FloorPlanId != 0)
+            if (model.FloorPlanId >= 0)
             {
                 list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
             }

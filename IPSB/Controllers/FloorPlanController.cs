@@ -157,12 +157,12 @@ namespace IPSB.Controllers
                      return cachedTime;
                  }, ifModifiedSince);
 
-                if (model.NotFloorPlanId > 0)
+                if (model.NotFloorPlanId >= 0)
                 {
                     list = list.Where(_ => _.Id != model.NotFloorPlanId);
                 }
 
-                if (model.BuildingId != 0)
+                if (model.BuildingId >= 0)
                 {
                     list = list.Where(_ => _.BuildingId == model.BuildingId);
                 }
@@ -244,12 +244,12 @@ namespace IPSB.Controllers
                      return cachedTime;
                  }, ifModifiedSince);
 
-                if (model.NotFloorPlanId > 0)
+                if (model.NotFloorPlanId >= 0)
                 {
                     list = list.Where(_ => _.Id != model.NotFloorPlanId);
                 }
 
-                if (model.BuildingId != 0)
+                if (model.BuildingId >= 0)
                 {
                     list = list.Where(_ => _.BuildingId == model.BuildingId);
                 }

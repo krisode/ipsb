@@ -110,15 +110,15 @@ namespace IPSB.Controllers
 
             IQueryable<Product> list = _service.GetAll(_ => _.ProductCategory, _ => _.Store);
 
-            if (model.StoreId > 0)
+            if (model.StoreId >= 0)
             {
                 list = list.Where(_ => _.StoreId == model.StoreId);
             }
-            if (model.BuildingId > 0)
+            if (model.BuildingId >= 0)
             {
                 list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
             }
-            if (model.ProductCategoryId > 0)
+            if (model.ProductCategoryId >= 0)
             {
                 list = list.Where(_ => _.ProductCategoryId == model.ProductCategoryId);
             }
@@ -133,12 +133,12 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.Description.Contains(model.Description));
             }
 
-            if (model.LowerPrice > 0)
+            if (model.LowerPrice >= 0)
             {
                 list = list.Where(_ => _.Price >= model.LowerPrice);
             }
 
-            if (model.UpperPrice > 0)
+            if (model.UpperPrice >= 0)
             {
                 list = list.Where(_ => _.Price <= model.UpperPrice);
             }
@@ -199,15 +199,15 @@ namespace IPSB.Controllers
 
             IQueryable<Product> list = _service.GetAll(_ => _.ProductCategory, _ => _.Store);
 
-            if (model.StoreId > 0)
+            if (model.StoreId >= 0)
             {
                 list = list.Where(_ => _.StoreId == model.StoreId);
             }
-            if (model.BuildingId > 0)
+            if (model.BuildingId >= 0)
             {
                 list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
             }
-            if (model.ProductCategoryId > 0)
+            if (model.ProductCategoryId >= 0)
             {
                 list = list.Where(_ => _.ProductCategoryId == model.ProductCategoryId);
             }
@@ -222,12 +222,12 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.Description.Contains(model.Description));
             }
 
-            if (model.LowerPrice > 0)
+            if (model.LowerPrice >= 0)
             {
                 list = list.Where(_ => _.Price >= model.LowerPrice);
             }
 
-            if (model.UpperPrice > 0)
+            if (model.UpperPrice >= 0)
             {
                 list = list.Where(_ => _.Price <= model.UpperPrice);
             }
@@ -408,7 +408,7 @@ namespace IPSB.Controllers
                 updProduct.Name = model.Name;
                 updProduct.ImageUrl = imageUrl;
                 updProduct.Description = model.Description;
-                if (model.ProductCategoryId > 0)
+                if (model.ProductCategoryId >= 0)
                 {
                     updProduct.ProductCategoryId = model.ProductCategoryId;
                 }

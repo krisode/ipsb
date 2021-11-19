@@ -79,7 +79,7 @@ namespace IPSB.Controllers
         public ActionResult<IEnumerable<ShoppingItemVM>> GetAllShoppingItems([FromQuery] ShoppingItemSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             var result = _service.GetAll(_ => _.Product);
-            if (model.ShoppingListId > 0)
+            if (model.ShoppingListId >= 0)
             {
                 result = result.Where(_ => _.ShoppingListId == model.ShoppingListId);
             }
@@ -108,7 +108,7 @@ namespace IPSB.Controllers
         public ActionResult<IEnumerable<ShoppingItemVM>> CountShoppingItems([FromQuery] ShoppingItemSM model)
         {
             var result = _service.GetAll(_ => _.Product);
-            if (model.ShoppingListId > 0)
+            if (model.ShoppingListId >= 0)
             {
                 result = result.Where(_ => _.ShoppingListId == model.ShoppingListId);
             }

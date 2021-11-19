@@ -160,32 +160,32 @@ namespace IPSB.Controllers
                     return cachedTime;
                 }, ifModifiedSince);
 
-                if (model.FromLocationId != 0)
+                if (model.FromLocationId >= 0)
                 {
                     list = list.Where(_ => _.FromLocationId == model.FromLocationId);
                 }
 
-                if (model.ToLocationId != 0)
+                if (model.ToLocationId >= 0)
                 {
                     list = list.Where(_ => _.ToLocationId == model.ToLocationId);
                 }
 
-                if (model.LowerDistance != 0)
+                if (model.LowerDistance >= 0)
                 {
                     list = list.Where(_ => _.Distance >= model.LowerDistance);
                 }
 
-                if (model.UpperDistance != 0)
+                if (model.UpperDistance >= 0)
                 {
                     list = list.Where(_ => _.Distance <= model.UpperDistance);
                 }
 
-                if (model.FloorPlanId != 0)
+                if (model.FloorPlanId >= 0)
                 {
                     list = list.Where(_ => _.FromLocation.FloorPlanId == model.FloorPlanId || _.ToLocation.FloorPlanId == model.FloorPlanId);
                 }
 
-                if (model.BuildingId != 0)
+                if (model.BuildingId >= 0)
                 {
                     list = list.Where(_ => _.FromLocation.FloorPlan.BuildingId == model.BuildingId);
                 }
@@ -271,32 +271,32 @@ namespace IPSB.Controllers
                     return cachedTime;
                 }, ifModifiedSince);
 
-                if (model.FromLocationId != 0)
+                if (model.FromLocationId >= 0)
                 {
                     list = list.Where(_ => _.FromLocationId == model.FromLocationId);
                 }
 
-                if (model.ToLocationId != 0)
+                if (model.ToLocationId >= 0)
                 {
                     list = list.Where(_ => _.ToLocationId == model.ToLocationId);
                 }
 
-                if (model.LowerDistance != 0)
+                if (model.LowerDistance >= 0)
                 {
                     list = list.Where(_ => _.Distance >= model.LowerDistance);
                 }
 
-                if (model.UpperDistance != 0)
+                if (model.UpperDistance >= 0)
                 {
                     list = list.Where(_ => _.Distance <= model.UpperDistance);
                 }
 
-                if (model.FloorPlanId != 0)
+                if (model.FloorPlanId >= 0)
                 {
                     list = list.Where(_ => _.FromLocation.FloorPlanId == model.FloorPlanId || _.ToLocation.FloorPlanId == model.FloorPlanId);
                 }
 
-                if (model.BuildingId != 0)
+                if (model.BuildingId >= 0)
                 {
                     list = list.Where(_ => _.FromLocation.FloorPlan.BuildingId == model.BuildingId);
                 }

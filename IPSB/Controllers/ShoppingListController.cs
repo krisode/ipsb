@@ -87,11 +87,11 @@ namespace IPSB.Controllers
         public ActionResult<IEnumerable<ShoppingListVM>> GetAllShoppingLists([FromQuery] ShoppingListSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             var result = _service.GetAll(_ => _.Building);
-            if (model.BuildingId > 0)
+            if (model.BuildingId >= 0)
             {
                 result = result.Where(_ => _.BuildingId == model.BuildingId);
             }
-            if (model.AccountId > 0)
+            if (model.AccountId >= 0)
             {
                 result = result.Where(_ => _.AccountId == model.AccountId);
             }
@@ -131,11 +131,11 @@ namespace IPSB.Controllers
         public ActionResult<IEnumerable<ShoppingListVM>> CountShoppingLists([FromQuery] ShoppingListSM model)
         {
             var result = _service.GetAll(_ => _.Building);
-            if (model.BuildingId > 0)
+            if (model.BuildingId >= 0)
             {
                 result = result.Where(_ => _.BuildingId == model.BuildingId);
             }
-            if (model.AccountId > 0)
+            if (model.AccountId >= 0)
             {
                 result = result.Where(_ => _.AccountId == model.AccountId);
             }

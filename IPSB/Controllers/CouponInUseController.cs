@@ -107,12 +107,12 @@ namespace IPSB.Controllers
 
             IQueryable<CouponInUse> list = _service.GetAll(_ => _.Coupon.Store, _ => _.Visitor);
 
-            if (model.CouponId != 0)
+            if (model.CouponId >= 0)
             {
                 list = list.Where(_ => _.CouponId == model.CouponId);
             }
 
-            if (model.VisitorId != 0)
+            if (model.VisitorId >= 0)
             {
                 list = list.Where(_ => _.VisitorId == model.VisitorId);
             }
@@ -166,7 +166,7 @@ namespace IPSB.Controllers
                     }
                 }
             }
-            if (model.StoreId != 0)
+            if (model.StoreId >= 0)
             {
                 list = list.Where(_ => _.Coupon.StoreId == model.StoreId);
             }
@@ -211,12 +211,12 @@ namespace IPSB.Controllers
 
             IQueryable<CouponInUse> list = _service.GetAll(_ => _.Coupon, _ => _.Visitor);
 
-            if (model.CouponId != 0)
+            if (model.CouponId >= 0)
             {
                 list = list.Where(_ => _.CouponId == model.CouponId);
             }
 
-            if (model.VisitorId != 0)
+            if (model.VisitorId >= 0)
             {
                 list = list.Where(_ => _.VisitorId == model.VisitorId);
             }
@@ -269,7 +269,7 @@ namespace IPSB.Controllers
                     }
                 }
             }
-            if (model.StoreId != 0)
+            if (model.StoreId >= 0)
             {
                 list = list.Where(_ => _.Coupon.StoreId == model.StoreId);
             }

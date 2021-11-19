@@ -176,7 +176,7 @@ namespace IPSB.Controllers
                     }
                 }
 
-                if (model.AccountId != 0)
+                if (model.AccountId >= 0)
                 {
                     list = list.Where(_ => _.AccountId == model.AccountId);
                 }
@@ -307,7 +307,7 @@ namespace IPSB.Controllers
                     }
                 }
 
-                if (model.AccountId != 0)
+                if (model.AccountId >= 0)
                 {
                     list = list.Where(_ => _.AccountId == model.AccountId);
                 }
@@ -516,7 +516,7 @@ namespace IPSB.Controllers
                 }
                 
                 
-                if(model.AccountId > 0)
+                if(model.AccountId >= 0)
                 {
                     updNotification.AccountId = model.AccountId;
                 }

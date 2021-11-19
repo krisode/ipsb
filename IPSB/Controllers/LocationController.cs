@@ -149,7 +149,7 @@ namespace IPSB.Controllers
                      return cachedTime;
                  }, ifModifiedSince);
 
-                if (model.BuildingId != 0)
+                if (model.BuildingId >= 0)
                 {
                     list = list.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
                 }
@@ -169,17 +169,17 @@ namespace IPSB.Controllers
                     }
                 }
 
-                if (model.FloorPlanId != 0)
+                if (model.FloorPlanId >= 0)
                 {
                     list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
                 }
 
-                if (model.StoreId != 0)
+                if (model.StoreId >= 0)
                 {
                     list = list.Where(_ => _.Store.Id == model.StoreId);
                 }
 
-                if (model.LocationTypeId != 0)
+                if (model.LocationTypeId >= 0)
                 {
                     list = list.Where(_ => _.LocationTypeId == model.LocationTypeId);
                 }
@@ -284,17 +284,17 @@ namespace IPSB.Controllers
                      return cachedTime;
                  }, ifModifiedSince);
 
-                if (model.BuildingId != 0)
+                if (model.BuildingId >= 0)
                 {
                     list = list.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
                 }
 
-                if (model.X != 0)
+                if (model.X >= 0)
                 {
                     list = list.Where(_ => _.X == model.X);
                 }
 
-                if (model.Y != 0)
+                if (model.Y >= 0)
                 {
                     list = list.Where(_ => _.Y == model.Y);
                 }
@@ -313,17 +313,17 @@ namespace IPSB.Controllers
                     }
                 }
 
-                if (model.FloorPlanId != 0)
+                if (model.FloorPlanId >= 0)
                 {
                     list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
                 }
 
-                if (model.StoreId != 0)
+                if (model.StoreId >= 0)
                 {
                     list = list.Where(_ => _.Store.Id == model.StoreId);
                 }
 
-                if (model.LocationTypeId != 0)
+                if (model.LocationTypeId >= 0)
                 {
                     list = list.Where(_ => _.LocationTypeId == model.LocationTypeId);
                 }

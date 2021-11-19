@@ -113,17 +113,17 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.Uuid.Equals(model.Uuid));
             }
 
-            if (model.BuildingId != 0)
+            if (model.BuildingId >= 0)
             {
                 list = list.Where(_ => _.BuildingId == model.BuildingId);
             }
 
-            if (model.FloorPlanId != 0)
+            if (model.FloorPlanId >= 0)
             {
                 list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
             }
 
-            if (model.LocationId != 0)
+            if (model.LocationId >= 0)
             {
                 list = list.Where(_ => _.LocationId == model.LocationId);
             }
@@ -198,17 +198,17 @@ namespace IPSB.Controllers
                 list = list.Where(_ => _.Uuid.Equals(model.Uuid));
             }
 
-            if (model.BuildingId != 0)
+            if (model.BuildingId >= 0)
             {
                 list = list.Where(_ => _.BuildingId == model.BuildingId);
             }
 
-            if (model.FloorPlanId != 0)
+            if (model.FloorPlanId >= 0)
             {
                 list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
             }
 
-            if (model.LocationId != 0)
+            if (model.LocationId >= 0)
             {
                 list = list.Where(_ => _.LocationId == model.LocationId);
             }
