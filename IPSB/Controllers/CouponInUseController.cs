@@ -393,7 +393,7 @@ namespace IPSB.Controllers
                 bool needUpdate = false;
                 if (!updCouponInUse.ApplyDate.HasValue && updCouponInUse.Status.Equals(Status.NOT_USED))
                 {
-                    updCouponInUse.ApplyDate = model.ApplyDate;
+                    updCouponInUse.ApplyDate = localTime.DateTime;
                     updCouponInUse.Status = Status.USED;
                     needUpdate = true;
                 }
