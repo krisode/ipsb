@@ -349,24 +349,26 @@ namespace IPSB.Controllers
             //     return new ObjectResult($"Not authorize to update locator tag with id: {id}") { StatusCode = 403 };
             // }
 
-            LocatorTag crtLocatorTag = _mapper.Map<LocatorTag>(model);
             var info = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             DateTimeOffset localServerTime = DateTimeOffset.Now;
             DateTimeOffset localTime = TimeZoneInfo.ConvertTime(localServerTime, info);
 
             try
             {
+                if (updLocatorTag.Status == Status.NEW && updLocatorTag.LocationId == null)
+                {
+                    updLocatorTag.Status = Status.ACTIVE;
+                }
                 updLocatorTag.LocationId = await _locationService.UpdateLocationJson(updLocatorTag.LocationId, model.LocationJson);
                 updLocatorTag.TxPower = model.TxPower;
                 updLocatorTag.UpdateTime = localTime.DateTime;
                 updLocatorTag.FloorPlanId = model.FloorPlanId;
-                updLocatorTag.BuildingId = model.BuildingId;
                 updLocatorTag.LocatorTagGroupId = model.LocatorTagGroupId;
 
                 _service.Update(updLocatorTag);
                 await _service.Save();
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 responseModel.Code = StatusCodes.Status500InternalServerError;
                 responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
