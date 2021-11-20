@@ -68,7 +68,12 @@ namespace IPSB.Utils
             int toSkip = (pageIndex - 1) * pageSize;
             if (random)
             {
-                toSkip = new Random().Next(1, _source.Count());
+                int totalCount = _source.Count();
+                int newToSkip = new Random().Next(1, totalCount);
+                if (totalCount - newToSkip >= pageSize)
+                {
+                    toSkip = newToSkip;
+                }
                 _sourcePageSize = _source.OrderBy(x => Guid.NewGuid());
             }
             else
