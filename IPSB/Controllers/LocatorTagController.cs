@@ -368,7 +368,7 @@ namespace IPSB.Controllers
                 _service.Update(updLocatorTag);
                 await _service.Save();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 responseModel.Code = StatusCodes.Status500InternalServerError;
                 responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
