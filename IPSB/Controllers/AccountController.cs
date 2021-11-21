@@ -154,7 +154,15 @@ namespace IPSB.Controllers
                 }
                 else
                 {
-                    list = list.Where(_ => _.Status == model.Status);
+                    if (model.NotManageStore || model.NotManageBuilding)
+                    {
+                        list = list.Where(_ => _.Status != Status.INACTIVE);
+                    }
+                    else
+                    {
+                        list = list.Where(_ => _.Status == model.Status);
+                    }
+
                 }
             }
 
