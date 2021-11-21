@@ -54,7 +54,7 @@ namespace IPSB.Controllers
             ResponseModel responseModel = new();
 
             var account = _accountService.CheckLogin(authAccount.Email, authAccount.Password, _ => _.Store, _ => _.Building);
-            
+
             if (account == null)
             {
                 responseModel.Code = StatusCodes.Status401Unauthorized;
@@ -63,7 +63,8 @@ namespace IPSB.Controllers
                 return Unauthorized(responseModel);
             }
 
-            if(account.Role.Equals(Role.VISITOR)){
+            if (account.Role.Equals(Role.VISITOR))
+            {
                 responseModel.Code = StatusCodes.Status400BadRequest;
                 responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(authAccount.Email) + " or " + nameof(authAccount.Password));
                 responseModel.Type = ResponseType.INVALID_REQUEST;
@@ -105,7 +106,8 @@ namespace IPSB.Controllers
                 return Unauthorized(responseModel);
             }
 
-            if(!account.Role.Equals(Role.VISITOR)){
+            if (!account.Role.Equals(Role.VISITOR))
+            {
                 responseModel.Code = StatusCodes.Status401Unauthorized;
                 responseModel.Message = ResponseMessage.UNAUTHORIZE;
                 responseModel.Type = ResponseType.UNAUTHORIZE;
@@ -170,9 +172,9 @@ namespace IPSB.Controllers
                 decodedToken = await auth.VerifyIdTokenAsync(authAccount.IdToken);
                 decodedToken.Claims.TryGetValue(TokenClaims.PHONE_NUMBER, out var phoneVar);
                 decodedToken.Claims.TryGetValue(TokenClaims.EMAIL, out var emailvar);
-                phone = (string)phoneVar;
+                phone = ((string)phoneVar).Replace("+84", "0");
                 email = (string)emailvar;
-            } 
+            }
             catch (Exception)
             {
                 responseModel.Code = StatusCodes.Status401Unauthorized;
@@ -188,7 +190,7 @@ namespace IPSB.Controllers
                     .FirstOrDefault();
                 accountCreate ??= new Account()
                 {
-                    Phone = phone.Replace("+84", "0"),
+                    Phone = phone,
                     Status = Status.NEW,
                 };
             }
@@ -321,9 +323,9 @@ namespace IPSB.Controllers
         public async Task<ActionResult> ChangePassword(AuthWebChangePassword authAccount)
         {
             ResponseModel responseModel = new();
-            
+
             var updAccount = await _accountService.GetByIdAsync(_ => _.Id == authAccount.AccountId);
-            
+
             if (updAccount == null)
             {
                 responseModel.Code = StatusCodes.Status400BadRequest;
@@ -331,7 +333,7 @@ namespace IPSB.Controllers
                 responseModel.Type = ResponseType.NOT_FOUND;
                 return BadRequest(responseModel);
             }
-            
+
             if (!authAccount.AccountId.ToString().Equals(User.Identity.Name))
             {
                 responseModel.Code = StatusCodes.Status403Forbidden;
@@ -350,7 +352,7 @@ namespace IPSB.Controllers
 
             try
             {
-                updAccount.Id = (int) authAccount.AccountId;
+                updAccount.Id = (int)authAccount.AccountId;
                 updAccount.Password = authAccount.Password;
                 updAccount.Status = Constants.Status.ACTIVE;
 
