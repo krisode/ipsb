@@ -106,10 +106,10 @@ namespace IPSB.Controllers
             }
 
             if(!account.Role.Equals(Role.VISITOR)){
-                responseModel.Code = StatusCodes.Status400BadRequest;
-                responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(authAccount.Phone) + " or " + nameof(authAccount.Password));
-                responseModel.Type = ResponseType.INVALID_REQUEST;
-                return BadRequest(responseModel);
+                responseModel.Code = StatusCodes.Status401Unauthorized;
+                responseModel.Message = ResponseMessage.UNAUTHORIZE;
+                responseModel.Type = ResponseType.UNAUTHORIZE;
+                return Unauthorized(responseModel);
             }
 
             var rtnAccount = await _jwtTokenProvider.GetUserAuth<AuthLoginSuccess>(account, Response);
@@ -188,7 +188,7 @@ namespace IPSB.Controllers
                     .FirstOrDefault();
                 accountCreate ??= new Account()
                 {
-                    Phone = phone,
+                    Phone = phone.Replace("+84", "0"),
                     Status = Status.NEW,
                 };
             }
