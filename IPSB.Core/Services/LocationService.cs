@@ -1,4 +1,4 @@
-﻿using ApplicationCore.Services;
+using ApplicationCore.Services;
 using IPSB;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Infrastructure.Repositories;
@@ -152,6 +152,10 @@ namespace IPSB.Core.Services
                         await Save();
                         updateLocationId = locationEntity.Id;
                     }
+                }
+                else
+                {
+                    updateLocationId = locationEntity.Id;
                 }
             }
             return updateLocationId;
