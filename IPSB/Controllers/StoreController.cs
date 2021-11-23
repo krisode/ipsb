@@ -33,8 +33,8 @@ namespace IPSB.Controllers
         private readonly ILocationService _locationService;
         private readonly ICacheStore _cacheStore;
 
-        public StoreController(IStoreService service, IProductCategoryService productCategoryService, IMapper mapper, 
-            IPagingSupport<Store> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService, 
+        public StoreController(IStoreService service, IProductCategoryService productCategoryService, IMapper mapper,
+            IPagingSupport<Store> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService,
             ILocationService locationService, ICacheStore cacheStore)
         {
             _service = service;
@@ -142,13 +142,17 @@ namespace IPSB.Controllers
             var cacheId = new CacheKey<Store>(DefaultValue.INTEGER);
             var cacheObjectType = new Store();
             string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
-
+            bool includeDistanceToBuilding = model.Lat != 0 && model.Lng != 0;
             try
             {
                 var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
                     var list = _service.GetAll(_ => _.Account, _ => _.Building, _ => _.FloorPlan, _ => _.Location);
 
+                    if (includeDistanceToBuilding)
+                    {
+                        list = list.OrderBy(_ => IndoorPositioningContext.DistanceBetweenLatLng(_.Building.Lat, _.Building.Lng, model.Lat, model.Lng));
+                    }
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
 
                     return Task.FromResult(list);
@@ -190,10 +194,11 @@ namespace IPSB.Controllers
                     list = list.Where(_ => _.Phone.Contains(model.Phone));
                 }
 
-                if (model.ProductCategoryIds is not null && model.ProductCategoryIds.Length > 0)
-                {
-                    list = list.Where(store => store.Products.Any(product => model.ProductCategoryIds.Contains(product.ProductCategoryId)));
-                }
+                //Cache disabled
+                // if (model.ProductCategoryIds is not null && model.ProductCategoryIds.Length > 0)
+                // {
+                //     list = list.Where(store => store.Products.Any(product => model.ProductCategoryIds.Contains(product.ProductCategoryId)));
+                // }
 
                 if (!string.IsNullOrEmpty(model.Status))
                 {
@@ -208,13 +213,6 @@ namespace IPSB.Controllers
                     {
                         list = list.Where(_ => _.Status == model.Status);
                     }
-                }
-
-                bool includeDistanceToBuilding = model.Lat != 0 && model.Lng != 0;
-                Expression<Func<Store, object>> sorter = _ => _.Id;
-                if (includeDistanceToBuilding)
-                {
-                    sorter = _ => IndoorPositioningContext.DistanceBetweenLatLng(_.Building.Lat, _.Building.Lng, model.Lat, model.Lng);
                 }
 
                 Func<StoreVM, Store, StoreVM> transformData = (storeVM, store) =>
@@ -233,7 +231,7 @@ namespace IPSB.Controllers
                 };
 
                 var pagedModel = _pagingSupport.From(list)
-                    .GetRange(pageIndex, pageSize, sorter, isAll, isAscending, model.Random)
+                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending, random: model.Random, noSort: includeDistanceToBuilding)
                     .Paginate<StoreVM>(transform: transformData);
 
 
@@ -408,7 +406,15 @@ namespace IPSB.Controllers
             {
 
                 await _service.AddAsync(crtStore);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(
+                        _cacheStore.Remove<Store>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Edge>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Location>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Coupon>(DefaultValue.INTEGER)
+                    );
+                }
             }
             catch (Exception)
             {
@@ -484,7 +490,15 @@ namespace IPSB.Controllers
                 updStore.Phone = model.Phone;
                 updStore.LocationId = await _locationService.UpdateLocationJson(updStore.LocationId, model.LocationJson);
                 _service.Update(updStore);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(
+                        _cacheStore.Remove<Store>(id),
+                        _cacheStore.Remove<Edge>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Location>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Coupon>(DefaultValue.INTEGER)
+                    );
+                }
             }
             catch (Exception)
             {
@@ -543,7 +557,15 @@ namespace IPSB.Controllers
             try
             {
                 _service.Update(store);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(
+                        _cacheStore.Remove<Store>(id),
+                        _cacheStore.Remove<Edge>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Location>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Coupon>(DefaultValue.INTEGER)
+                    );
+                }
             }
             catch (Exception)
             {

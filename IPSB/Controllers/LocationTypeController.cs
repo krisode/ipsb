@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using IPSB.Cache;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
@@ -23,15 +24,21 @@ namespace IPSB.Controllers
         private readonly IMapper _mapper;
         private readonly IPagingSupport<LocationType> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
-        // private readonly IAuthorizationService _authorizationService;
 
-        public LocationTypeController(ILocationTypeService service, IMapper mapper, IPagingSupport<LocationType> pagingSupport, IUploadFileService uploadFileService)
+        private readonly ICacheStore _cacheStore;
+
+        public LocationTypeController(ILocationTypeService service, IMapper mapper, IPagingSupport<LocationType> pagingSupport, IUploadFileService uploadFileService, ICacheStore cacheStore)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
+            _cacheStore = cacheStore;
         }
+
+
+
+
 
         /// <summary>
         /// Get a specific location type by id
@@ -117,7 +124,7 @@ namespace IPSB.Controllers
 
             return Ok(pagedModel);
         }
-        
+
         /// <summary>
         /// Count location types
         /// </summary>
@@ -205,7 +212,12 @@ namespace IPSB.Controllers
             {
                 crtLocationType.Status = Status.ACTIVE;
                 await _service.AddAsync(crtLocationType);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(
+                        _cacheStore.Remove<Location>(DefaultValue.INTEGER)
+                    );
+                }
             }
             catch (Exception)
             {
@@ -262,7 +274,12 @@ namespace IPSB.Controllers
                 updLocationType.Description = model.Description;
                 updLocationType.ImageUrl = imageURL;
                 _service.Update(updLocationType);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(
+                        _cacheStore.Remove<Location>(DefaultValue.INTEGER)
+                    );
+                }
             }
             catch (Exception)
             {
@@ -313,7 +330,12 @@ namespace IPSB.Controllers
             {
                 updLocationType.Status = Status.INACTIVE;
                 _service.Update(updLocationType);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(
+                        _cacheStore.Remove<Location>(DefaultValue.INTEGER)
+                    );
+                }
             }
             catch (Exception)
             {

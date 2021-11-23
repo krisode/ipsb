@@ -201,23 +201,6 @@ namespace IPSB.Controllers
                     || _.Facility.Name.Contains(model.SearchKey));
                 }
 
-                if (!string.IsNullOrEmpty(model.LocationTypeName))
-                {
-                    list = list.Where(_ => _.LocationType.Name.Contains(model.LocationTypeName));
-                }
-
-                if (!string.IsNullOrEmpty(model.StoreName))
-                {
-                    list = list.Where(_ => _.Store.Name.Contains(model.StoreName));
-                }
-
-                if (!string.IsNullOrEmpty(model.ProductName))
-                {
-
-                    list = list.Where(_ => _.Store.Products.Any(_ => _.Name.Contains(model.ProductName)));
-                }
-
-
                 var pagedModel = _pagingSupport.From(list)
                     .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
                     .Paginate<LocationVM>();
@@ -337,21 +320,6 @@ namespace IPSB.Controllers
                     list = list.Where(_ => model.LocationTypeIds.Contains(_.LocationTypeId));
                 }
 
-                if (!string.IsNullOrEmpty(model.LocationTypeName))
-                {
-                    list = list.Where(_ => _.LocationType.Name.Contains(model.LocationTypeName));
-                }
-
-                if (!string.IsNullOrEmpty(model.StoreName))
-                {
-                    list = list.Where(_ => _.Store.Name.Contains(model.StoreName));
-                }
-
-                if (!string.IsNullOrEmpty(model.ProductName))
-                {
-
-                    list = list.Where(_ => _.Store.Products.Any(_ => _.Name.Contains(model.ProductName)));
-                }
 
                 return Ok(list.Count());
             }
@@ -407,7 +375,14 @@ namespace IPSB.Controllers
             try
             {
                 await _service.AddRangeAsync(list);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(
+                        _cacheStore.Remove<Location>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Edge>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Store>(DefaultValue.INTEGER)
+                    );
+                }
             }
             catch (Exception)
             {
@@ -450,10 +425,11 @@ namespace IPSB.Controllers
                 _service.Update(updLocation);
                 if (await _service.Save() > 0)
                 {
-                    #region Updating cache
-                    var cacheId = new CacheKey<Location>(id);
-                    await _cacheStore.Remove(cacheId);
-                    #endregion
+                    await Task.WhenAll(
+                        _cacheStore.Remove<Location>(id),
+                        _cacheStore.Remove<Edge>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Store>(DefaultValue.INTEGER)
+                    );
                 }
 
             }
@@ -491,7 +467,14 @@ namespace IPSB.Controllers
                     _service.DeleteRange(model.Ids);
                 }
 
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(
+                        _cacheStore.Remove<Location>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Edge>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Store>(DefaultValue.INTEGER)
+                    );
+                }
             }
             catch (Exception)
             {

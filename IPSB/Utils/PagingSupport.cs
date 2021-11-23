@@ -21,7 +21,7 @@ namespace IPSB.Utils
         ///<summary>
         /// Get a range of persited entities.
         ///</summary>
-        PagingSupport<T> GetRange(int pageIndex, int pageSize, Expression<Func<T, object>> selector, bool isAll, bool sortOrder, bool random = false);
+        PagingSupport<T> GetRange(int pageIndex, int pageSize, Expression<Func<T, object>> orderBy, bool isAll, bool sortOrder, bool noSort = false, bool random = false);
 
 
 
@@ -55,7 +55,7 @@ namespace IPSB.Utils
             get { return _source.Count(); }
         }
 
-        public PagingSupport<T> GetRange(int pageIndex, int pageSize, Expression<Func<T, object>> selector, bool isAll, bool sortOrder = true, bool random = false)
+        public PagingSupport<T> GetRange(int pageIndex, int pageSize, Expression<Func<T, object>> orderBy, bool isAll, bool sortOrder = true, bool noSort = false, bool random = false)
         {
             // If random and isAll is both specified at the same time
             if (random && isAll)
@@ -66,27 +66,31 @@ namespace IPSB.Utils
             _pageIndex = pageIndex;
             _pageSize = pageSize;
             int toSkip = (pageIndex - 1) * pageSize;
-            if (random)
+            if (!noSort)
             {
-                int totalCount = _source.Count();
-                int newToSkip = new Random().Next(1, totalCount);
-                if (totalCount - newToSkip >= pageSize)
+                if (random)
                 {
-                    toSkip = newToSkip;
-                }
-                _sourcePageSize = _source.OrderBy(x => Guid.NewGuid());
-            }
-            else
-            {
-                if (sortOrder)
-                {
-                    _sourcePageSize = _source.OrderBy(selector);
+                    int totalCount = _source.Count();
+                    int newToSkip = new Random().Next(1, totalCount);
+                    if (totalCount - newToSkip >= pageSize)
+                    {
+                        toSkip = newToSkip;
+                    }
+                    _sourcePageSize = _source.OrderBy(x => Guid.NewGuid());
                 }
                 else
                 {
-                    _sourcePageSize = _source.OrderByDescending(selector);
+                    if (sortOrder)
+                    {
+                        _sourcePageSize = _source.OrderBy(orderBy);
+                    }
+                    else
+                    {
+                        _sourcePageSize = _source.OrderByDescending(orderBy);
+                    }
                 }
             }
+
             if (!isAll)
             {
                 _sourcePageSize = _sourcePageSize.Skip(toSkip).Take(pageSize);

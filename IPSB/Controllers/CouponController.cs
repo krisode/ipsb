@@ -146,14 +146,18 @@ namespace IPSB.Controllers
                 var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
                     var list = _service.GetAll(_ => _.CouponType, _ => _.Store.Building);
+                    if (includeDistanceToBuilding)
+                    {   
+                        list = list.OrderBy(_ => IndoorPositioningContext.DistanceBetweenLatLng(_.Store.Building.Lat, _.Store.Building.Lng, model.Lat, model.Lng));
+                    }
 
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
                     return Task.FromResult(list);
                 }, setLastModified: (cachedTime) =>
-                {
-                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
-                    return cachedTime;
-                }, ifModifiedSince);
+                        {
+                            Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
+                            return cachedTime;
+                        }, ifModifiedSince);
 
                 if (model.BuildingId != 0)
                 {
@@ -292,13 +296,9 @@ namespace IPSB.Controllers
                     return couponVM;
                 };
 
-                Expression<Func<Coupon, object>> sorter = _ => _.Id;
-                if (includeDistanceToBuilding)
-                {
-                    sorter = _ => IndoorPositioningContext.DistanceBetweenLatLng(_.Store.Building.Lat, _.Store.Building.Lng, model.Lat, model.Lng);
-                }
+
                 var pagedModel = _pagingSupport.From(list)
-                    .GetRange(pageIndex, pageSize, sorter, isAll, isAscending, model.Random)
+                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending, random: model.Random, noSort: includeDistanceToBuilding)
                     .Paginate<CouponVM>(transform: transformData);
 
                 return Ok(pagedModel);

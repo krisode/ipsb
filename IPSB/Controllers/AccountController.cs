@@ -1,5 +1,6 @@
 using AutoMapper;
 using IPSB.AuthorizationHandler;
+using IPSB.Cache;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
@@ -26,15 +27,18 @@ namespace IPSB.Controllers
         private readonly IPagingSupport<Account> _pagingSupport;
         private readonly IUploadFileService _uploadFileService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly ICacheStore _cacheService;
 
-        public AccountController(IAccountService service, IMapper mapper, IPagingSupport<Account> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService)
+        public AccountController(IAccountService service, IMapper mapper, IPagingSupport<Account> pagingSupport, IUploadFileService uploadFileService, IAuthorizationService authorizationService, ICacheStore cacheService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _uploadFileService = uploadFileService;
             _authorizationService = authorizationService;
+            _cacheService = cacheService;
         }
+
 
 
         /// <summary>
@@ -344,7 +348,14 @@ namespace IPSB.Controllers
             try
             {
                 await _service.AddAsync(crtAccount);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(
+                        _cacheService.Remove<Building>(DefaultValue.INTEGER),
+                        _cacheService.Remove<Store>(DefaultValue.INTEGER),
+                        _cacheService.Remove<Notification>(DefaultValue.INTEGER)
+                    );
+                }
             }
             catch (Exception)
             {
@@ -425,7 +436,14 @@ namespace IPSB.Controllers
                 updAccount.Phone = model.Phone;
 
                 _service.Update(updAccount);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(
+                        _cacheService.Remove<Building>(DefaultValue.INTEGER),
+                        _cacheService.Remove<Store>(DefaultValue.INTEGER),
+                        _cacheService.Remove<Notification>(DefaultValue.INTEGER)
+                    );
+                }
             }
             catch (Exception)
             {
@@ -476,7 +494,14 @@ namespace IPSB.Controllers
             {
                 deleteEntity.Status = Status.INACTIVE;
                 _service.Update(deleteEntity);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(
+                        _cacheService.Remove<Building>(DefaultValue.INTEGER),
+                        _cacheService.Remove<Store>(DefaultValue.INTEGER),
+                        _cacheService.Remove<Notification>(DefaultValue.INTEGER)
+                    );
+                }
             }
             catch (Exception)
             {

@@ -335,7 +335,16 @@ namespace IPSB.Controllers
             try
             {
                 await _service.AddAsync(crtFloorPlan);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(
+                        _cacheStore.Remove<FloorPlan>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Edge>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Location>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Coupon>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Store>(DefaultValue.INTEGER)
+                    );
+                }
             }
             catch (Exception)
             {
@@ -411,10 +420,13 @@ namespace IPSB.Controllers
                 _service.Update(updFloorPlan);
                 if (await _service.Save() > 0)
                 {
-                    // #region Updating cache
-                    // var cacheId = new CacheKey<FloorPlan>(id);
-                    // await _cacheStore.Remove(cacheId);
-                    // #endregion
+                    await Task.WhenAll(
+                        _cacheStore.Remove<FloorPlan>(id),
+                        _cacheStore.Remove<Edge>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Location>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Coupon>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Store>(DefaultValue.INTEGER)
+                    );
                 }
 
             }
@@ -475,7 +487,16 @@ namespace IPSB.Controllers
             try
             {
                 _service.Update(floorPlan);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(
+                        _cacheStore.Remove<FloorPlan>(id),
+                        _cacheStore.Remove<Edge>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Location>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Coupon>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Store>(DefaultValue.INTEGER)
+                    );
+                }
             }
             catch (Exception)
             {

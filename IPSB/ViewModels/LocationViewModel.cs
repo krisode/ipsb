@@ -77,9 +77,6 @@ namespace IPSB.ViewModels
         public int LocationTypeId { get; set; }
         public int[] NotLocationTypeIds { get; set; }
         public int[] LocationTypeIds { get; set; }
-        public string LocationTypeName { get; set; }
-        public string StoreName { get; set; }
-        public string ProductName { get; set; }
         public string Status { get; set; }
 
     }
