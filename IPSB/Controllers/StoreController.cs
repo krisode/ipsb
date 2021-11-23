@@ -142,17 +142,14 @@ namespace IPSB.Controllers
             var cacheId = new CacheKey<Store>(DefaultValue.INTEGER);
             var cacheObjectType = new Store();
             string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
-            bool includeDistanceToBuilding = model.Lat != 0 && model.Lng != 0;
+
             try
             {
-                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                var cacheResponse = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
                     var list = _service.GetAll(_ => _.Account, _ => _.Building, _ => _.FloorPlan, _ => _.Location);
 
-                    if (includeDistanceToBuilding)
-                    {
-                        list = list.OrderBy(_ => IndoorPositioningContext.DistanceBetweenLatLng(_.Building.Lat, _.Building.Lng, model.Lat, model.Lng));
-                    }
+
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
 
                     return Task.FromResult(list);
@@ -163,7 +160,7 @@ namespace IPSB.Controllers
                     return cachedTime;
                 }, ifModifiedSince);
 
-
+                var list = cacheResponse.Result;
                 if (model.AccountId != 0)
                 {
                     list = list.Where(_ => _.AccountId == model.AccountId);
@@ -214,6 +211,12 @@ namespace IPSB.Controllers
                         list = list.Where(_ => _.Status == model.Status);
                     }
                 }
+                bool includeDistanceToBuilding = model.Lat != 0 && model.Lng != 0;
+                Expression<Func<Store, object>> orderBy = _ => _.Id;
+                if (includeDistanceToBuilding)
+                {
+                    orderBy = _ => HelperFunctions.DistanceBetweenLatLng(_.Building.Lat, _.Building.Lng, model.Lat, model.Lng);
+                }
 
                 Func<StoreVM, Store, StoreVM> transformData = (storeVM, store) =>
                 {
@@ -231,22 +234,17 @@ namespace IPSB.Controllers
                 };
 
                 var pagedModel = _pagingSupport.From(list)
-                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending, random: model.Random, noSort: includeDistanceToBuilding)
+                    .GetRange(pageIndex, pageSize, orderBy, isAll, isAscending, random: model.Random)
                     .Paginate<StoreVM>(transform: transformData);
 
-
+                if (cacheResponse.NotModified)
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
                 return Ok(pagedModel);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
-                {
-                    responseModel.Code = StatusCodes.Status304NotModified;
-                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
-                    responseModel.Type = ResponseType.NOT_MODIFIED;
-                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
-
-                }
                 responseModel.Code = StatusCodes.Status500InternalServerError;
                 responseModel.Message = ResponseMessage.CAN_NOT_READ;
                 responseModel.Type = ResponseType.CAN_NOT_READ;

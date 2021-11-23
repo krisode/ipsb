@@ -144,20 +144,14 @@ namespace IPSB.Controllers
             var cacheId = new CacheKey<Building>(DefaultValue.INTEGER);
             var cacheObjectType = new Building();
             string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
-            bool includeDistanceTo = model.Lat != 0 && model.Lng != 0;
+
             try
             {
-                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                var cacheResponse = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
-                    var list = _service.GetAll(_ => _.Manager);
-                    if (model.FindCurrentBuilding && includeDistanceTo)
-                    {
-                        list = list.Where(_ => IndoorPositioningContext.DistanceBetweenLatLng(_.Lat, _.Lng, model.Lat, model.Lng) < 0.5);
-                    }
-                    if (includeDistanceTo)
-                    {
-                        list.OrderBy(_ => IndoorPositioningContext.DistanceBetweenLatLng(_.Lat, _.Lng, model.Lat, model.Lng));
-                    }
+                    var list = _service.GetAll(_ => _.Manager).ToList().AsQueryable();
+
+
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
 
                     return Task.FromResult(list);
@@ -168,7 +162,7 @@ namespace IPSB.Controllers
                     return cachedTime;
                 }, ifModifiedSince);
 
-
+                var list = cacheResponse.Result;
                 if (!string.IsNullOrEmpty(model.Status))
                 {
                     if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
@@ -207,6 +201,16 @@ namespace IPSB.Controllers
                 {
                     list = list.Where(_ => _.Address.Contains(model.Address));
                 }
+                bool includeDistanceTo = model.Lat != 0 && model.Lng != 0;
+                if (model.FindCurrentBuilding && includeDistanceTo)
+                {
+                    list = list.Where(_ => HelperFunctions.DistanceBetweenLatLng(_.Lat, _.Lng, model.Lat, model.Lng) < 0.5);
+                }
+                Expression<Func<Building, object>> orderBy = _ => _.Id;
+                if (includeDistanceTo)
+                {
+                    orderBy = _ => HelperFunctions.DistanceBetweenLatLng(_.Lat, _.Lng, model.Lat, model.Lng);
+                }
 
                 Func<BuildingVM, Building, BuildingVM> transformData = (buildingVM, building) =>
                 {
@@ -222,21 +226,18 @@ namespace IPSB.Controllers
                 };
 
                 var pagedModel = _pagingSupport.From(list)
-                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending, noSort: includeDistanceTo)
+                    .GetRange(pageIndex, pageSize, orderBy, isAll, isAscending)
                     .Paginate<BuildingVM>(transform: transformData);
+
+                if (cacheResponse.NotModified)
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
 
                 return Ok(pagedModel);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
-                {
-                    responseModel.Code = StatusCodes.Status304NotModified;
-                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
-                    responseModel.Type = ResponseType.NOT_MODIFIED;
-                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
-
-                }
                 responseModel.Code = StatusCodes.Status500InternalServerError;
                 responseModel.Message = ResponseMessage.CAN_NOT_READ;
                 responseModel.Type = ResponseType.CAN_NOT_READ;
@@ -264,29 +265,13 @@ namespace IPSB.Controllers
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<BuildingVM>>> CountBuildings([FromQuery] BuildingSM model)
+        public ActionResult<IEnumerable<BuildingVM>> CountBuildings([FromQuery] BuildingSM model)
         {
             ResponseModel responseModel = new();
 
-            var cacheId = new CacheKey<Building>(Utils.Constants.DefaultValue.INTEGER);
-            var cacheObjectType = new Building();
-            string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
-
             try
             {
-                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
-                {
-                    var list = _service.GetAll(_ => _.Manager);
-
-                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
-
-                    return Task.FromResult(list);
-
-                }, setLastModified: (cachedTime) =>
-                {
-                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
-                    return cachedTime;
-                }, ifModifiedSince);
+                var list = _service.GetAll();
 
 
                 if (!string.IsNullOrEmpty(model.Status))

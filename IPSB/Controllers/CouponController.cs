@@ -140,16 +140,13 @@ namespace IPSB.Controllers
             var cacheId = new CacheKey<Coupon>(DefaultValue.INTEGER);
             var cacheObjectType = new Coupon();
             string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
-            var includeDistanceToBuilding = model.Lat != 0 && model.Lng != 0;
+
             try
             {
-                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                var cacheResponse = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
                     var list = _service.GetAll(_ => _.CouponType, _ => _.Store.Building);
-                    if (includeDistanceToBuilding)
-                    {
-                        list = list.OrderBy(_ => IndoorPositioningContext.DistanceBetweenLatLng(_.Store.Building.Lat, _.Store.Building.Lng, model.Lat, model.Lng));
-                    }
+
 
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
                     return Task.FromResult(list);
@@ -159,6 +156,7 @@ namespace IPSB.Controllers
                             return cachedTime;
                         }, ifModifiedSince);
 
+                var list = cacheResponse.Result;
                 if (model.BuildingId != 0)
                 {
                     list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
@@ -276,6 +274,16 @@ namespace IPSB.Controllers
                         }
                     }
                 }
+                var includeDistanceToBuilding = model.Lat != 0 && model.Lng != 0;
+                Expression<Func<Coupon, object>> orderBy = _ => _.Id;
+                if (includeDistanceToBuilding)
+                {
+                    double toLat = model.Lat;
+                    double toLng = model.Lng;
+                    orderBy = coupon => HelperFunctions.DistanceBetweenLatLng(coupon.Store.Building.Lat, coupon.Store.Building.Lng, toLat, toLng);
+                }
+
+
 
                 Func<CouponVM, Coupon, CouponVM> transformData = (couponVM, coupon) =>
                 {
@@ -298,21 +306,18 @@ namespace IPSB.Controllers
 
 
                 var pagedModel = _pagingSupport.From(list)
-                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending, random: model.Random, noSort: includeDistanceToBuilding)
+                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending, random: model.Random)
                     .Paginate<CouponVM>(transform: transformData);
+
+                if (cacheResponse.NotModified)
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
 
                 return Ok(pagedModel);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
-                {
-                    responseModel.Code = StatusCodes.Status304NotModified;
-                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
-                    responseModel.Type = ResponseType.NOT_MODIFIED;
-                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
-
-                }
                 responseModel.Code = StatusCodes.Status500InternalServerError;
                 responseModel.Message = ResponseMessage.CAN_NOT_READ;
                 responseModel.Type = ResponseType.CAN_NOT_READ;
@@ -623,7 +628,7 @@ namespace IPSB.Controllers
             return CreatedAtAction("GetCouponById", new { id = crtCoupon.Id }, crtCoupon);
         }
 
-        
+
 
         /// <summary>
         /// Update coupon with specified id

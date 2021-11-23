@@ -106,7 +106,7 @@ namespace IPSB.Controllers
             var cacheId = new CacheKey<LocatorTag>(DefaultValue.INTEGER);
             var cacheObjectType = new LocatorTag();
             var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
-            var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+            var cacheResponse = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                            {
                                var list = _service.GetAll(_ => _.FloorPlan, _ => _.Location, _ => _.LocatorTagGroup);
 
@@ -120,64 +120,79 @@ namespace IPSB.Controllers
                                return cachedTime;
                            }, ifModifiedSince);
 
-            if (model.Id != null)
+            var list = cacheResponse.Result;
+            try
             {
-                list = list.Where(_ => model.Id.Contains(_.Id));
-            }
-
-            if (!string.IsNullOrEmpty(model.Uuid))
-            {
-                list = list.Where(_ => _.Uuid.Equals(model.Uuid));
-            }
-
-            if (model.BuildingId != 0)
-            {
-                list = list.Where(_ => _.BuildingId == model.BuildingId);
-            }
-
-            if (model.FloorPlanId != 0)
-            {
-                list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
-            }
-
-            if (model.LocationId != 0)
-            {
-                list = list.Where(_ => _.LocationId == model.LocationId);
-            }
-
-            if (model.LowerUpdateTime.HasValue)
-            {
-                list = list.Where(_ => _.UpdateTime >= model.LowerUpdateTime);
-            }
-
-            if (model.UpperUpdateTime.HasValue)
-            {
-                list = list.Where(_ => _.UpdateTime <= model.UpperUpdateTime);
-            }
-
-
-            if (!string.IsNullOrEmpty(model.Status))
-            {
-                if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE && model.Status != Status.NEW)
+                if (model.Id != null)
                 {
-                    responseModel.Code = StatusCodes.Status400BadRequest;
-                    responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
-                    responseModel.Type = ResponseType.INVALID_REQUEST;
-                    return BadRequest(responseModel);
+                    list = list.Where(_ => model.Id.Contains(_.Id));
                 }
 
-                else
+                if (!string.IsNullOrEmpty(model.Uuid))
                 {
-                    list = list.Where(_ => _.Status == model.Status);
+                    list = list.Where(_ => _.Uuid.Equals(model.Uuid));
                 }
+
+                if (model.BuildingId != 0)
+                {
+                    list = list.Where(_ => _.BuildingId == model.BuildingId);
+                }
+
+                if (model.FloorPlanId != 0)
+                {
+                    list = list.Where(_ => _.FloorPlanId == model.FloorPlanId);
+                }
+
+                if (model.LocationId != 0)
+                {
+                    list = list.Where(_ => _.LocationId == model.LocationId);
+                }
+
+                if (model.LowerUpdateTime.HasValue)
+                {
+                    list = list.Where(_ => _.UpdateTime >= model.LowerUpdateTime);
+                }
+
+                if (model.UpperUpdateTime.HasValue)
+                {
+                    list = list.Where(_ => _.UpdateTime <= model.UpperUpdateTime);
+                }
+
+
+                if (!string.IsNullOrEmpty(model.Status))
+                {
+                    if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE && model.Status != Status.NEW)
+                    {
+                        responseModel.Code = StatusCodes.Status400BadRequest;
+                        responseModel.Message = ResponseMessage.INVALID_PARAMETER.Replace("Object", nameof(model.Status));
+                        responseModel.Type = ResponseType.INVALID_REQUEST;
+                        return BadRequest(responseModel);
+                    }
+
+                    else
+                    {
+                        list = list.Where(_ => _.Status == model.Status);
+                    }
+                }
+
+
+                var pagedModel = _pagingSupport.From(list)
+                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
+                    .Paginate<LocatorTagVM>();
+                if (cacheResponse.NotModified)
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
+                return Ok(pagedModel);
+            }
+            catch (System.Exception)
+            {
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
+                responseModel.Type = ResponseType.CAN_NOT_CREATE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
 
-
-            var pagedModel = _pagingSupport.From(list)
-                .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
-                .Paginate<LocatorTagVM>();
-
-            return Ok(pagedModel);
         }
 
         /// <summary>

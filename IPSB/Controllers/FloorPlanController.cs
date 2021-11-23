@@ -144,7 +144,7 @@ namespace IPSB.Controllers
             try
             {
 
-                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                var cacheResponse = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
                     var list = _service.GetAll();
 
@@ -156,6 +156,8 @@ namespace IPSB.Controllers
                      Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
                      return cachedTime;
                  }, ifModifiedSince);
+
+                var list = cacheResponse.Result;
 
                 if (model.NotFloorPlanId > 0)
                 {
@@ -180,18 +182,14 @@ namespace IPSB.Controllers
                 var pagedModel = _pagingSupport.From(list)
                     .GetRange(pageIndex, pageSize, _ => _.FloorNumber, isAll, isAscending)
                     .Paginate<FloorPlanVM>();
-
+                if (cacheResponse.NotModified)
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
                 return Ok(pagedModel);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
-                {
-                    responseModel.Code = StatusCodes.Status304NotModified;
-                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
-                    responseModel.Type = ResponseType.NOT_MODIFIED;
-                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
-                }
 
                 responseModel.Code = StatusCodes.Status500InternalServerError;
                 responseModel.Message = ResponseMessage.CAN_NOT_READ;
@@ -220,29 +218,17 @@ namespace IPSB.Controllers
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<FloorPlanVM>>> CountFloorPlans([FromQuery] FloorPlanSM model)
+        public ActionResult<int> CountFloorPlans([FromQuery] FloorPlanSM model)
         {
             ResponseModel responseModel = new();
 
-            var cacheId = new CacheKey<FloorPlan>(Utils.Constants.DefaultValue.INTEGER);
-            var cacheObjectType = new FloorPlan();
-            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
 
             try
             {
 
-                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
-                {
-                    var list = _service.GetAll();
 
-                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+                var list = _service.GetAll();
 
-                    return Task.FromResult(list);
-                }, setLastModified: (cachedTime) =>
-                 {
-                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
-                     return cachedTime;
-                 }, ifModifiedSince);
 
                 if (model.NotFloorPlanId > 0)
                 {

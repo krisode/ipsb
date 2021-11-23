@@ -137,7 +137,7 @@ namespace IPSB.Controllers
 
             try
             {
-                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                var cacheResponse = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
                     var list = _service.GetAll();
 
@@ -151,6 +151,7 @@ namespace IPSB.Controllers
                     return cachedTime;
                 }, ifModifiedSince);
 
+                var list = cacheResponse.Result;
 
                 if (!string.IsNullOrEmpty(model.Status))
                 {
@@ -219,18 +220,16 @@ namespace IPSB.Controllers
                 var pagedModel = _pagingSupport.From(list)
                     .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
                     .Paginate<NotificationVM>();
+                if (cacheResponse.NotModified)
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
 
                 return Ok(pagedModel);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
-                {
-                    responseModel.Code = StatusCodes.Status304NotModified;
-                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
-                    responseModel.Type = ResponseType.NOT_MODIFIED;
-                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
-                }
+
                 responseModel.Code = StatusCodes.Status500InternalServerError;
                 responseModel.Message = ResponseMessage.CAN_NOT_READ;
                 responseModel.Type = ResponseType.CAN_NOT_READ;
@@ -258,30 +257,15 @@ namespace IPSB.Controllers
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<int>>> CountNotification([FromQuery] NotificationSM model)
+        public ActionResult<int> CountNotification([FromQuery] NotificationSM model)
         {
             ResponseModel responseModel = new();
 
-            var cacheId = new CacheKey<Notification>(DefaultValue.INTEGER);
-            var cacheObjectType = new Notification();
-            string ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
 
             try
             {
-                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
-                {
-                    var list = _service.GetAll();
 
-                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
-
-                    return Task.FromResult(list);
-
-                }, setLastModified: (cachedTime) =>
-                {
-                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
-                    return cachedTime;
-                }, ifModifiedSince);
-
+                var list = _service.GetAll();
 
                 if (!string.IsNullOrEmpty(model.Status))
                 {

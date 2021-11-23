@@ -135,7 +135,7 @@ namespace IPSB.Controllers
             var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
             try
             {
-                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                var cacheResponse = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
                     var list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store, _ => _.LocatorTag, _ => _.Facility);
 
@@ -149,6 +149,7 @@ namespace IPSB.Controllers
                      return cachedTime;
                  }, ifModifiedSince);
 
+                var list = cacheResponse.Result;
                 if (model.BuildingId != 0)
                 {
                     list = list.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
@@ -204,19 +205,16 @@ namespace IPSB.Controllers
                 var pagedModel = _pagingSupport.From(list)
                     .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
                     .Paginate<LocationVM>();
+                if (cacheResponse.NotModified)
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
 
                 return Ok(pagedModel);
 
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
-                {
-                    responseModel.Code = StatusCodes.Status304NotModified;
-                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
-                    responseModel.Type = ResponseType.NOT_MODIFIED;
-                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
-                }
                 responseModel.Code = StatusCodes.Status500InternalServerError;
                 responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
                 responseModel.Type = ResponseType.CAN_NOT_CREATE;
@@ -245,32 +243,12 @@ namespace IPSB.Controllers
         [Produces("application/json")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<LocationVM>>> CountLocations([FromQuery] LocationSM model)
+        public ActionResult<int> CountLocations([FromQuery] LocationSM model)
         {
             ResponseModel responseModel = new();
-            var cacheId = new CacheKey<Location>(Utils.Constants.DefaultValue.INTEGER);
-            var cacheObjectType = new Location();
-            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
             try
             {
-                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
-                {
-                    var list = _service.GetAll(_ => _.FloorPlan, _ => _.LocationType, _ => _.Store, _ => _.LocatorTag, _ => _.Facility);
-
-                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
-
-                    return Task.FromResult(list);
-
-                }, setLastModified: (cachedTime) =>
-                 {
-                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
-                     return cachedTime;
-                 }, ifModifiedSince);
-
-                if (model.BuildingId != 0)
-                {
-                    list = list.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
-                }
+                var list = _service.GetAll();
 
                 if (model.X != 0)
                 {
@@ -323,15 +301,8 @@ namespace IPSB.Controllers
 
                 return Ok(list.Count());
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
-                {
-                    responseModel.Code = StatusCodes.Status304NotModified;
-                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
-                    responseModel.Type = ResponseType.NOT_MODIFIED;
-                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
-                }
                 responseModel.Code = StatusCodes.Status500InternalServerError;
                 responseModel.Message = ResponseMessage.CAN_NOT_CREATE;
                 responseModel.Type = ResponseType.CAN_NOT_CREATE;

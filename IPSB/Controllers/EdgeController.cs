@@ -143,7 +143,7 @@ namespace IPSB.Controllers
             var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
             try
             {
-                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                var cacheResponse = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
                     var list = _service.GetAll(_ => _.FromLocation.FloorPlan,
                         _ => _.ToLocation.FloorPlan,
@@ -159,6 +159,8 @@ namespace IPSB.Controllers
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
                     return cachedTime;
                 }, ifModifiedSince);
+
+                var list = cacheResponse.Result;
 
                 if (model.FromLocationId != 0)
                 {
@@ -208,18 +210,15 @@ namespace IPSB.Controllers
                     .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
                     .Paginate<EdgeVM>();
 
-                return Ok(pagedModel);
-            }
-            catch (Exception e)
-            {
-                if (e.Message.Equals(Constants.ExceptionMessage.NOT_MODIFIED))
+                if (cacheResponse.NotModified)
                 {
-                    responseModel.Code = StatusCodes.Status304NotModified;
-                    responseModel.Message = ResponseMessage.NOT_MODIFIED;
-                    responseModel.Type = ResponseType.NOT_MODIFIED;
-                    return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status304NotModified };
+                    return StatusCode(StatusCodes.Status304NotModified);
                 }
 
+                return Ok(pagedModel);
+            }
+            catch (Exception)
+            {
                 responseModel.Code = StatusCodes.Status500InternalServerError;
                 responseModel.Message = ResponseMessage.CAN_NOT_READ;
                 responseModel.Type = ResponseType.CAN_NOT_READ;
@@ -246,31 +245,13 @@ namespace IPSB.Controllers
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<EdgeVM>>> CountEdges([FromQuery] EdgeSM model)
+        public ActionResult<int> CountEdges([FromQuery] EdgeSM model)
         {
             ResponseModel responseModel = new();
 
-            var cacheId = new CacheKey<Edge>(DefaultValue.INTEGER);
-            var cacheObjectType = new Edge();
-            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
             try
             {
-                var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
-                {
-                    var list = _service.GetAll(_ => _.FromLocation.FloorPlan,
-                        _ => _.ToLocation.FloorPlan,
-                        _ => _.FromLocation.Store,
-                        _ => _.ToLocation.Store);
-
-                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
-
-                    return Task.FromResult(list);
-
-                }, setLastModified: (cachedTime) =>
-                {
-                    Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
-                    return cachedTime;
-                }, ifModifiedSince);
+                var list = _service.GetAll();
 
                 if (model.FromLocationId != 0)
                 {

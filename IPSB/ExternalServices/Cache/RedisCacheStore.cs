@@ -84,12 +84,13 @@ namespace IPSB.Cache
             return newItem;
         }
 
-        public async Task<IQueryable<TItem>> GetAllOrSetAsync<TItem>(TItem item, CacheKey<TItem> key, Func<string, Task<IQueryable<TItem>>> func, Func<string, string> setLastModified, string ifModifiedSince)
+        public async Task<CacheResponse<TItem>> GetAllOrSetAsync<TItem>(TItem item, CacheKey<TItem> key, Func<string, Task<IQueryable<TItem>>> func, Func<string, string> setLastModified, string ifModifiedSince)
         {
-
+            CacheResponse<TItem> response = new CacheResponse<TItem>();
             if (_config[Constants.CacheConfig.CACHE_STATUS].Equals("off"))
             {
-                return await func("");
+                response.Result = await func("");
+                return response;
             }
             var cachedObjectName = item.GetType().Name;
             var cachedItem = await _distributedCache.GetStringAsync(key.CacheAll);
@@ -104,11 +105,12 @@ namespace IPSB.Cache
                 {
                     if (cachedItemTime.Equals(ifModifiedSince))
                     {
-                        throw new Exception("Not-modified");
+                        response.NotModified = true;
                     }
                 }
                 setLastModified(cachedItemTime);
-                return JsonConvert.DeserializeObject<List<TItem>>(cachedItem).AsQueryable();
+                response.Result = JsonConvert.DeserializeObject<List<TItem>>(cachedItem).AsQueryable();
+                return response;
                 /* JsonSerializer.Deserialize<TItem>(cachedItem) can not be used here
                  * because it caused "A possible object cycle was detected" exception.*/
 
@@ -120,7 +122,7 @@ namespace IPSB.Cache
             string updateTime = localTime.DateTime.ToString("ddd, dd MMM yyy HH:mm:ss") + " GMT";
 
             var newItem = await func(updateTime);
-
+            response.Result = newItem;
             if (newItem != null)
             {
 
@@ -140,7 +142,7 @@ namespace IPSB.Cache
                 await _distributedCache.SetStringAsync(key.CacheAllTime, updateTime.ToString(), cacheEntryOptions);
             }
 
-            return newItem;
+            return response;
         }
 
         public async Task Remove<TItem>(CacheKey<TItem> key)
