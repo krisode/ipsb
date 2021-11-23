@@ -60,6 +60,7 @@ namespace IPSB.Utils
 
         public static class Status
         {
+            public const string COMPLETE = "COMPLETE";
             public const string ACTIVE = "Active";
 
             public const string INACTIVE = "Inactive";

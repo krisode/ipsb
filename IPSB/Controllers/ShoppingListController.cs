@@ -117,7 +117,7 @@ namespace IPSB.Controllers
 
             return Ok(pagedModel);
         }
-        
+
         /// <summary>
         /// Count shopping lists
         /// </summary>
@@ -297,6 +297,48 @@ namespace IPSB.Controllers
                 responseModel.Code = StatusCodes.Status500InternalServerError;
                 responseModel.Message = ResponseMessage.CAN_NOT_DELETE;
                 responseModel.Type = ResponseType.CAN_NOT_DELETE;
+                return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
+            }
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Complete shopping list with specified id
+        /// </summary>
+        /// <param name="id">Shopping list's id</param>
+        /// <response code="204">Complete shopping list successfully</response>
+        /// <response code="400">Shopping list's id does not exist</response>
+        /// <response code="500">Failed to complete</response>
+        [HttpDelete]
+        [Route("{id}/complete")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> CompleteShopping(int id)
+        {
+            ResponseModel responseModel = new();
+
+            var dataToUpdate = await _service.GetByIdAsync(_ => _.Id == id, _ => _.ShoppingItems);
+            if (dataToUpdate == null)
+            {
+                responseModel.Code = StatusCodes.Status400BadRequest;
+                responseModel.Message = ResponseMessage.NOT_FOUND.Replace("Object", nameof(ShoppingList));
+                responseModel.Type = ResponseType.NOT_FOUND;
+                return BadRequest(responseModel);
+            }
+            try
+            {
+                dataToUpdate.Status = Status.COMPLETE;
+                _service.Update(dataToUpdate);
+                await _service.Save();
+            }
+            catch (Exception)
+            {
+                responseModel.Code = StatusCodes.Status500InternalServerError;
+                responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;
+                responseModel.Type = ResponseType.CAN_NOT_UPDATE;
                 return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
             return NoContent();
