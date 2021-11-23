@@ -100,11 +100,25 @@ namespace IPSB.Controllers
         [AllowAnonymous]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<LocatorTagVM>> GetAllLocatorTags([FromQuery] LocatorTagSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
+        public async Task<ActionResult<IEnumerable<LocatorTagVM>>> GetAllLocatorTags([FromQuery] LocatorTagSM model, int pageSize = 20, int pageIndex = 1, bool isAll = false, bool isAscending = true)
         {
             ResponseModel responseModel = new();
+            var cacheId = new CacheKey<LocatorTag>(DefaultValue.INTEGER);
+            var cacheObjectType = new LocatorTag();
+            var ifModifiedSince = Request.Headers[Constants.Request.IF_MODIFIED_SINCE];
+            var list = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
+                           {
+                               var list = _service.GetAll(_ => _.FloorPlan, _ => _.Location, _ => _.LocatorTagGroup);
 
-            IQueryable<LocatorTag> list = _service.GetAll(_ => _.FloorPlan, _ => _.Location, _ => _.LocatorTagGroup);
+                               Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
+
+                               return Task.FromResult(list);
+
+                           }, setLastModified: (cachedTime) =>
+                           {
+                               Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedTime);
+                               return cachedTime;
+                           }, ifModifiedSince);
 
             if (model.Id != null)
             {
@@ -307,7 +321,10 @@ namespace IPSB.Controllers
                 await _service.AddAsync(crtLocatorTag);
                 if (await _service.Save() > 0)
                 {
-                    await Task.WhenAll(_cacheStore.Remove<Location>(DefaultValue.INTEGER));
+                    await Task.WhenAll(
+                        _cacheStore.Remove<LocatorTag>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<Location>(DefaultValue.INTEGER)
+                    );
                 }
             }
             catch (Exception)
@@ -374,7 +391,10 @@ namespace IPSB.Controllers
                 _service.Update(updLocatorTag);
                 if (await _service.Save() > 0)
                 {
-                    await Task.WhenAll(_cacheStore.Remove<Location>(DefaultValue.INTEGER));
+                    await Task.WhenAll(
+                        _cacheStore.Remove<LocatorTag>(id),
+                        _cacheStore.Remove<Location>(DefaultValue.INTEGER)
+                    );
                 }
             }
             catch (Exception)
@@ -434,7 +454,7 @@ namespace IPSB.Controllers
                 updLocatorTag.UpdateTime = localTime.DateTime;
 
                 _service.Update(updLocatorTag);
-                await _service.Save();
+
             }
             catch (Exception)
             {
@@ -494,7 +514,10 @@ namespace IPSB.Controllers
                 _service.Update(locatorTag);
                 if (await _service.Save() > 0)
                 {
-                    await Task.WhenAll(_cacheStore.Remove<Location>(DefaultValue.INTEGER));
+                    await Task.WhenAll(
+                        _cacheStore.Remove<LocatorTag>(id),
+                        _cacheStore.Remove<Location>(DefaultValue.INTEGER)
+                    );
                 }
             }
             catch (Exception)

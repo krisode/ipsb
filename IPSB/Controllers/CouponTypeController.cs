@@ -255,7 +255,7 @@ namespace IPSB.Controllers
                 _service.Update(updateCouponType);
                 if (await _service.Save() > 0)
                 {
-                    await _cacheService.Remove<Coupon>(Constants.DefaultValue.INTEGER);
+                    await _cacheService.Remove<Coupon>(id);
                 }
             }
             catch (Exception)
@@ -309,7 +309,7 @@ namespace IPSB.Controllers
                 _service.Update(deleteCouponType);
                 if (await _service.Save() > 0)
                 {
-                    await _cacheService.Remove<Coupon>(Constants.DefaultValue.INTEGER);
+                    await _cacheService.Remove<Coupon>(deleteCouponType.Id);
                 }
             }
             catch (Exception)

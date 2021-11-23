@@ -238,7 +238,7 @@ namespace IPSB.Controllers
             }
 
         }
-        
+
         /// <summary>
         /// Count notifications
         /// </summary>
@@ -407,7 +407,10 @@ namespace IPSB.Controllers
             try
             {
                 await _service.AddAsync(crtNotification);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await _cacheStore.Remove<Notification>(DefaultValue.INTEGER);
+                }
             }
             catch (Exception)
             {
@@ -487,48 +490,48 @@ namespace IPSB.Controllers
                 {
                     updNotification.Id = model.Id;
                 }
-                
-                if(!string.IsNullOrEmpty(model.Title))
+
+                if (!string.IsNullOrEmpty(model.Title))
                 {
                     updNotification.Title = model.Title;
                 }
-                
-                if(!string.IsNullOrEmpty(model.Body))
+
+                if (!string.IsNullOrEmpty(model.Body))
                 {
                     updNotification.Body = model.Body;
                 }
-                
-                if(!string.IsNullOrEmpty(model.ImageUrl))
+
+                if (!string.IsNullOrEmpty(model.ImageUrl))
                 {
                     updNotification.ImageUrl = model.ImageUrl;
                 }
-                
-                
-                if(!string.IsNullOrEmpty(model.Screen))
+
+
+                if (!string.IsNullOrEmpty(model.Screen))
                 {
                     updNotification.Screen = model.Screen;
                 }
-                
-                
-                if(!string.IsNullOrEmpty(model.Parameter))
+
+
+                if (!string.IsNullOrEmpty(model.Parameter))
                 {
                     updNotification.Parameter = model.Parameter;
                 }
-                
-                
-                if(model.AccountId > 0)
+
+
+                if (model.AccountId > 0)
                 {
                     updNotification.AccountId = model.AccountId;
                 }
-                
-                
-                if(!string.IsNullOrEmpty(model.Status))
+
+
+                if (!string.IsNullOrEmpty(model.Status))
                 {
                     updNotification.Status = model.Status;
                 }
-                
-                
-                if(model.Date.HasValue)
+
+
+                if (model.Date.HasValue)
                 {
                     updNotification.Date = model.Date.Value;
                 }
@@ -536,10 +539,8 @@ namespace IPSB.Controllers
                 _service.Update(updNotification);
                 if (await _service.Save() > 0)
                 {
-                    #region Updating cache
-                    var cacheId = new CacheKey<Notification>(id);
-                    await _cacheStore.Remove(cacheId);
-                    #endregion
+                    await _cacheStore.Remove<Notification>(id);
+
                 }
 
             }
@@ -592,7 +593,11 @@ namespace IPSB.Controllers
             try
             {
                 _service.Delete(notification);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await _cacheStore.Remove<Notification>(id);
+
+                }
             }
             catch (Exception)
             {

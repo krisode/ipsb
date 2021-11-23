@@ -379,6 +379,7 @@ namespace IPSB.Controllers
                 {
                     await Task.WhenAll(
                         _cacheStore.Remove<Location>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<LocatorTag>(DefaultValue.INTEGER),
                         _cacheStore.Remove<Edge>(DefaultValue.INTEGER),
                         _cacheStore.Remove<Store>(DefaultValue.INTEGER)
                     );
@@ -427,6 +428,7 @@ namespace IPSB.Controllers
                 {
                     await Task.WhenAll(
                         _cacheStore.Remove<Location>(id),
+                        _cacheStore.Remove<LocatorTag>(DefaultValue.INTEGER),
                         _cacheStore.Remove<Edge>(DefaultValue.INTEGER),
                         _cacheStore.Remove<Store>(DefaultValue.INTEGER)
                     );
@@ -471,6 +473,7 @@ namespace IPSB.Controllers
                 {
                     await Task.WhenAll(
                         _cacheStore.Remove<Location>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<LocatorTag>(DefaultValue.INTEGER),
                         _cacheStore.Remove<Edge>(DefaultValue.INTEGER),
                         _cacheStore.Remove<Store>(DefaultValue.INTEGER)
                     );

@@ -342,7 +342,8 @@ namespace IPSB.Controllers
                         _cacheStore.Remove<Edge>(DefaultValue.INTEGER),
                         _cacheStore.Remove<Location>(DefaultValue.INTEGER),
                         _cacheStore.Remove<Coupon>(DefaultValue.INTEGER),
-                        _cacheStore.Remove<Store>(DefaultValue.INTEGER)
+                        _cacheStore.Remove<Store>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<LocatorTag>(DefaultValue.INTEGER)
                     );
                 }
             }
@@ -425,7 +426,8 @@ namespace IPSB.Controllers
                         _cacheStore.Remove<Edge>(DefaultValue.INTEGER),
                         _cacheStore.Remove<Location>(DefaultValue.INTEGER),
                         _cacheStore.Remove<Coupon>(DefaultValue.INTEGER),
-                        _cacheStore.Remove<Store>(DefaultValue.INTEGER)
+                        _cacheStore.Remove<Store>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<LocatorTag>(DefaultValue.INTEGER)
                     );
                 }
 
@@ -494,7 +496,8 @@ namespace IPSB.Controllers
                         _cacheStore.Remove<Edge>(DefaultValue.INTEGER),
                         _cacheStore.Remove<Location>(DefaultValue.INTEGER),
                         _cacheStore.Remove<Coupon>(DefaultValue.INTEGER),
-                        _cacheStore.Remove<Store>(DefaultValue.INTEGER)
+                        _cacheStore.Remove<Store>(DefaultValue.INTEGER),
+                        _cacheStore.Remove<LocatorTag>(DefaultValue.INTEGER)
                     );
                 }
             }
