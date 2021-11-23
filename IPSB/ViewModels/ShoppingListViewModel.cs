@@ -51,5 +51,6 @@ namespace IPSB.ViewModels
         public DateTime? StartShoppingDate { get; set; }
         public DateTime? EndShoppingDate { get; set; }
         public string Status { get; set; }
+        public string NotStatus { get; set; }
     }
 }

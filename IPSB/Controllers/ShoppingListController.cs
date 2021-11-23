@@ -111,6 +111,10 @@ namespace IPSB.Controllers
             {
                 result = result.Where(_ => _.Status.Equals(model.Status));
             }
+            if (model.NotStatus != null)
+            {
+                result = result.Where(_ => !_.Status.Equals(model.NotStatus));
+            }
             var pagedModel = _pagingSupport.From(result)
                 .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending)
                 .Paginate<ShoppingListVM>();
