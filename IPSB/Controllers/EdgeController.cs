@@ -190,7 +190,8 @@ namespace IPSB.Controllers
                     list = list.Where(_ => _.FromLocation.FloorPlan.BuildingId == model.BuildingId);
                 }
 
-                if (!string.IsNullOrEmpty(model.Status)) {
+                if (!string.IsNullOrEmpty(model.Status))
+                {
 
                     if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
                     {
@@ -225,7 +226,7 @@ namespace IPSB.Controllers
                 return new ObjectResult(responseModel) { StatusCode = StatusCodes.Status500InternalServerError };
             }
         }
-        
+
         /// <summary>
         /// Count edges
         /// </summary>
@@ -301,7 +302,8 @@ namespace IPSB.Controllers
                     list = list.Where(_ => _.FromLocation.FloorPlan.BuildingId == model.BuildingId);
                 }
 
-                if (!string.IsNullOrEmpty(model.Status)) {
+                if (!string.IsNullOrEmpty(model.Status))
+                {
 
                     if (model.Status != Status.ACTIVE && model.Status != Status.INACTIVE)
                     {
@@ -362,7 +364,10 @@ namespace IPSB.Controllers
             try
             {
                 await _service.AddRangeAsync(list);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await _cacheStore.Remove<Edge>(DefaultValue.INTEGER);
+                }
             }
             catch (Exception)
             {
@@ -429,10 +434,7 @@ namespace IPSB.Controllers
                 _service.Update(updEdge);
                 if (await _service.Save() > 0)
                 {
-                    #region Updating cache
-                    var cacheId = new CacheKey<Edge>(id);
-                    await _cacheStore.Remove(cacheId);
-                    #endregion
+                    await _cacheStore.Remove<Edge>(id);
                 }
 
             }
@@ -466,7 +468,10 @@ namespace IPSB.Controllers
             try
             {
                 _service.DeleteRange(model.Ids);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await _cacheStore.Remove<Edge>(DefaultValue.INTEGER);
+                }
             }
             catch (Exception)
             {
