@@ -309,7 +309,7 @@ namespace IPSB.Controllers
         /// <response code="204">Complete shopping list successfully</response>
         /// <response code="400">Shopping list's id does not exist</response>
         /// <response code="500">Failed to complete</response>
-        [HttpDelete]
+        [HttpPut]
         [Route("{id}/complete")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
