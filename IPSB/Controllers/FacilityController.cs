@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using IPSB.Cache;
 using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
@@ -21,14 +22,18 @@ namespace IPSB.Controllers
         private readonly ILocationService _locationService;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<Facility> _pagingSupport;
+        private readonly ICacheStore _cacheStore;
 
-        public FacilityController(IFacilityService service, ILocationService locationService, IMapper mapper, IPagingSupport<Facility> pagingSupport)
+        public FacilityController(IFacilityService service, ILocationService locationService, IMapper mapper, IPagingSupport<Facility> pagingSupport, ICacheStore cacheStore)
         {
             _service = service;
             _locationService = locationService;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
+            _cacheStore = cacheStore;
         }
+
+
 
         /// <summary>
         /// Get a specific facility by id
@@ -153,7 +158,7 @@ namespace IPSB.Controllers
                 facilityList = facilityList.Where(_ => _.Location.LocationType.Name.Contains(model.LocationType));
             }
 
-            
+
             return Ok(facilityList.Count());
         }
 
@@ -190,7 +195,10 @@ namespace IPSB.Controllers
                 createdFacility.Status = Status.ACTIVE;
                 createdFacility.LocationId = await _locationService.CreateLocationJson(model.LocationJson);
                 await _service.AddAsync(createdFacility);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(_cacheStore.Remove<Location>(DefaultValue.INTEGER));
+                }
             }
             catch (Exception)
             {
@@ -244,12 +252,15 @@ namespace IPSB.Controllers
             }
             try
             {
-                updateFacility.LocationId =  await _locationService.UpdateLocationJson(updateFacility.LocationId, model.LocationJson);
+                updateFacility.LocationId = await _locationService.UpdateLocationJson(updateFacility.LocationId, model.LocationJson);
                 updateFacility.Name = model.Name;
                 updateFacility.Description = model.Description;
                 updateFacility.FloorPlanId = model.FloorPlanId;
                 _service.Update(updateFacility);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(_cacheStore.Remove<Location>(DefaultValue.INTEGER));
+                }
             }
             catch (Exception)
             {
@@ -294,7 +305,10 @@ namespace IPSB.Controllers
                 deleteFacility.LocationId = null;
                 await _locationService.DisableLocation(deleteFacility.LocationId);
                 _service.Update(deleteFacility);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(_cacheStore.Remove<Location>(DefaultValue.INTEGER));
+                }
             }
             catch (Exception)
             {

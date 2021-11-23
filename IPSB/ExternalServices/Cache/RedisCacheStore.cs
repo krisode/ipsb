@@ -3,9 +3,11 @@ using IPSB.Utils;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace IPSB.Cache
@@ -148,16 +150,56 @@ namespace IPSB.Cache
             {
                 await _distributedCache.RemoveAsync(key.CacheId);
                 await _distributedCache.RemoveAsync(key.CacheIDTime);
-
-                var cachedAllItem = await _distributedCache.GetStringAsync(key.CacheAll);
-
-                if (!string.IsNullOrEmpty(cachedAllItem))
-                {
-                    await _distributedCache.RemoveAsync(key.CacheAll);
-                    await _distributedCache.RemoveAsync(key.CacheAllTime);
-                }
             }
 
+            var cachedAllItem = await _distributedCache.GetStringAsync(key.CacheAll);
+            if (!string.IsNullOrEmpty(cachedAllItem))
+            {
+                await _distributedCache.RemoveAsync(key.CacheAll);
+                await _distributedCache.RemoveAsync(key.CacheAllTime);
+            }
+
+        }
+
+        public async Task Remove<TItem>(int id)
+        {
+            var cacheId = new CacheKey<TItem>(id);
+            await Remove(cacheId);
+        }
+
+        public async Task<bool> RemoveAll()
+        {
+            var keys = GetAllRedisKeys();
+            try
+            {
+                await Task.WhenAll(keys.Select(key => _distributedCache.RemoveAsync(key.ToString())));
+            }
+            catch (System.Exception)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public IEnumerable<string> GetAllKeys()
+        {
+            var keys = GetAllRedisKeys();
+            return keys.Select(_ => _.ToString());
+        }
+
+        private RedisKey[] GetAllRedisKeys()
+        {
+            string connectionString = _config.GetConnectionString("RedisConnectionString");
+            ConfigurationOptions options = ConfigurationOptions.Parse(connectionString);
+            ConnectionMultiplexer connection = ConnectionMultiplexer.Connect(options);
+            EndPoint endPoint = connection.GetEndPoints().First();
+            RedisKey[] keys = connection.GetServer(endPoint).Keys(pattern: "*").ToArray();
+            return keys;
+        }
+
+        public async Task<string> GetByKey(string key)
+        {
+            return await _distributedCache.GetStringAsync(key);
         }
     }
 }

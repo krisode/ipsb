@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using IPSB.Cache;
 using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
@@ -19,13 +20,17 @@ namespace IPSB.Controllers
         private readonly ICouponTypeService _service;
         private readonly IMapper _mapper;
         private readonly IPagingSupport<CouponType> _pagingSupport;
+        private readonly ICacheStore _cacheService;
 
-        public CouponTypeController(ICouponTypeService service, IMapper mapper, IPagingSupport<CouponType> pagingSupport)
+        public CouponTypeController(ICouponTypeService service, IMapper mapper, IPagingSupport<CouponType> pagingSupport, ICacheStore cacheService)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
+            _cacheService = cacheService;
         }
+
+
 
         /// <summary>
         /// Get a specific coupon type by id
@@ -140,7 +145,7 @@ namespace IPSB.Controllers
                 couponTypeList = couponTypeList.Where(_ => _.Status.Equals(model.Status));
             }
 
-            
+
             return Ok(couponTypeList.Count());
         }
 
@@ -182,7 +187,10 @@ namespace IPSB.Controllers
             {
                 createdCouponType.Status = Constants.Status.ACTIVE;
                 await _service.AddAsync(createdCouponType);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await _cacheService.Remove<Coupon>(Constants.DefaultValue.INTEGER);
+                }
             }
             catch (Exception)
             {
@@ -245,7 +253,10 @@ namespace IPSB.Controllers
                 updateCouponType.Name = model.Name;
                 updateCouponType.Description = model.Description;
                 _service.Update(updateCouponType);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await _cacheService.Remove<Coupon>(Constants.DefaultValue.INTEGER);
+                }
             }
             catch (Exception)
             {
@@ -296,7 +307,10 @@ namespace IPSB.Controllers
             {
                 deleteCouponType.Status = Constants.Status.INACTIVE;
                 _service.Update(deleteCouponType);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await _cacheService.Remove<Coupon>(Constants.DefaultValue.INTEGER);
+                }
             }
             catch (Exception)
             {

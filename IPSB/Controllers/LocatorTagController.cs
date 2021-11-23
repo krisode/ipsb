@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using IPSB.AuthorizationHandler;
+using IPSB.Cache;
 using IPSB.Core.Services;
 using IPSB.Infrastructure.Contexts;
 using IPSB.Utils;
@@ -26,14 +27,16 @@ namespace IPSB.Controllers
         private readonly IPagingSupport<LocatorTag> _pagingSupport;
         private readonly IAuthorizationService _authorizationService;
         private readonly ILocationService _locationService;
+        private readonly ICacheStore _cacheStore;
 
-        public LocatorTagController(ILocatorTagService service, IMapper mapper, IPagingSupport<LocatorTag> pagingSupport, IAuthorizationService authorizationService, ILocationService locationService)
+        public LocatorTagController(ILocatorTagService service, IMapper mapper, IPagingSupport<LocatorTag> pagingSupport, IAuthorizationService authorizationService, ILocationService locationService, ICacheStore cacheStore)
         {
             _service = service;
             _mapper = mapper;
             _pagingSupport = pagingSupport;
             _authorizationService = authorizationService;
             _locationService = locationService;
+            _cacheStore = cacheStore;
         }
 
 
@@ -302,7 +305,10 @@ namespace IPSB.Controllers
             try
             {
                 await _service.AddAsync(crtLocatorTag);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(_cacheStore.Remove<Location>(DefaultValue.INTEGER));
+                }
             }
             catch (Exception)
             {
@@ -366,7 +372,10 @@ namespace IPSB.Controllers
                 updLocatorTag.LocatorTagGroupId = model.LocatorTagGroupId;
 
                 _service.Update(updLocatorTag);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(_cacheStore.Remove<Location>(DefaultValue.INTEGER));
+                }
             }
             catch (Exception)
             {
@@ -483,7 +492,10 @@ namespace IPSB.Controllers
             try
             {
                 _service.Update(locatorTag);
-                await _service.Save();
+                if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(_cacheStore.Remove<Location>(DefaultValue.INTEGER));
+                }
             }
             catch (Exception)
             {
