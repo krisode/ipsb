@@ -306,7 +306,7 @@ namespace IPSB.Controllers
 
 
                 var pagedModel = _pagingSupport.From(list)
-                    .GetRange(pageIndex, pageSize, _ => _.Id, isAll, isAscending, random: model.Random)
+                    .GetRange(pageIndex, pageSize, orderBy, isAll, isAscending, random: model.Random)
                     .Paginate<CouponVM>(transform: transformData);
 
                 if (cacheResponse.NotModified)
