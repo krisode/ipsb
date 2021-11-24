@@ -145,7 +145,7 @@ namespace IPSB.Controllers
             {
                 var cacheResponse = await _cacheStore.GetAllOrSetAsync(cacheObjectType, cacheId, func: (cachedItemTime) =>
                 {
-                    var list = _service.GetAll(_ => _.CouponType, _ => _.Store.Building);
+                    var list = _service.GetAll(_ => _.CouponType, _ => _.Store.Building, _ => _.Store.FloorPlan);
 
 
                     Response.Headers.Add(Constants.Response.LAST_MODIFIED, cachedItemTime);
@@ -159,7 +159,7 @@ namespace IPSB.Controllers
                 var list = cacheResponse.Result;
                 if (model.BuildingId != 0)
                 {
-                    list = list.Where(_ => _.Store.BuildingId == model.BuildingId);
+                    list = list.ToList().Where(_ => _.Store?.BuildingId == model.BuildingId).AsQueryable();
                 }
 
                 if (model.StoreId != 0)
@@ -169,7 +169,7 @@ namespace IPSB.Controllers
 
                 if (model.FloorPlanId > 0)
                 {
-                    list = list.Where(_ => _.Store.FloorPlan.Id == model.FloorPlanId);
+                    list = list.ToList().Where(_ => _.Store?.FloorPlan?.Id == model.FloorPlanId).AsQueryable();
                 }
 
                 if (!string.IsNullOrEmpty(model.Name))

@@ -184,12 +184,13 @@ namespace IPSB.Controllers
 
                 if (model.FloorPlanId != 0)
                 {
-                    list = list.Where(_ => _.FromLocation.FloorPlanId == model.FloorPlanId || _.ToLocation.FloorPlanId == model.FloorPlanId);
+                    list = list.ToList()
+                    .Where(_ => _.FromLocation?.FloorPlanId == model.FloorPlanId || _.ToLocation?.FloorPlanId == model.FloorPlanId).AsQueryable();
                 }
 
                 if (model.BuildingId != 0)
                 {
-                    list = list.Where(_ => _.FromLocation.FloorPlan.BuildingId == model.BuildingId);
+                    list = list.ToList().Where(_ => _.FromLocation?.FloorPlan?.BuildingId == model.BuildingId).AsQueryable();
                 }
 
                 if (!string.IsNullOrEmpty(model.Status))

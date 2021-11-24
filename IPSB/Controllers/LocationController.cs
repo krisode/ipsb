@@ -152,7 +152,7 @@ namespace IPSB.Controllers
                 var list = cacheResponse.Result;
                 if (model.BuildingId != 0)
                 {
-                    list = list.Where(_ => _.FloorPlan.BuildingId == model.BuildingId);
+                    list = list.ToList().Where(_ => _.FloorPlan?.BuildingId == model.BuildingId).AsQueryable();
                 }
 
                 if (!string.IsNullOrEmpty(model.Status))
@@ -177,7 +177,7 @@ namespace IPSB.Controllers
 
                 if (model.StoreId != 0)
                 {
-                    list = list.Where(_ => _.Store.Id == model.StoreId);
+                    list = list.ToList().Where(_ => _.Store?.Id == model.StoreId).AsQueryable();
                 }
 
                 if (model.LocationTypeId != 0)
@@ -196,10 +196,10 @@ namespace IPSB.Controllers
 
                 if (!string.IsNullOrEmpty(model.SearchKey))
                 {
-                    list = list.Where(_ =>
-                    _.LocationType.Name.Contains(model.SearchKey)
-                    || _.Store.Name.Contains(model.SearchKey)
-                    || _.Facility.Name.Contains(model.SearchKey));
+                    list = list.ToList().Where(_ =>
+                    (_.LocationType?.Name?.Contains(model.SearchKey) ?? false)
+                    || (_.Store?.Name?.Contains(model.SearchKey) ?? false)
+                    || (_.Facility?.Name?.Contains(model.SearchKey) ?? false)).AsQueryable();
                 }
 
                 var pagedModel = _pagingSupport.From(list)
