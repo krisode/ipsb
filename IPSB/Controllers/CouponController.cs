@@ -169,7 +169,7 @@ namespace IPSB.Controllers
 
                 if (model.FloorPlanId > 0)
                 {
-                    list = list.ToList().Where(_ => _.Store?.FloorPlan?.Id == model.FloorPlanId).AsQueryable();
+                    list = list.ToList().Where(_ => _.Store?.FloorPlanId == model.FloorPlanId).AsQueryable();
                 }
 
                 if (!string.IsNullOrEmpty(model.Name))
