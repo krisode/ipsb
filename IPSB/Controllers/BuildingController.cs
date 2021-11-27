@@ -194,12 +194,12 @@ namespace IPSB.Controllers
 
                 if (!string.IsNullOrEmpty(model.Name))
                 {
-                    list = list.Where(_ => _.Name.Contains(model.Name));
+                    list = list.Where(_ => _.Name.ToLower().Contains(model.Name.ToLower()));
                 }
 
                 if (!string.IsNullOrEmpty(model.Address))
                 {
-                    list = list.Where(_ => _.Address.Contains(model.Address));
+                    list = list.Where(_ => _.Address.ToLower().Contains(model.Address.ToLower()));
                 }
                 bool includeDistanceTo = model.Lat != 0 && model.Lng != 0;
                 if (model.FindCurrentBuilding && includeDistanceTo)

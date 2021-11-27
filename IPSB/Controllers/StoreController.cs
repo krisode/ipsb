@@ -178,17 +178,17 @@ namespace IPSB.Controllers
 
                 if (!string.IsNullOrEmpty(model.Name))
                 {
-                    list = list.Where(_ => _.Name.Contains(model.Name));
+                    list = list.Where(_ => _.Name.ToLower().Contains(model.Name.ToLower()));
                 }
 
                 if (!string.IsNullOrEmpty(model.Description))
                 {
-                    list = list.Where(_ => _.Description.Contains(model.Description));
+                    list = list.Where(_ => _.Description.ToLower().Contains(model.Description.ToLower()));
                 }
 
                 if (!string.IsNullOrEmpty(model.Phone))
                 {
-                    list = list.Where(_ => _.Phone.Contains(model.Phone));
+                    list = list.Where(_ => _.Phone.ToLower().Contains(model.Phone.ToLower()));
                 }
 
                 //Cache disabled
