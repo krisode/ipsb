@@ -174,7 +174,7 @@ namespace IPSB.Controllers
 
                 if (!string.IsNullOrEmpty(model.Name))
                 {
-                    list = list.Where(_ => _.Name.Contains(model.Name));
+                    list = list.Where(_ => _.Name.ToLower().Contains(model.Name.ToLower()));
                 }
 
                 if (!string.IsNullOrEmpty(model.Description))
@@ -184,15 +184,16 @@ namespace IPSB.Controllers
 
                 if (!string.IsNullOrEmpty(model.SearchKey))
                 {
-                    list = list.Where(_ => _.Name.Contains(model.SearchKey)
-                    || _.Description.Contains(model.SearchKey)
-                    || _.Store.Name.Contains(model.SearchKey)
+                    var search = model.SearchKey.ToLower();
+                    list = list.Where(_ => _.Name.ToLower().Contains(search)
+                    || _.Description.ToLower().Contains(search)
+                    || _.Store.Name.ToLower().Contains(search)
                     );
                 }
 
                 if (!string.IsNullOrEmpty(model.Code))
                 {
-                    list = list.Where(_ => _.Code.Contains(model.Code));
+                    list = list.Where(_ => _.Code.ToLower().Contains(model.Code.ToLower()));
                 }
 
                 if (model.CouponTypeId > 0)

@@ -171,7 +171,7 @@ namespace IPSB.Controllers
 
                 if (!string.IsNullOrEmpty(model.FloorCode))
                 {
-                    list = list.Where(_ => _.FloorCode.Contains(model.FloorCode));
+                    list = list.Where(_ => _.FloorCode.ToLower().Contains(model.FloorCode.ToLower()));
                 }
 
                 if (Status.ACTIVE.Equals(model.Status) || Status.INACTIVE.Equals(model.Status))
