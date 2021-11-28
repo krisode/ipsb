@@ -140,14 +140,25 @@ namespace IPSB.Core.Services
                         {
                             updateEntity.X = locationEntity.X;
                             updateEntity.Y = locationEntity.Y;
-                            if(floorPlanId != null){
+                            if (floorPlanId != updateEntity.FloorPlanId)
+                            {
+                                _edgeService.RemoveAllEdge(updateEntity);
+                            }
+                            else
+                            {
+                                _edgeService.UpdateEdgeRange(updateEntity);
+                            }
+
+                            if (floorPlanId != null)
+                            {
                                 updateEntity.FloorPlanId = (int)floorPlanId;
                             }
-                            else{
+                            else
+                            {
                                 updateEntity.FloorPlanId = locationEntity.FloorPlanId;
                             }
+
                             updateLocationId = updateEntity.Id;
-                            _edgeService.UpdateEdgeRange(updateEntity);
                             Update(updateEntity);
                         }
                     }
