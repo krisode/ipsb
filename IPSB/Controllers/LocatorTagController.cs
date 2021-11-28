@@ -467,9 +467,8 @@ namespace IPSB.Controllers
             {
                 updLocatorTag.TxPower = model.TxPower;
                 updLocatorTag.UpdateTime = localTime.DateTime;
-
                 _service.Update(updLocatorTag);
-
+                await _service.Save();
             }
             catch (Exception)
             {

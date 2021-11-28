@@ -1,17 +1,6 @@
-using AutoMapper;
-using IPSB.AuthorizationHandler;
 using IPSB.Cache;
-using IPSB.Core.Services;
-using IPSB.ExternalServices;
-using IPSB.Infrastructure.Contexts;
-using IPSB.Utils;
-using IPSB.ViewModels;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using static IPSB.Utils.Constants;
 
