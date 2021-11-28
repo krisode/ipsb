@@ -14,6 +14,8 @@ namespace IPSB.Core.Services
         Task AddRangeAsync(List<Edge> list);
         void DeleteRange(List<int> ids);
         void UpdateEdgeRange(Location location);
+
+        void RemoveAllEdge(Location location);
     }
 
     public class EdgeService : IEdgeService
@@ -58,6 +60,14 @@ namespace IPSB.Core.Services
         public async Task<Edge> GetByIdAsync(Expression<Func<Edge, bool>> predicate, params Expression<Func<Edge, object>>[] includes)
         {
             return await _iRepository.GetByIdAsync(predicate, includes);
+        }
+
+        public void RemoveAllEdge(Location location)
+        {
+            var listEdges = _iRepository.GetAll(_ => _.FromLocation, _ => _.ToLocation)
+                                        .Where(_ => _.FromLocationId == location.Id || _.ToLocationId == location.Id)
+                                        .ToList();
+            _iRepository.DeleteRange(listEdges);
         }
 
         public Task<int> Save()
