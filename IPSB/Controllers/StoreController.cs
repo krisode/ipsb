@@ -498,7 +498,7 @@ namespace IPSB.Controllers
                     );
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 responseModel.Code = StatusCodes.Status500InternalServerError;
                 responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;

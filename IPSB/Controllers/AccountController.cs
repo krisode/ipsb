@@ -134,7 +134,7 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Name))
             {
-                list = list.Where(_ => _.Name.Contains(model.Name));
+                list = list.Where(_ => _.Name.ToLower().Contains(model.Name.ToLower()));
             }
 
             if (!string.IsNullOrEmpty(model.Phone))
@@ -235,7 +235,7 @@ namespace IPSB.Controllers
 
             if (!string.IsNullOrEmpty(model.Email))
             {
-                list = list.Where(_ => _.Email.Contains(model.Email));
+                list = list.Where(_ => _.Email.ToLower().Contains(model.Email.ToLower()));
             }
 
             if (!string.IsNullOrEmpty(model.Status))

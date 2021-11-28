@@ -197,9 +197,9 @@ namespace IPSB.Controllers
                 if (!string.IsNullOrEmpty(model.SearchKey))
                 {
                     list = list.ToList().Where(_ =>
-                    (_.LocationType?.Name?.Contains(model.SearchKey) ?? false)
-                    || (_.Store?.Name?.Contains(model.SearchKey) ?? false)
-                    || (_.Facility?.Name?.Contains(model.SearchKey) ?? false)).AsQueryable();
+                    (_.LocationType?.Name?.ToLower().Contains(model.SearchKey.ToLower()) ?? false)
+                    || (_.Store?.Name?.ToLower().Contains(model.SearchKey.ToLower()) ?? false)
+                    || (_.Facility?.Name?.ToLower().Contains(model.SearchKey.ToLower()) ?? false)).AsQueryable();
                 }
 
                 var pagedModel = _pagingSupport.From(list)
