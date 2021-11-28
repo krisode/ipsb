@@ -397,7 +397,7 @@ namespace IPSB.Controllers
                 {
                     updLocatorTag.Status = Status.ACTIVE;
                 }
-                updLocatorTag.LocationId = await _locationService.UpdateLocationJson(updLocatorTag.LocationId, model.LocationJson);
+                updLocatorTag.LocationId = await _locationService.UpdateLocationJson(updLocatorTag.LocationId, model.LocationJson, updLocatorTag.FloorPlanId);
                 updLocatorTag.TxPower = model.TxPower;
                 updLocatorTag.UpdateTime = localTime.DateTime;
                 updLocatorTag.FloorPlanId = model.FloorPlanId;

@@ -252,7 +252,7 @@ namespace IPSB.Controllers
             }
             try
             {
-                updateFacility.LocationId = await _locationService.UpdateLocationJson(updateFacility.LocationId, model.LocationJson);
+                updateFacility.LocationId = await _locationService.UpdateLocationJson(updateFacility.LocationId, model.LocationJson, updateFacility.FloorPlanId);
                 updateFacility.Name = model.Name;
                 updateFacility.Description = model.Description;
                 updateFacility.FloorPlanId = model.FloorPlanId;

@@ -486,7 +486,7 @@ namespace IPSB.Controllers
                 updStore.Description = model.Description;
                 updStore.FloorPlanId = model.FloorPlanId;
                 updStore.Phone = model.Phone;
-                updStore.LocationId = await _locationService.UpdateLocationJson(updStore.LocationId, model.LocationJson);
+                updStore.LocationId = await _locationService.UpdateLocationJson(updStore.LocationId, model.LocationJson, updStore.FloorPlanId);
                 _service.Update(updStore);
                 if (await _service.Save() > 0)
                 {

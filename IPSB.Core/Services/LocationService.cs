@@ -19,7 +19,7 @@ namespace IPSB.Core.Services
         Task DeleteById(int id);
         void Disable(List<int> ids);
         Task<int?> CreateLocationJson(string json);
-        Task<int?> UpdateLocationJson(int? id, string json);
+        Task<int?> UpdateLocationJson(int? id, string json, int? floorPlanId);
         Task<bool> DisableLocation(int? id);
     }
 
@@ -123,7 +123,7 @@ namespace IPSB.Core.Services
         }
 
 
-        public async Task<int?> UpdateLocationJson(int? locationId, string json)
+        public async Task<int?> UpdateLocationJson(int? locationId, string json, int? floorPlanId)
         {
             int? updateLocationId = null;
             var activeStatus = "Active";
@@ -140,6 +140,12 @@ namespace IPSB.Core.Services
                         {
                             updateEntity.X = locationEntity.X;
                             updateEntity.Y = locationEntity.Y;
+                            if(floorPlanId != null){
+                                updateEntity.FloorPlanId = (int)floorPlanId;
+                            }
+                            else{
+                                updateEntity.FloorPlanId = locationEntity.FloorPlanId;
+                            }
                             updateLocationId = updateEntity.Id;
                             _edgeService.UpdateEdgeRange(updateEntity);
                             Update(updateEntity);
