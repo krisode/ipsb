@@ -468,7 +468,13 @@ namespace IPSB.Controllers
                 updLocatorTag.TxPower = model.TxPower;
                 updLocatorTag.UpdateTime = localTime.DateTime;
                 _service.Update(updLocatorTag);
-                await _service.Save();
+                 if (await _service.Save() > 0)
+                {
+                    await Task.WhenAll(
+                        _cacheStore.Remove<LocatorTag>(updLocatorTag.Id),
+                        _cacheStore.Remove<Location>(DefaultValue.INTEGER)
+                    );
+                }
             }
             catch (Exception)
             {
