@@ -445,22 +445,22 @@ namespace IPSB.Controllers
         {
             ResponseModel responseModel = new();
 
-            if (_service.IsExisted(_ => _.Id != id && _.Name.ToLower().Equals(model.Name.ToLower())))
-            {
-                responseModel.Code = StatusCodes.Status409Conflict;
-                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Name);
-                responseModel.Type = ResponseType.INVALID_REQUEST;
-                return Conflict(responseModel);
-            }
+            // if (_service.IsExisted(_ => _.Id != id && _.Name.ToLower().Equals(model.Name.ToLower())))
+            // {
+            //     responseModel.Code = StatusCodes.Status409Conflict;
+            //     responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Name);
+            //     responseModel.Type = ResponseType.INVALID_REQUEST;
+            //     return Conflict(responseModel);
+            // }
 
-            bool isExisted = _service.IsExisted(_ => _.Phone == model.Phone && _.Id != id);
-            if (isExisted)
-            {
-                responseModel.Code = StatusCodes.Status409Conflict;
-                responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Phone);
-                responseModel.Type = ResponseType.INVALID_REQUEST;
-                return Conflict(responseModel);
-            }
+            // bool isExisted = _service.IsExisted(_ => _.Phone == model.Phone && _.Id != id);
+            // if (isExisted)
+            // {
+            //     responseModel.Code = StatusCodes.Status409Conflict;
+            //     responseModel.Message = ResponseMessage.DUPLICATED.Replace("Object", model.Phone);
+            //     responseModel.Type = ResponseType.INVALID_REQUEST;
+            //     return Conflict(responseModel);
+            // }
 
             Store updStore = await _service.GetByIdAsync(_ => _.Id == id);
 
