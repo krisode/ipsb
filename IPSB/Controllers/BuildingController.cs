@@ -204,7 +204,7 @@ namespace IPSB.Controllers
                 bool includeDistanceTo = model.Lat != 0 && model.Lng != 0;
                 if (model.FindCurrentBuilding && includeDistanceTo)
                 {
-                    list = list.Where(_ => HelperFunctions.DistanceBetweenLatLng(_.Lat, _.Lng, model.Lat, model.Lng) < 0.5);
+                    list = list.Where(_ => HelperFunctions.DistanceBetweenLatLng(_.Lat, _.Lng, model.Lat, model.Lng) < 5);
                 }
                 Expression<Func<Building, object>> orderBy = _ => _.Id;
                 if (includeDistanceTo)
