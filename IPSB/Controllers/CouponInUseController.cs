@@ -518,11 +518,11 @@ namespace IPSB.Controllers
                 responseModel.Type = ResponseType.NOT_FOUND;
                 return BadRequest(responseModel);
             }
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, couponInUse, Operations.Delete);
-            if (!authorizedResult.Succeeded)
-            {
-                return new ObjectResult($"Not authorize to delete coupon in use with id: {id}") { StatusCode = 403 };
-            }
+            // var authorizedResult = await _authorizationService.AuthorizeAsync(User, couponInUse, Operations.Delete);
+            // if (!authorizedResult.Succeeded)
+            // {
+            //     return new ObjectResult($"Not authorize to delete coupon in use with id: {id}") { StatusCode = 403 };
+            // }
 
             if (couponInUse.Status.Equals(Status.DELETED))
             {

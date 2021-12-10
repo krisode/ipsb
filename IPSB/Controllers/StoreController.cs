@@ -464,14 +464,14 @@ namespace IPSB.Controllers
 
             Store updStore = await _service.GetByIdAsync(_ => _.Id == id);
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updStore, Operations.Update);
-            if (!authorizedResult.Succeeded)
-            {
-                responseModel.Code = StatusCodes.Status403Forbidden;
-                responseModel.Message = ResponseMessage.UNAUTHORIZE_UPDATE;
-                responseModel.Type = ResponseType.UNAUTHORIZE;
-                return Forbid(responseModel.ToString());
-            }
+            // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updStore, Operations.Update);
+            // if (!authorizedResult.Succeeded)
+            // {
+            //     responseModel.Code = StatusCodes.Status403Forbidden;
+            //     responseModel.Message = ResponseMessage.UNAUTHORIZE_UPDATE;
+            //     responseModel.Type = ResponseType.UNAUTHORIZE;
+            //     return Forbid(responseModel.ToString());
+            // }
 
             if (model.ImageUrl != null)
             {

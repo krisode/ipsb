@@ -73,14 +73,14 @@ namespace IPSB.Controllers
             }
 
             // resouce-based imperative authorization
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, account, Operations.Read);
-            if (!authorizedResult.Succeeded)
-            {
-                responseModel.Code = StatusCodes.Status403Forbidden;
-                responseModel.Message = ResponseMessage.UNAUTHORIZE_READ;
-                responseModel.Type = ResponseType.UNAUTHORIZE;
-                return Forbid(responseModel.ToString());
-            }
+            // var authorizedResult = await _authorizationService.AuthorizeAsync(User, account, Operations.Read);
+            // if (!authorizedResult.Succeeded)
+            // {
+            //     responseModel.Code = StatusCodes.Status403Forbidden;
+            //     responseModel.Message = ResponseMessage.UNAUTHORIZE_READ;
+            //     responseModel.Type = ResponseType.UNAUTHORIZE;
+            //     return Forbid(responseModel.ToString());
+            // }
 
             var rtnAccount = _mapper.Map<AccountVM>(account);
 
@@ -407,15 +407,15 @@ namespace IPSB.Controllers
                 return BadRequest(responseModel);
             }
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updAccount, Operations.Update);
+            // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updAccount, Operations.Update);
 
-            if (!authorizedResult.Succeeded)
-            {
-                responseModel.Code = StatusCodes.Status403Forbidden;
-                responseModel.Message = ResponseMessage.UNAUTHORIZE_UPDATE;
-                responseModel.Type = ResponseType.UNAUTHORIZE;
-                return Forbid(responseModel.ToString());
-            }
+            // if (!authorizedResult.Succeeded)
+            // {
+            //     responseModel.Code = StatusCodes.Status403Forbidden;
+            //     responseModel.Message = ResponseMessage.UNAUTHORIZE_UPDATE;
+            //     responseModel.Type = ResponseType.UNAUTHORIZE;
+            //     return Forbid(responseModel.ToString());
+            // }
 
             string imageURL = updAccount.ImageUrl;
 
@@ -445,7 +445,7 @@ namespace IPSB.Controllers
                     );
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 responseModel.Code = StatusCodes.Status500InternalServerError;
                 responseModel.Message = ResponseMessage.CAN_NOT_UPDATE;

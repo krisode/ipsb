@@ -456,17 +456,17 @@ namespace IPSB.Controllers
                 return BadRequest(responseModel);
             }
 
-            #region Authorization(Role = "Building Manager, Admin")
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updBuilding, Operations.Update);
+            // #region Authorization(Role = "Building Manager, Admin")
+            // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updBuilding, Operations.Update);
 
-            if (!authorizedResult.Succeeded)
-            {
-                responseModel.Code = StatusCodes.Status403Forbidden;
-                responseModel.Message = ResponseMessage.UNAUTHORIZE_UPDATE;
-                responseModel.Type = ResponseType.UNAUTHORIZE;
-                return Forbid(responseModel.ToString());
-            }
-            #endregion
+            // if (!authorizedResult.Succeeded)
+            // {
+            //     responseModel.Code = StatusCodes.Status403Forbidden;
+            //     responseModel.Message = ResponseMessage.UNAUTHORIZE_UPDATE;
+            //     responseModel.Type = ResponseType.UNAUTHORIZE;
+            //     return Forbid(responseModel.ToString());
+            // }
+            // #endregion
 
 
 

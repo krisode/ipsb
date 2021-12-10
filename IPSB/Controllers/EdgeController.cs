@@ -398,14 +398,14 @@ namespace IPSB.Controllers
                 return BadRequest(responseModel);
             }
 
-            var authorizedResult = await _authorizationService.AuthorizeAsync(User, updEdge, Operations.Update);
-            if (!authorizedResult.Succeeded)
-            {
-                responseModel.Code = StatusCodes.Status403Forbidden;
-                responseModel.Message = ResponseMessage.UNAUTHORIZE_UPDATE;
-                responseModel.Type = ResponseType.UNAUTHORIZE;
-                return Forbid(responseModel.ToString());
-            }
+            // var authorizedResult = await _authorizationService.AuthorizeAsync(User, updEdge, Operations.Update);
+            // if (!authorizedResult.Succeeded)
+            // {
+            //     responseModel.Code = StatusCodes.Status403Forbidden;
+            //     responseModel.Message = ResponseMessage.UNAUTHORIZE_UPDATE;
+            //     responseModel.Type = ResponseType.UNAUTHORIZE;
+            //     return Forbid(responseModel.ToString());
+            // }
 
             try
             {
