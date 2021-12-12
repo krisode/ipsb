@@ -172,7 +172,7 @@ namespace IPSB.Controllers
                 decodedToken = await auth.VerifyIdTokenAsync(authAccount.IdToken);
                 decodedToken.Claims.TryGetValue(TokenClaims.PHONE_NUMBER, out var phoneVar);
                 decodedToken.Claims.TryGetValue(TokenClaims.EMAIL, out var emailvar);
-                phone = ((string)phoneVar).Replace("+84", "0");
+                phone = ((string)phoneVar)?.Replace("+84", "0");
                 email = (string)emailvar;
             }
             catch (Exception)
