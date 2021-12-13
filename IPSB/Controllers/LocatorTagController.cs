@@ -130,7 +130,7 @@ namespace IPSB.Controllers
 
                 if (!string.IsNullOrEmpty(model.Uuid))
                 {
-                    list = list.Where(_ => _.Uuid.Equals(model.Uuid));
+                    list = list.Where(_ => _.Uuid.Contains(model.Uuid));
                 }
 
                 if (model.BuildingId != 0)
