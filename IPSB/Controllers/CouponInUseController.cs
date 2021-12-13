@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using IPSB.AuthorizationHandler;
+using IPSB.Cache;
 using IPSB.Core.Services;
 using IPSB.ExternalServices;
 using IPSB.Infrastructure.Contexts;
@@ -28,10 +29,11 @@ namespace IPSB.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly IPushNotificationService _pushNotificationService;
         private readonly INotificationService _notificationService;
+        private readonly ICacheStore _cacheStore;
 
         public CouponInUseController(ICouponInUseService service, IMapper mapper, IPagingSupport<CouponInUse> pagingSupport,
             IUploadFileService uploadFileService, IAuthorizationService authorizationService, IPushNotificationService pushNotificationService,
-            INotificationService notificationService)
+            INotificationService notificationService, ICacheStore cacheStore)
         {
             _service = service;
             _mapper = mapper;
@@ -40,6 +42,7 @@ namespace IPSB.Controllers
             _authorizationService = authorizationService;
             _pushNotificationService = pushNotificationService;
             _notificationService = notificationService;
+            _cacheStore = cacheStore;
         }
 
         /// <summary>
@@ -437,6 +440,8 @@ namespace IPSB.Controllers
                             Notification crtNotification = await _notificationService.AddAsync(notification);
                             if (await _notificationService.Save() > 0)
                             {
+                                await _cacheStore.Remove<Notification>(DefaultValue.INTEGER);
+
                                 var data = new Dictionary<String, String>();
                                 data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
                                 data.Add("notificationType", "feedback_changed");
@@ -465,6 +470,8 @@ namespace IPSB.Controllers
                             var crtNotification = await _notificationService.AddAsync(notification);
                             if (await _notificationService.Save() > 0)
                             {
+                                await _cacheStore.Remove<Notification>(DefaultValue.INTEGER);
+
                                 var data = new Dictionary<String, String>();
                                 data.Add("click_action", "FLUTTER_NOTIFICATION_CLICK");
                                 data.Add("notificationType", "coupon_in_use_changed");
